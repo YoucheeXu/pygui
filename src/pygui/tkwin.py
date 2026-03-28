@@ -1085,7 +1085,7 @@ class tkWin(WinBasic):
                 ctrl = CheckButtonCtrl(master, self, idctrl,
                     text=text, vartext=vartext, select=sel, **options)
             case "SlideSwitch":
-                ctrl = SlideSwitch(master, self, idctrl, **options)
+                ctrl = SlideSwitch(master, owner, idctrl, **options)
             case "Statusbar":
                 ctrl = MultiStatusBar(master, **options)
                 # for subctrl_cfg in list(ctrl_cfg):

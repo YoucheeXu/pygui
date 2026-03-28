@@ -126,11 +126,11 @@
 			</Tab>
 		</Notebook>
     </Dialog>
-    <CustomDialog id="dlgTodoDetail" text="Todo Detail" Width="400" Height="600">
+    <CustomDialog id="dlgTodoDetail" text="Todo Detail" Width="550" Height="600">
     	<Style text="BW.TLabel" options="{'background':'white'}"/>
     	<Frame id="frmInfoEditTodo" layout="pack" pack="{'padx':8,'pady':4,'expand':1,'fill':'x'}" options="{'bg':'white'}">
     		<Entry id="txtNameEditTodo" text="" options="{'width':20}" layout="pack" pack="{}"/>
-    		<Entry id="txtNoteEditTodo" text="备注" options="{'width':20}" layout="pack" pack="{}"/>
+    		<Entry id="txtNoteEditTodo" text="" options="{'width':20}" layout="pack" pack="{}"/>
     	</Frame>
     	<Frame id="frmReminderEditTodo" layout="pack" pack="{'pady':4,'expand':1,'fill':'x'}">
     		<Frame id="frmDateEditTodo" layout="pack" pack="{'pady':2}" options="{'bg':'white'}">
@@ -144,6 +144,17 @@
     			<Label id="lblTimeEditTodo" text="时间" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
     			<Label id="lblSelTimeEditTodo" text="" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1,'sticky':'w'}"/>
     			<SlideSwitch id="slsTimeEditTodo" text="" options="{'width':50,'height':25}" layout="grid" grid="{'row':0,'column':2,'rowspan':2,'sticky':'w','padx':4}"/>
+    		</Frame>
+    	</Frame>
+		<Frame id="frmRepeatEditTodo" layout="pack" pack="{'padx':4,'pady':4,'expand':1,'fill':'x'}" options="{'bg':'white'}">
+    		<Frame id="frmCycleEditTodo" layout="pack" pack="{'pady':2}" options="{'bg':'white'}">
+    			<ImagePanel id="imgCycleEditTodo" image="calendar.png" options="{'width':40,'height':40,'bg':'white'}" layout="grid" grid="{'row':0,'column':0}"/>
+    			<Label id="lblCycleEditTodo" text="重复" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+    			<Label id="lblSelCycleEditTodo" text="" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'w'}"/>
+    		</Frame>
+    		<Frame id="frmEndEditTodo" layout="pack" pack="{'pady':2}">
+    			<Label id="lblEndEditTodo" text="结束重复" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+    			<Label id="lblSelEndEditTodo" text="永不" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'w'}"/>
     		</Frame>
     	</Frame>
 	</CustomDialog>

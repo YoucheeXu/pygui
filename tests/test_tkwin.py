@@ -47,6 +47,7 @@ def test_gui():
             if self.alive:
                 match idmsg:
                     case _:
+                        print(f"undeal with idMsg of TodoDetailDlg: {idmsg} with {kwargs}")
                         return super().process_message(idmsg, **kwargs)
             return super().process_message(idmsg, **kwargs)
 
