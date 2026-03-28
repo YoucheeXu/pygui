@@ -1,3 +1,4 @@
+import calendar
 import os
 import sys
 import random
@@ -16,6 +17,7 @@ from src.pygui.tkcontrol import tkControl
 from src.pygui.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
 from src.pygui.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
 from src.pygui.tkwin import DialogCtrl, tkWin
+from src.pygui.calendarctrl import CalendarDialog
 """
     uv run pytest --cov=src.pygui.tkwin .\tests\test_tkwin.py -v
 """
@@ -46,9 +48,17 @@ def test_gui():
             kwargs.update(self._extral_msg)
             if self.alive:
                 match idmsg:
+                    case "cadDateEditTodo":
+                        lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
+                        date = cast(datetime.date, kwargs['val'])
+                        # date_text = f"{date.year}年{date.month:02d}月{date.day:02d}日"
+                        date_text = date.strftime("%B %d, %Y\t%A")
+                        # print(f"select date: {date_text}")
+                        lbl.set_text(date_text)
                     case _:
                         print(f"undeal with idMsg of TodoDetailDlg: {idmsg} with {kwargs}")
                         return super().process_message(idmsg, **kwargs)
+                return True
             return super().process_message(idmsg, **kwargs)
 
     class ExampleApp(tkWin):
@@ -138,6 +148,12 @@ def test_gui():
                 match idmsg:
                     case "beforego":
                         self._hourdetaildlg_beforego(**kwargs)
+                    case "btnRecordHourDetail":
+                        x, y = cast(tuple[int, int], kwargs["mousepos"])
+                        calendar_dlg = CalendarDialog((x + 20, y + 40))
+                        date = calendar_dlg.get_datestr()
+                        if date:
+                            print(f"hour detail dialog: select date {date}")
                     case "cancel":
                         return self._hourdetaildlg_cancel(**kwargs)
                     case _:

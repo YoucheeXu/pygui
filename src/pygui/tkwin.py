@@ -33,6 +33,7 @@ from src.pygui.tkcontrol import tkControl
 from src.pygui.matplot import MatPlotCtrl
 from src.pygui.slideswitch import SlideSwitch
 import src.pygui.cv2_utilities as cv2u
+from src.pygui.calendarctrl import CalendarCtrl
 
 IS_WINDOWS = platform.system() == "Windows"
 
@@ -1086,6 +1087,8 @@ class tkWin(WinBasic):
                     text=text, vartext=vartext, select=sel, **options)
             case "SlideSwitch":
                 ctrl = SlideSwitch(master, owner, idctrl, **options)
+            case "Calendar":
+                ctrl = CalendarCtrl(master, owner, idctrl, **options)
             case "Statusbar":
                 ctrl = MultiStatusBar(master, **options)
                 # for subctrl_cfg in list(ctrl_cfg):

@@ -138,6 +138,7 @@
     			<Label id="lblDateEditTodo" text="日期" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
     			<Label id="lblSelDateEditTodo" text="" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1,'sticky':'w'}"/>
     			<SlideSwitch id="slsDateEditTodo" text="" options="{'width':50,'height':25}" layout="grid" grid="{'row':0,'column':2,'rowspan':2,'sticky':'w','padx':4}"/>
+				<Calendar id="cadDateEditTodo" options="{'width':186,'height':150}" layout="grid" grid="{'row':3,'column':0,'columnspan':3, 'pady':4}"/>
     		</Frame>
     		<Frame id="frmTimeEditTodo" layout="pack" pack="{'pady':2}" options="{'bg':'white'}">
     			<ImagePanel id="imgTimeEditTodo" image="VaadinAlarm.png" options="{'width':40,'height':40,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'rowspan':2}"/>

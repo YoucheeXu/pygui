@@ -2,25 +2,36 @@
 # -*- coding: UTF-8 -*-
 from __future__ import annotations
 import calendar
+import datetime
+from typing import override, cast
 import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import ttk
-import datetime
 
-class CalendarCtrl:
-    def __init__(self, point: tuple[int, int] | None = None):
-        self._master: tk.Toplevel = tk.Toplevel()
-        self._master.withdraw()
-        # fwday = calendar.SUNDAY
-        fwday = 6
+from src.pygui.winbasic import Dialog
+from src.pygui.tkcontrol import tkControl
+
+
+class CalendarCtrl(tkControl):
+    def __init__(self, parent: tk.Misc, owner: Dialog, idself: str, **kwargs: object):
+        ctrl = ttk.Frame(parent)
+        super().__init__(parent, "", idself, ctrl)
+
+        # print(kwargs)
+        self._master: tk.Misc = parent
+        self._owner: Dialog = owner
+
+        fwday = cast(int, kwargs.get("fwday", 0))   # first day of week, default to Monday)
+        locale = None
+
         year = datetime.datetime.now().year
         month = datetime.datetime.now().month
-        locale = None
-        sel_bg = '#ecffc4'
-        sel_fg = '#05640e'
         self._date: datetime.date = datetime.datetime(year, month, 1)        # 每月第一日
+
         self._selection: tuple[str, str, str] | None = None     # 设置为未选中日期
-        self.G_Frame: ttk.Frame = ttk.Frame(self._master)
+
+        # self._contain_frame: ttk.Frame = ttk.Frame(ctrl)
+        self._contain_frame: ttk.Frame = ctrl
         self._cal: calendar.TextCalendar | calendar.LocaleTextCalendar = \
             self.__get_calendar(locale, fwday)
         self.__setup_styles()        # 创建自定义样式
@@ -29,29 +40,14 @@ class CalendarCtrl:
         self._canvas_text: int = 0
         self._font: tkFont.Font = tkFont.Font()
         # 配置画布和正确的绑定，以选择日期。
+        sel_bg = '#ecffc4'
+        sel_fg = '#05640e'        
         self._canvas: tk.Canvas = self.__setup_selection(sel_bg, sel_fg)
         # 存储项ID，用于稍后插入。
         self._items: list[str] = [self._calendar.insert('', 'end', values=[]) for _ in range(6)]
         # 在当前空日历中插入日期
         self._update()
-        self.G_Frame.pack(expand = 1, fill = 'both')
-        self._master.overrideredirect(True)
-        self._master.update_idletasks()
-        width, height = self._master.winfo_reqwidth(), self._master.winfo_reqheight()
-        self.height: int = height
-        if point:
-            x, y = point[0], point[1]
-        else:
-            x, y = (self._master.winfo_screenwidth() - width)/2, \
-                (self._master.winfo_screenheight() - height)/2
-        # self._master.geometry('%dx%d+%d+%d' % (width, height, x, y)) # 窗口位置居中
-        self._master.geometry(f"{width}x{height}+{x}+{y}") # 窗口位置居中
-        _ = self._master.after(300, self._main_judge)
-        self._master.attributes('-topmost', True)
-        self._master.grab_set()        # ensure all input goes to our window
-        self._master.deiconify()
-        self._master.focus_set()
-        self._master.wait_window()
+        print(f"first day of week: {self._cal.firstweekday}")
 
     def __get_calendar(self, locale: tuple[str | None, str | None] | None = None,
             fwday: int = 0):
@@ -60,7 +56,8 @@ class CalendarCtrl:
         else:
             return calendar.LocaleTextCalendar(fwday, locale)
 
-    def __setitem__(self, item: str, value):
+    @override
+    def __setitem__(self, item: str, value: object):
         if item in ('year', 'month'):
             raise AttributeError("attribute '%s' is not writeable" % item)
         elif item == 'selectbackground':
@@ -68,15 +65,16 @@ class CalendarCtrl:
         elif item == 'selectforeground':
             _ = self._canvas.itemconfigure(self._canvas_text, item=value)
         else:
-            self.G_Frame.__setitem__(item, value)
+            self._contain_frame.__setitem__(item, value)
 
+    @override
     def __getitem__(self, item: str):
         if item in ('year', 'month'):
             return getattr(self._date, item)
         elif item == 'selectbackground':
             return self._canvas['background']
         elif item == 'selectforeground':
-            return self._canvas.itemcget(self._self._canvas_text, 'fill')
+            return self._canvas.itemcget(self._canvas_text, 'fill')
         else:
             r = ttk.tclobjs_to_py({item: ttk.Frame.__getitem__(self, item)})
             return r[item]
@@ -93,50 +91,50 @@ class CalendarCtrl:
     def __place_widgets(self):
         # 标头框架及其小部件
         input_judgment_num = self._master.register(self.input_judgment) # 需要将函数包装一下，必要的
-        hframe = ttk.Frame(self.G_Frame)
-        gframe = ttk.Frame(self.G_Frame)
-        bframe = ttk.Frame(self.G_Frame)
-        hframe.pack(in_=self.G_Frame, side='top', pady=5, anchor='center')
-        gframe.pack(in_=self.G_Frame, fill=tk.X, pady=5)
-        bframe.pack(in_=self.G_Frame, side='bottom', pady=5)
-        lbtn = ttk.Button(hframe, style='L.TButton', command=self._prev_month)
-        lbtn.grid(in_=hframe, column=0, row=0, padx=12)
-        rbtn = ttk.Button(hframe, style='R.TButton', command=self._next_month)
-        rbtn.grid(in_=hframe, column=5, row=0, padx=12)
-        self._cmb_year: ttk.Combobox = ttk.Combobox(hframe, width=5,
+
+        title_frame = ttk.Frame(self._contain_frame)
+        gframe = ttk.Frame(self._contain_frame)
+        title_frame.pack(in_=self._contain_frame, side='top', pady=5, anchor='center')
+        gframe.pack(in_=self._contain_frame, fill=tk.X, pady=5)
+
+        lbtn = ttk.Button(title_frame, style='L.TButton', command=self._prev_month)
+        lbtn.grid(in_=title_frame, column=0, row=0, padx=12)
+        rbtn = ttk.Button(title_frame, style='R.TButton', command=self._next_month)
+        rbtn.grid(in_=title_frame, column=5, row=0, padx=12)
+        self._cmb_year: ttk.Combobox = ttk.Combobox(title_frame, width=5,
             values=[str(year) for year in range(datetime.datetime.now().year,
                 datetime.datetime.now().year-11, -1)],
             validate='key', validatecommand=(input_judgment_num, '%P'))
         _ = self._cmb_year.current(0)
-        self._cmb_year.grid(in_=hframe, column=1, row=0)
+        self._cmb_year.grid(in_=title_frame, column=1, row=0)
         _ = self._cmb_year.bind('<KeyPress>', lambda event: self._update(event, True))
         _ = self._cmb_year.bind("<<ComboboxSelected>>", self._update)
-        tk.Label(hframe, text = '年', justify = 'left').grid(in_=hframe, column=2, row=0, padx=(0,5))
-        self._cmb_month: ttk.Combobox = ttk.Combobox(hframe, width=3,
+        tk.Label(title_frame, text = '年', justify = 'left').grid(in_=title_frame, column=2, row=0, padx=(0,5))
+        self._cmb_month: ttk.Combobox = ttk.Combobox(title_frame, width=3,
             values=['%02d' % month for month in range(1,13)], state='readonly')
         _ = self._cmb_month.current(datetime.datetime.now().month - 1)
-        self._cmb_month.grid(in_=hframe, column=3, row=0)
+        self._cmb_month.grid(in_=title_frame, column=3, row=0)
         _ = self._cmb_month.bind("<<ComboboxSelected>>", self._update)
-        tk.Label(hframe, text='月', justify='left').grid(in_=hframe, column=4, row=0)
+        tk.Label(title_frame, text='月', justify='left').grid(in_=title_frame, column=4, row=0)
+
         # 日历部件
         self._calendar: ttk.Treeview = ttk.Treeview(gframe, show='', selectmode='none', height=7)
         self._calendar.pack(expand=1, fill='both', side='bottom', padx=5)
-        ttk.Button(bframe, text="确 定", width=6,
-            command=lambda: self._exit(True)).grid(row=0, column=0, sticky='ns', padx=20)
-        ttk.Button(bframe, text="取 消", width=6, command=self._exit). \
-            grid(row=0, column=1, sticky='ne', padx=20)
-        tk.Frame(self.G_Frame, bg='#565656').\
-            place(x=0, y=0, relx=0, rely=0, relwidth=1, relheigh=2/200)
-        tk.Frame(self.G_Frame, bg='#565656'). \
-            place(x=0, y=0, relx=0, rely=198/200, relwidth=1, relheigh=2/200)
-        tk.Frame(self.G_Frame, bg='#565656'). \
-            place(x=0, y=0, relx=0, rely=0, relwidth=2/200, relheigh=1)
-        tk.Frame(self.G_Frame, bg='#565656'). \
-            place(x=0, y=0, relx=198/200, rely=0, relwidth=2/200, relheigh=1)
+
+    def _generate_week_cols(self, fwd: int):
+        # Fixed base week (unchanged standard order: 一 → 二 → ... → 六 → 日)
+        BASE_WEEK = ['一','二','三','四','五','六','日']
+
+        # Validate input (only accept valid Chinese weekdays)
+        if fwd < 0 or fwd > 6:
+            raise ValueError("Invalid first day! Must be: 0~6")
+
+        # Rotate the list: put first day at index 0
+        cols = BASE_WEEK[fwd:] + BASE_WEEK[:fwd]
+        return cols
 
     def __config_calendar(self):
-        # cols = self._cal.formatweekheader(3).split()
-        cols = ['日','一','二','三','四','五','六']
+        cols = self._generate_week_cols(self._cal.firstweekday)
         self._calendar['columns'] = cols
         _ = self._calendar.tag_configure('header', background='grey90')
         _ = self._calendar.insert('', 'end', values=cols, tags='header')
@@ -204,6 +202,10 @@ class CalendarCtrl:
         self._selection = (text, item, column)
         self._show_select(text, bbox)
 
+        year, month = self._date.year, self._date.month
+        date = datetime.date(year, month, int(self._selection[0]))
+        _ = self._owner.process_message(self._idself, event="select_date", val=date)
+
     def _prev_month(self):
         """ 更新日历以显示前一个月"""
         self._canvas.place_forget()
@@ -247,33 +249,19 @@ class CalendarCtrl:
                     _ = self._master.after(100, lambda :self._clicked(item=item, column=column,
                         widget=self._calendar))
 
-    def _exit(self, confirm: bool = False):
-        # pv(self._selection)
-        if not confirm:
-            self._selection = None
-        self._master.grab_release()
-        self._master.destroy()
-
-    def _main_judge(self):
-        """ 判断窗口是否在最顶层"""
-        try:
-            if self._master.focus_displayof() is None \
-                or 'toplevel' not in str(self._master.focus_displayof()):
-                self._exit()
-            else:
-                _ = self._master.after(10, self._main_judge)
-        except:
-            _ = self._master.after(10, self._main_judge)
-
-    def get_datestr(self):
-        """ 返回表示当前选定日期的日期时间"""
+    def get_date(self):
+        """ 返回表示当前选定日期的日期"""
         if not self._selection:
-            print("no selection")
             return None
         year, month = self._date.year, self._date.month
-        # pv(year)
-        # pv(month)
-        return str(datetime.datetime(year, month, int(self._selection[0])))[:10]
+        return datetime.date(year, month, int(self._selection[0]))
+
+    def get_datestr(self):
+        """ 返回表示当前选定日期的日期字符串"""
+        if not self._selection:
+            return None
+        year, month = self._date.year, self._date.month
+        return str(datetime.date(year, month, int(self._selection[0])))
 
     def input_judgment(self, content: str):
         """ 输入判断"""
@@ -281,6 +269,89 @@ class CalendarCtrl:
             return True
         else:
             return False
+
+    def cancel_select(self):
+        self._selection = None
+
+class CalendarDialog(Dialog):
+    def __init__(self, point: tuple[int, int] | None = None):
+        super().__init__("", 0, 0)
+
+        self._top: tk.Toplevel = tk.Toplevel()
+        self._top.withdraw()
+
+        frame = ttk.Frame(self._top)
+
+        self._calendar_ctrl: CalendarCtrl = CalendarCtrl(frame, self, "")
+        self._calendar_ctrl.control.pack(expand = 1, fill = 'both')
+
+        bottom_frame = ttk.Frame(frame)
+        bottom_frame.pack(in_=frame, side='bottom', pady=5)
+
+        ttk.Button(bottom_frame, text="确 定", width=6,
+            command=lambda: self._exit(True)).grid(row=0, column=0, sticky='ns', padx=20)
+        ttk.Button(bottom_frame, text="取 消", width=6, command=self._exit). \
+            grid(row=0, column=1, sticky='ne', padx=20)
+
+        # tk.Frame(frame, bg='#565656').\
+        #     place(x=0, y=0, relx=0, rely=0, relwidth=1, relheigh=2/200)
+        # tk.Frame(frame, bg='#565656'). \
+        #     place(x=0, y=0, relx=0, rely=198/200, relwidth=1, relheigh=2/200)
+        # tk.Frame(frame, bg='#565656'). \
+        #     place(x=0, y=0, relx=0, rely=0, relwidth=2/200, relheigh=1)
+        # tk.Frame(frame, bg='#565656'). \
+        #     place(x=0, y=0, relx=198/200, rely=0, relwidth=2/200, relheigh=1)
+
+        frame.pack(expand = 1, fill = 'both')
+
+        self._top.overrideredirect(True)
+        self._top.update_idletasks()
+
+        width, height = self._top.winfo_reqwidth(), self._top.winfo_reqheight()
+        self._hh: int = height
+        if point:
+            x, y = point[0], point[1]
+        else:
+            x, y = (self._top.winfo_screenwidth() - width)/2, \
+                (self._top.winfo_screenheight() - height)/2
+
+        self._top.geometry(f"{width}x{height}+{x}+{y}") # 窗口位置居中
+        # _ = self._master.after(300, self._main_judge)
+
+        _ = self._top.resizable(width=tk.FALSE, height=tk.FALSE)
+        # self._top.transient(self._parent)
+        self._top.protocol("WM_DELETE_WINDOW", self.destroy)
+
+        self._top.attributes('-topmost', True)
+        self._top.grab_set()        # ensure all input goes to our window
+        self._top.deiconify()
+        self._top.focus_set()
+        self._top.wait_window()
+
+    def _main_judge(self):
+        """ 判断窗口是否在最顶层"""
+        try:
+            if self._top.focus_displayof() is None \
+                or 'toplevel' not in str(self._top.focus_displayof()):
+                self._exit()
+            else:
+                _ = self._top.after(10, self._main_judge)
+        except:
+            _ = self._top.after(10, self._main_judge)
+
+    def get_datestr(self):
+        """ 返回表示当前选定日期的日期时间"""
+        return self._calendar_ctrl.get_datestr()
+
+    def _exit(self, confirm: bool = False):
+        if not confirm:
+            self._calendar_ctrl.cancel_select()
+        self._top.grab_release()
+        self._top.destroy()
+
+    @override
+    def destroy(self, **kwargs: object):
+        pass
 
 
 if __name__ == "__main__":
@@ -325,7 +396,7 @@ if __name__ == "__main__":
             self.var_test.set(res)
 
         def ask_date(self, x: int, y: int):
-            calendar = CalendarCtrl((x, y))
+            calendar = CalendarDialog((x, y))
             return calendar.get_datestr()
 
     app = CalendarCtrl_test()
