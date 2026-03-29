@@ -142,7 +142,7 @@ class ScrollPicker(tk.Frame):
         self._end = maxdata
 
 
-class DateScrollPickerCtrl:
+class DateScrollPickerDialog:
     def __init__(self, point: tuple[int, int] | None = None,
             title: str = "", initial: str = ""):
         self._master: tk.Toplevel = tk.Toplevel()
@@ -280,7 +280,7 @@ class DateScrollPickerCtrl:
             _ = self._master.after(10, self._main_judge)
 
 
-class TimeScrollPickerCtrl:
+class TimeScrollPickerDialog:
     def __init__(self, point: tuple[int, int] | None = None,
             title: str = "", initial: str = ""):
         self._master: tk.Toplevel = tk.Toplevel()
@@ -455,7 +455,7 @@ if __name__ == "__main__":
             self._var_date.set(res)
 
         def ask_date(self, x: int, y: int):
-            scrollpicker = DateScrollPickerCtrl((x, y))
+            scrollpicker = DateScrollPickerDialog((x, y))
             return scrollpicker.get_datestr()
 
         def get_time(self, x: int, y: int):    # x, y位Entry的坐标位置
@@ -464,7 +464,7 @@ if __name__ == "__main__":
             self._var_time.set(res)
 
         def ask_time(self, x: int, y: int):
-            scrollpicker = TimeScrollPickerCtrl((x, y), "wahaha")
+            scrollpicker = TimeScrollPickerDialog((x, y), "wahaha")
             return scrollpicker.get_datestr()
 
 
