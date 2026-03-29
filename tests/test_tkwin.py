@@ -1,4 +1,3 @@
-import calendar
 import os
 import sys
 import random
@@ -12,7 +11,7 @@ root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_path)
 
 from src.pygui.winbasic import Dialog
-from src.pygui.matplot import LineData, MatPlotCtrl
+from src.pygui.tkmatplot import LineData, MatPlotCtrl
 from src.pygui.tkcontrol import tkControl
 from src.pygui.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
 from src.pygui.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
