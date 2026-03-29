@@ -5,7 +5,10 @@ import datetime
 import calendar
 import tkinter as tk
 from tkinter import ttk
-from typing import TypeAlias, Callable, Any
+from typing import TypeAlias, Callable, Any, override
+
+from src.pygui.winbasic import Dialog
+from src.pygui.tkcontrol import tkControl
 
 
 OnSelect: TypeAlias = Callable[[int], None]
@@ -280,15 +283,17 @@ class DateScrollPickerDialog:
             _ = self._master.after(10, self._main_judge)
 
 
-class TimeScrollPickerDialog:
-    def __init__(self, point: tuple[int, int] | None = None,
+class TimeScrollPickerCtrl(tkControl):
+    def __init__(self, parent: tk.Misc, owner: Dialog, idself: str,
+            width: int, height: int,
             title: str = "", initial: str = ""):
-        self._master: tk.Toplevel = tk.Toplevel()
-        self._master.withdraw()
+        self._master: tk.Misc = parent
+        self._owner: Dialog = owner
 
-        self._frame: tk.Frame = tk.Frame(self._master)
-
-        self._title: str = title if title else "时间选择器"
+        self._frame: tk.Frame = tk.Frame(self._master,
+            background='white',
+            width=width, height=height)
+        super().__init__(parent, "", idself, self._frame)
 
         # 初始时间设置
         if not initial:
@@ -301,17 +306,99 @@ class TimeScrollPickerDialog:
             self._selected_minute = int(now_list[1])
 
         self._hour_scrollpicker: ScrollPicker = ScrollPicker(self._frame, self._selected_hour,
-            0, 23, self._on_hour_change)
+            0, 23, self._on_hour_change
+        )
 
         self._minute_scrollpicker: ScrollPicker = ScrollPicker(self._frame, self._selected_minute,
-            0, 59, self._on_minute_change)
+            0, 59, self._on_minute_change
+        )
 
-        self._confirm_btn: ttk.Button
-        self._result_var: tk.StringVar
-        self._result_label: ttk.Label
+        self._result_var: tk.StringVar = tk.StringVar()
 
         # 创建UI组件
         self._create_widgets()
+
+    def _create_widgets(self) -> None:
+        # 配置网格权重，使布局更美观
+        for i in range(1):  # 行
+            _ = self._frame.grid_rowconfigure(i, weight=1)
+        for i in range(2):  # 列
+            _ = self._frame.grid_columnconfigure(i, weight=1)
+
+        # ttk.Label(self._frame, text=self._title, font=("SimHei", 12)).grid(row=0, column=0,
+        #     columnspan=3, pady=5)
+
+        self._hour_scrollpicker.grid(row=0, column=1)
+        self._minute_scrollpicker.grid(row=0, column=2)
+
+        self._result_var = tk.StringVar()
+        self._result_var.set(f"当前选择: {self._selected_hour:02d}:{self._selected_minute:02d}")
+
+    def _on_hour_change(self, hour: int):
+        self._selected_hour = hour
+        self._update_result_preview()
+        time = datetime.time(self._selected_hour, self._selected_minute)
+        _ = self._owner.process_message(self._idself, event="select_time", val=time)
+
+    def _on_minute_change(self, minute: int):
+        self._selected_minute = minute
+        self._update_result_preview()
+        time = datetime.time(self._selected_hour, self._selected_minute)
+        _ = self._owner.process_message(self._idself, event="select_time", val=time)
+
+    def _update_result_preview(self) -> None:
+        """ 更新结果预览"""
+        formatted_time: str = f"{self._selected_hour:02d}:{self._selected_minute:02d}"
+        self._result_var.set(f"当前选择: {formatted_time}")
+
+    def get_time(self):
+        """ 获取当前选择的时间"""
+        return datetime.time(self._selected_hour, self._selected_minute)
+
+    def get_timestr(self) -> str:
+        """ 获取当前选择的时间字符串"""
+        return f"{self._selected_hour:02d}:{self._selected_minute:02d}"
+
+
+class TimeScrollPickerDialog(Dialog):
+    def __init__(self, point: tuple[int, int] | None = None,
+            title: str = "", initial: str = ""):
+        super().__init__(title, 0, 0)
+
+        self._master: tk.Toplevel = tk.Toplevel()
+        self._master.withdraw()
+
+        self._frame: tk.Frame = tk.Frame(self._master)
+
+        self._title: str = title if title else "时间选择器"
+
+        # 初始时间设置
+        if not initial:
+            now: datetime.datetime = datetime.datetime.now()
+            selected_hour = now.hour
+            selected_minute = now.minute
+        else:
+            now_list = initial.split(":")
+            selected_hour = int(now_list[0])
+            selected_minute = int(now_list[1])
+
+        # ttk.Label(self._frame, text=self._title, font=("SimHei", 12)).grid(row=0, column=0, pady=5)
+        ttk.Label(self._frame, text=self._title, font=("SimHei", 12)).pack()
+
+        self._time_scrollpicker_ctrl: TimeScrollPickerCtrl = TimeScrollPickerCtrl(self._frame, self,
+            "tspSelectTime",
+            100, 50,
+            initial=f"{selected_hour}:{selected_minute}"
+        )
+        self._time_scrollpicker_ctrl.control.pack(pady=5)
+
+        confirm_btn = ttk.Button(self._frame, text="确认选择", command=self._confirm)
+        confirm_btn.pack()
+
+        self._result_var: tk.StringVar = tk.StringVar()
+        self._result_var.set(f"当前选择: {selected_hour:02d}:{selected_minute:02d}")
+        result_label = ttk.Label(self._frame, textvariable=self._result_var, font=("SimHei", 12))
+        result_label.pack(pady=(5,0))
 
         self._frame.pack(expand = 1, fill = 'both')
 
@@ -332,51 +419,18 @@ class TimeScrollPickerDialog:
         self._master.focus_set()
         self._master.wait_window()
 
-    def _create_widgets(self) -> None:
-        # 配置网格权重，使布局更美观
-        for i in range(3):  # 行
-            _ = self._frame.grid_rowconfigure(i, weight=1)
-        for i in range(2):  # 列
-            _ = self._frame.grid_columnconfigure(i, weight=1)
-
-        ttk.Label(self._frame, text=self._title, font=("SimHei", 12)).grid(row=0, column=0,
-            columnspan=3, pady=5)
-
-        self._hour_scrollpicker.grid(row=1, column=1)
-        self._minute_scrollpicker.grid(row=1, column=2)
-
-        # 确认按钮和结果显示
-        self._confirm_btn = ttk.Button(self._frame, text="确认选择", command=self._confirm)
-        self._confirm_btn.grid(row=2, column=0, columnspan=3, pady=10)
-
-        self._result_var = tk.StringVar()
-        self._result_var.set(f"当前选择: {self._selected_hour:02d}:{self._selected_minute:02d}")
-        self._result_label = ttk.Label(self._frame, textvariable=self._result_var, font=("SimHei", 12))
-        self._result_label.grid(row=3, column=0, columnspan=3, pady=5)
-
-    def _on_hour_change(self, hour: int):
-        self._selected_hour = hour
-        self._update_result_preview()
-
-    def _on_minute_change(self, minute: int):
-        self._selected_minute = minute
-        self._update_result_preview()
-
-    def _update_result_preview(self) -> None:
-        """ 更新结果预览"""
-        formatted_time: str = f"{self._selected_hour:02d}:{self._selected_minute:02d}"
-        self._result_var.set(f"当前选择: {formatted_time}")
-
-    def _confirm(self) -> str:
-        """ 显示并返回最终选择的日期"""
-        formatted_time: str = f"{self._selected_hour:02d}:{self._selected_minute:02d}"
-        self._result_var.set(f"已选择: {formatted_time}")
+    @override
+    def _confirm(self, **kwargs: object):
         self._exit()
-        return formatted_time
+        return True, ""
 
-    def get_datestr(self) -> str:
+    def get_time(self):
         """ 获取当前选择的时间"""
-        return f"{self._selected_hour:02d}:{self._selected_minute:02d}"
+        return self._time_scrollpicker_ctrl.get_time()
+
+    def get_timestr(self) -> str:
+        """ 获取当前选择的时间字符串"""
+        return self._time_scrollpicker_ctrl.get_timestr()
 
     def _exit(self):
         self._master.grab_release()
@@ -393,6 +447,19 @@ class TimeScrollPickerDialog:
         except:
             _ = self._master.after(10, self._main_judge)
 
+    @override
+    def process_message(self, idmsg: str, **kwargs: object):
+        match idmsg:
+            case "tspSelectTime":
+                time = self.get_time()
+                self._result_var.set(f"当前选择: {time.hour:02d}:{time.minute:02d}")
+            case _:
+                return super().process_message(idmsg, **kwargs)
+        return True
+
+    @override
+    def destroy(self, **kwargs: object):
+        pass
 
 if __name__ == "__main__":
     class ScrollPickerCtrl_test():
@@ -465,7 +532,7 @@ if __name__ == "__main__":
 
         def ask_time(self, x: int, y: int):
             scrollpicker = TimeScrollPickerDialog((x, y), "wahaha")
-            return scrollpicker.get_datestr()
+            return scrollpicker.get_timestr()
 
 
     app = ScrollPickerCtrl_test()
