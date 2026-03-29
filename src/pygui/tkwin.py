@@ -33,7 +33,7 @@ from src.pygui.tkcontrol import tkControl
 from src.pygui.matplot import MatPlotCtrl
 from src.pygui.slideswitch import SlideSwitch
 import src.pygui.cv2_utilities as cv2u
-from src.pygui.calendarctrl import CalendarCtrl
+from src.pygui.tkcalendar import CalendarCtrl
 
 IS_WINDOWS = platform.system() == "Windows"
 

@@ -17,7 +17,7 @@ from src.pygui.tkcontrol import tkControl
 from src.pygui.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
 from src.pygui.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
 from src.pygui.tkwin import DialogCtrl, tkWin
-from src.pygui.calendarctrl import CalendarDialog
+from src.pygui.tkcalendar import CalendarDialog
 """
     uv run pytest --cov=src.pygui.tkwin .\tests\test_tkwin.py -v
 """
