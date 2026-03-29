@@ -16,7 +16,8 @@ from src.pygui.tkcontrol import tkControl
 from src.pygui.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
 from src.pygui.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
 from src.pygui.tkwin import DialogCtrl, tkWin
-from src.pygui.tkcalendar import CalendarDialog
+from src.pygui.tkslideswitch import SlideSwitchCtrl
+from src.pygui.tkcalendar import CalendarCtrl, CalendarDialog
 """
     uv run pytest --cov=src.pygui.tkwin .\tests\test_tkwin.py -v
 """
@@ -30,7 +31,8 @@ def test_gui():
         @override
         def _beforego(self, **kwargs: object):
             # po(f"{self._idself} beforego")
-            pass
+            calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
+            calendar.hide()
 
         @override
         def _confirm(self, **kwargs: object):
@@ -47,6 +49,21 @@ def test_gui():
             kwargs.update(self._extral_msg)
             if self.alive:
                 match idmsg:
+                    case "lblSelDateEditTodo":
+                        lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
+                        calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
+                        if lbl.get_text():
+                            calendar.hide(calendar.visible)
+                            # slideswitch = cast(SlideSwitchCtrl, self.get_control("slsDateEditTodo"))
+                            # slideswitch.turn_on(calendar.visible)
+                    case "slsDateEditTodo":
+                        val = cast(bool, kwargs['val'])
+                        calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
+                        if not val:
+                            calendar.cancel_select()
+                            lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
+                            lbl.set_text("")
+                        calendar.hide(not val)
                     case "cadDateEditTodo":
                         lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
                         date = cast(datetime.date, kwargs['val'])
