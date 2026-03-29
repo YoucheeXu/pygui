@@ -34,6 +34,7 @@ from src.pygui.tkmatplot import MatPlotCtrl
 from src.pygui.tkslideswitch import SlideSwitchCtrl
 import src.pygui.cv2_utilities as cv2u
 from src.pygui.tkcalendar import CalendarCtrl
+from src.pygui.tkscrollpicker import TimeScrollPickerCtrl
 
 IS_WINDOWS = platform.system() == "Windows"
 
@@ -1089,6 +1090,8 @@ class tkWin(WinBasic):
                 ctrl = SlideSwitchCtrl(master, owner, idctrl, **options)
             case "Calendar":
                 ctrl = CalendarCtrl(master, owner, idctrl, **options)
+            case "TimeScrollPicker":
+                ctrl = TimeScrollPickerCtrl(master, owner, idctrl, **options)
             case "Statusbar":
                 ctrl = MultiStatusBar(master, **options)
                 # for subctrl_cfg in list(ctrl_cfg):
