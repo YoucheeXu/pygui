@@ -5,7 +5,8 @@ import datetime
 import calendar
 import tkinter as tk
 from tkinter import ttk
-from typing import TypeAlias, Callable, Any, override
+from typing import override, cast
+from typing import TypeAlias, Callable, Any
 
 from src.pygui.winbasic import Dialog
 from src.pygui.tkcontrol import tkControl
@@ -26,6 +27,8 @@ class ScrollPicker(tk.Frame):
         self._end: int = end
         self._on_select: OnSelect | None = on_select
         self._selected_data: int = cur
+
+        self._background: str = cast(str, kwargs.get('background', 'white'))
 
         # 创建UI组件
         self._create_widgets()
@@ -53,11 +56,13 @@ class ScrollPicker(tk.Frame):
 
         # 上方预览（+2）
         self._data_up2 = tk.Label(self, font=("SimHei", 10), fg="#888888", width=6,
+            bg=self._background,
             anchor="center")
         self._data_up2.grid(row=0, column=0)
 
         # 上方预览（+1）
         self._data_up1 = tk.Label(self, font=("SimHei", 12), fg="#555555", width=6,
+            bg=self._background,
             anchor="center")
         self._data_up1.grid(row=1, column=0)
 
@@ -70,17 +75,19 @@ class ScrollPicker(tk.Frame):
             width=8,
             height=2,
             anchor="center",
-            bg="white"
+            bg=self._background
         )
         self._data_label.grid(row=2, column=0, padx=10)
 
         # 下方预览（-1）
         self._data_down1 = tk.Label(self, font=("SimHei", 12), fg="#555555", width=6,
+            bg=self._background,
             anchor="center")
         self._data_down1.grid(row=3, column=0)
 
         # 下方预览（-2）
         self._data_down2 = tk.Label(self, font=("SimHei", 10), fg="#888888", width=6,
+            bg=self._background,
             anchor="center")
         self._data_down2.grid(row=4, column=0)
 
@@ -286,12 +293,13 @@ class DateScrollPickerDialog:
 class TimeScrollPickerCtrl(tkControl):
     def __init__(self, parent: tk.Misc, owner: Dialog, idself: str,
             width: int, height: int,
+            background: str = "white",
             title: str = "", initial: str = ""):
         self._master: tk.Misc = parent
         self._owner: Dialog = owner
 
         self._frame: tk.Frame = tk.Frame(self._master,
-            background='white',
+            background=background,
             width=width, height=height)
         super().__init__(parent, "", idself, self._frame)
 
@@ -306,11 +314,13 @@ class TimeScrollPickerCtrl(tkControl):
             self._selected_minute = int(now_list[1])
 
         self._hour_scrollpicker: ScrollPicker = ScrollPicker(self._frame, self._selected_hour,
-            0, 23, self._on_hour_change
+            0, 23, self._on_hour_change,
+            background=background
         )
 
         self._minute_scrollpicker: ScrollPicker = ScrollPicker(self._frame, self._selected_minute,
-            0, 59, self._on_minute_change
+            0, 59, self._on_minute_change,
+            background=background
         )
 
         self._result_var: tk.StringVar = tk.StringVar()
