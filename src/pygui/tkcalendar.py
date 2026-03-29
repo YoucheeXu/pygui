@@ -272,6 +272,7 @@ class CalendarCtrl(tkControl):
 
     def cancel_select(self):
         self._selection = None
+        self._canvas.place_forget()
 
 class CalendarDialog(Dialog):
     def __init__(self, point: tuple[int, int] | None = None):
