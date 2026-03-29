@@ -18,6 +18,7 @@ from src.pygui.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
 from src.pygui.tkwin import DialogCtrl, tkWin
 from src.pygui.tkslideswitch import SlideSwitchCtrl
 from src.pygui.tkcalendar import CalendarCtrl, CalendarDialog
+from src.pygui.tkscrollpicker import TimeScrollPickerCtrl, TimeScrollPickerDialog
 """
     uv run pytest --cov=src.pygui.tkwin .\tests\test_tkwin.py -v
 """
@@ -33,6 +34,8 @@ def test_gui():
             # po(f"{self._idself} beforego")
             calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
             calendar.hide()
+            time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
+            time_scrollerpicker_ctrl.hide()
 
         @override
         def _confirm(self, **kwargs: object):
@@ -71,6 +74,27 @@ def test_gui():
                         date_text = date.strftime("%B %d, %Y\t%A")
                         # print(f"select date: {date_text}")
                         lbl.set_text(date_text)
+                    case "lblSelTimeEditTodo":
+                        lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
+                        time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
+                        if lbl.get_text():
+                            time_scrollerpicker_ctrl.hide(time_scrollerpicker_ctrl.visible)
+                            # slideswitch = cast(SlideSwitchCtrl, self.get_control("slsDateEditTodo"))
+                            # slideswitch.set_state(calendar.visible)
+                    case "slsTimeEditTodo":
+                        val = cast(bool, kwargs['val'])
+                        time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
+                        if not val:
+                            lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
+                            lbl.set_text("")
+                        time_scrollerpicker_ctrl.hide(not val)
+                    case "tspTimeEditTodo":
+                        lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
+                        time = cast(datetime.time, kwargs['val'])
+                        # date_text = f"{date.year}年{date.month:02d}月{date.day:02d}日"
+                        time_text = time.strftime("%H:%M")
+                        # print(f"select date: {date_text}")
+                        lbl.set_text(time_text)
                     case _:
                         print(f"undeal with idMsg of TodoDetailDlg: {idmsg} with {kwargs}")
                         return super().process_message(idmsg, **kwargs)
@@ -170,6 +194,11 @@ def test_gui():
                         date = calendar_dlg.get_datestr()
                         if date:
                             print(f"hour detail dialog: select date {date}")
+                    case "lblSelClockItemDetail":
+                        x, y = cast(tuple[int, int], kwargs["mousepos"])
+                        time_scrollpicker_dlg = TimeScrollPickerDialog((x + 20, y + 40))
+                        time = time_scrollpicker_dlg.get_time()
+                        print(f"hour detail dialog: select time {time}")
                     case "cancel":
                         return self._hourdetaildlg_cancel(**kwargs)
                     case _:

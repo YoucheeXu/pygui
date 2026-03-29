@@ -99,7 +99,7 @@
         <Frame id="frmItemDetail2" layout="pack" pack="{'pady':4}">
             <ImagePanel id="imgClockItemDetail" text="clock" image="VaadinAlarm.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':0,'column':0,'sticky':'W'}"/>
 			<Label id="lblClockItemDetail" text="定时提醒" options="{'width':20}" layout="grid" grid="{'row':0,'column':1,'sticky':'W'}"/>
-			<Label id="lblSelClockItemDetail" text="选择定时提醒" options="{'width':20}" layout="grid" grid="{'row':0,'column':2}"/>
+			<Label id="lblSelClockItemDetail" text="选择定时提醒" options="{'width':20}" clickable='true' layout="grid" grid="{'row':0,'column':2}"/>
 			<ImagePanel id="imgScheduleItemDetail" text="schedule" image="calendar.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':1,'column':0,'sticky':'W'}"/>
 			<Label id="lblScheduleItemDetail" text="时间投入计划" options="{'width':20}" layout="grid" grid="{'row':1,'column':1,'sticky':'W'}"/>
 			<Label id="lblSelScheduleItemDetail" text="选择时间投入计划" options="{'width':20}" layout="grid" grid="{'row':1,'column':2}"/>
@@ -145,6 +145,7 @@
     			<Label id="lblTimeEditTodo" text="时间" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
     			<Label id="lblSelTimeEditTodo" text="" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1,'sticky':'w'}"/>
     			<SlideSwitch id="slsTimeEditTodo" text="" options="{'width':50,'height':25}" layout="grid" grid="{'row':0,'column':2,'rowspan':2,'sticky':'w','padx':4}"/>
+				<TimeScrollPicker id="tspTimeEditTodo" options="{'width':186,'height':150}" layout="grid" grid="{'row':3,'column':0,'columnspan':3, 'pady':4}"/>
     		</Frame>
     	</Frame>
 		<Frame id="frmRepeatEditTodo" layout="pack" pack="{'padx':4,'pady':4,'expand':1,'fill':'x'}" options="{'bg':'white'}">
