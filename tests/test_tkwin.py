@@ -55,7 +55,7 @@ def test_gui():
                         if lbl.get_text():
                             calendar.hide(calendar.visible)
                             # slideswitch = cast(SlideSwitchCtrl, self.get_control("slsDateEditTodo"))
-                            # slideswitch.turn_on(calendar.visible)
+                            # slideswitch.set_state(calendar.visible)
                     case "slsDateEditTodo":
                         val = cast(bool, kwargs['val'])
                         calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
