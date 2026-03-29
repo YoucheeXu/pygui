@@ -7,7 +7,7 @@ from src.pygui.winbasic import Dialog
 from src.pygui.tkcontrol import tkControl
 
 
-class SlideSwitch(tkControl):
+class SlideSwitchCtrl(tkControl):
     """iOS-style toggle switch widget implemented with Tkinter Canvas.
 
     This widget replicates the behavior and appearance of the native iOS toggle switch,
@@ -390,7 +390,7 @@ if __name__ == "__main__":
             title_label.pack(pady=30)
 
             # Create SlideSwitch widget
-            self._switch: SlideSwitch = SlideSwitch(
+            self._switch: SlideSwitchCtrl = SlideSwitchCtrl(
                 self._root,
                 self,
                 "",

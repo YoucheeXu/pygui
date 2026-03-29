@@ -31,7 +31,7 @@ from idlelib.tooltip import Hovertip
 from src.pygui.winbasic import EventHanlder, Widget, Container, Dialog, WinBasic
 from src.pygui.tkcontrol import tkControl
 from src.pygui.matplot import MatPlotCtrl
-from src.pygui.slideswitch import SlideSwitch
+from src.pygui.tkslideswitch import SlideSwitchCtrl
 import src.pygui.cv2_utilities as cv2u
 from src.pygui.tkcalendar import CalendarCtrl
 
@@ -1086,7 +1086,7 @@ class tkWin(WinBasic):
                 ctrl = CheckButtonCtrl(master, self, idctrl,
                     text=text, vartext=vartext, select=sel, **options)
             case "SlideSwitch":
-                ctrl = SlideSwitch(master, owner, idctrl, **options)
+                ctrl = SlideSwitchCtrl(master, owner, idctrl, **options)
             case "Calendar":
                 ctrl = CalendarCtrl(master, owner, idctrl, **options)
             case "Statusbar":
