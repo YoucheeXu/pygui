@@ -8,8 +8,8 @@ from tkinter import ttk
 from typing import override, cast
 from typing import TypeAlias, Callable, Any
 
-from src.pygui.winbasic import Dialog
-from src.pygui.tkcontrol import tkControl
+from pygui.winbasic import Dialog
+from pygui.tkcontrol import tkControl
 
 
 OnSelect: TypeAlias = Callable[[int], None]

@@ -3,8 +3,8 @@
 import tkinter as tk
 from typing import Callable, cast, override
 
-from src.pygui.winbasic import Dialog
-from src.pygui.tkcontrol import tkControl
+from pygui.winbasic import Dialog
+from pygui.tkcontrol import tkControl
 
 
 class SlideSwitchCtrl(tkControl):

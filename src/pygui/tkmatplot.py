@@ -13,7 +13,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from numpy.typing import ArrayLike
 import numpy as np
 
-from src.pygui.tkcontrol import tkControl
+from pygui.tkcontrol import tkControl
 
 
 __version__ = "2.4.0"
