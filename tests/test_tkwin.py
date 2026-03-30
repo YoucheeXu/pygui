@@ -1,3 +1,9 @@
+#!/usr/bin/python3
+# -*- coding: UTF-8 -*-
+"""
+    uv pip install e .
+    uv run .\tests\test_tkwin.py
+"""
 import os
 import sys
 import random
@@ -7,21 +13,15 @@ import tkinter as tk
 from tkinter import scrolledtext
 from typing import override, cast
 
-root_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(root_path)
-
-from src.pygui.winbasic import Dialog
-from src.pygui.tkmatplot import LineData, MatPlotCtrl
-from src.pygui.tkcontrol import tkControl
-from src.pygui.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
-from src.pygui.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
-from src.pygui.tkwin import DialogCtrl, tkWin
-from src.pygui.tkslideswitch import SlideSwitchCtrl
-from src.pygui.tkcalendar import CalendarCtrl, CalendarDialog
-from src.pygui.tkscrollpicker import TimeScrollPickerCtrl, TimeScrollPickerDialog
-"""
-    uv run pytest --cov=src.pygui.tkwin .\tests\test_tkwin.py -v
-"""
+from pygui.winbasic import Dialog
+from pygui.tkmatplot import LineData, MatPlotCtrl
+from pygui.tkcontrol import tkControl
+from pygui.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
+from pygui.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
+from pygui.tkwin import DialogCtrl, tkWin
+from pygui.tkslideswitch import SlideSwitchCtrl
+from pygui.tkcalendar import CalendarCtrl, CalendarDialog
+from pygui.tkscrollpicker import TimeScrollPickerCtrl, TimeScrollPickerDialog
 
 def test_gui():
 
