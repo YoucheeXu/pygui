@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
+from __future__ import annotations
 import abc
 import xml.etree.ElementTree as et
 from typing import cast, Literal, Protocol, override
@@ -81,11 +82,11 @@ class Control(Widget, metaclass=abc.ABCMeta):
 
 
 class Container(Widget):
-    def __init__(self):
+    def __init__(self, owner: Container | None = None):
         super().__init__()
         self._eventhandler_dict: dict[str, list[EventHanlder]] = {}
         self._msgs_hanlders: list[tuple[int, list[str], EventsHanlder]] = []
-        self._owner: Container | None = None
+        self._owner: Container | None = owner
 
     @property
     def owner(self):
