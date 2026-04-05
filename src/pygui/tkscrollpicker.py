@@ -7,28 +7,35 @@ import tkinter as tk
 from tkinter import ttk
 from typing import override, cast
 from typing import TypeAlias, Callable, Any
+from typing import Generic, TypeVar
 
 from pygui.winbasic import Dialog
 from pygui.tkcontrol import tkControl
 
 
-OnSelect: TypeAlias = Callable[[int], None]
+T = TypeVar("T", bound=int | str)
 
+OnSelect: TypeAlias = Callable[[T], None]
 
-class ScrollPicker(tk.Frame):
+class ScrollPicker(tk.Frame, Generic[T]):
     def __init__(self, parent: tk.Tk | tk.Frame,
-            cur: int, strt: int, end: int,
-            on_select: OnSelect | None = None,
+            val_list: list[T],
+            initial: T | None = None,
+            on_select: OnSelect[T] | None = None,
             **kwargs: Any) -> None:
         super().__init__(parent, **kwargs)
         self._parent: tk.Tk | tk.Frame = parent
 
-        self._bgn: int = strt
-        self._end: int = end
-        self._on_select: OnSelect | None = on_select
-        self._selected_data: int = cur
+        self._val_list: list[T] = val_list
+        self._on_select: OnSelect[T] | None = on_select
+        if initial:
+            self._selected_data: T = initial
+        else:
+            self._selected_data = val_list[0]
 
         self._background: str = cast(str, kwargs.get('background', 'white'))
+
+        self._index: int = 0
 
         # 创建UI组件
         self._create_widgets()
@@ -118,12 +125,12 @@ class ScrollPicker(tk.Frame):
     def _update_previews(self) -> None:  # 保护方法
         """ 更新上下预览内容"""
         # 上方预览（+1和+2，受限于上限）
-        up1 = self._selected_data + 1 if self._selected_data + 1 <= self._end else self._bgn
-        up2 = self._selected_data + 2 if self._selected_data + 2 <= self._end else (self._selected_data + 2 - self._end)
+        up1 = self._get_data(self._index + 1)
+        up2 = self._get_data(self._index + 2)
 
         # 下方预览（-1和-2，受限于下限）
-        down1 = self._selected_data - 1 if self._selected_data - 1 >= self._bgn else self._end
-        down2 = self._selected_data - 2 if self._selected_data - 2 >= self._bgn else (self._selected_data - 2 + self._end)
+        down1 = self._get_data(self._index - 1)
+        down2 = self._get_data(self._index - 2)
 
         _ = self._data_up2.config(text=str(up2))
         _ = self._data_up1.config(text=str(up1))
@@ -133,9 +140,9 @@ class ScrollPicker(tk.Frame):
     def _on_data_scroll(self, event: tk.Event) -> None:  # 保护方法
         """ 处理滚动"""
         if event.delta > 0 or getattr(event, 'num', 0) == 4:  # 上滚增加
-            self._selected_data = self._selected_data + 1 if self._selected_data < self._end else self._bgn
+            self._selected_data = self._get_data(self._index + 1, True)
         else:  # 下滚减少
-            self._selected_data = self._selected_data - 1 if self._selected_data > self._bgn else self._end
+            self._selected_data = self._get_data(self._index - 1, True)
 
         _ = self._data_label.config(text=str(self._selected_data))
 
@@ -144,12 +151,62 @@ class ScrollPicker(tk.Frame):
         if self._on_select is not None:
             self._on_select(self._selected_data)
 
-    def update_data(self, data: int):
+    def _get_data(self, index: int, update_index: int = False):
+        val_len  = len(self._val_list)
+        if index >= val_len:
+            index -= val_len
+        elif index < 0:
+            index += val_len
+        if update_index:
+            self._index = index
+        return self._val_list[index]
+
+    def update_data(self, data: T):
         self._selected_data = data
         self._update_previews()
 
-    def set_max_data(self, maxdata: int):
-        self._end = maxdata
+    def update_val_list(self, val_list: list[T]):
+        self._val_list = val_list
+        self._update_previews()
+
+
+class ScrollPickerCtrl(tkControl, Generic[T]):
+    def __init__(self, parent: tk.Misc, owner: Dialog, idself: str,
+            width: int, height: int,
+            val_list: list[T],
+            initial: T | None = None,
+            background: str = "white"):
+        self._master: tk.Misc = parent
+        self._owner: Dialog = owner
+
+        self._frame: tk.Frame = tk.Frame(self._master,
+            background=background,
+            width=width, height=height)
+        super().__init__(parent, "", idself, self._frame)
+
+        self._scrollpicker: ScrollPicker[T] = ScrollPicker[T](self._frame, val_list,
+            initial, self._on_val_change,
+            background=background
+        )
+
+        self._selected_val: T = initial if initial else val_list[0]
+
+        # 创建UI组件
+        self._create_widgets()
+
+    def _create_widgets(self) -> None:
+        _ = self._frame.grid_rowconfigure(0, weight=1)
+        _ = self._frame.grid_columnconfigure(0, weight=1)
+
+        self._scrollpicker.grid(row=0, column=1)
+
+    def _on_val_change(self, val: T):
+        self._selected_val = val
+        _ = self._owner.process_message(self._idself, event="select_val", val=val)
+
+    def get_val(self):
+        """ 获取当前选择的时间"""
+        return self._selected_val
 
 
 class DateScrollPickerDialog:
@@ -174,14 +231,20 @@ class DateScrollPickerDialog:
             self._selected_month = int(today_list[1])
             self._selected_day = int(today_list[2])
 
-        self._year_scrollpicker: ScrollPicker = ScrollPicker(self._frame, self._selected_year,
-            1970, 2100, self._on_year_change)
+        year_list = list(range(1970, 2101))
+        self._year_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
+            year_list, self._selected_year,
+            self._on_year_change)
 
-        self._month_scrollpicker: ScrollPicker = ScrollPicker(self._frame, self._selected_month,
-            1, 12, self._on_month_change)
+        month_list  = list(range(1, 13))
+        self._month_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
+            month_list, self._selected_month,
+            self._on_month_change)
 
-        self._day_scrollpicker: ScrollPicker = ScrollPicker(self._frame, self._selected_day,
-            1, 31, self._on_day_change)
+        day_list = list(range(1, 32))
+        self._day_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
+            day_list, self._selected_day,
+            self._on_day_change)
 
         # 创建UI组件
         self._create_widgets()
@@ -256,7 +319,8 @@ class DateScrollPickerDialog:
         if self._selected_day > max_day:
             self._selected_day = max_day
             self._day_scrollpicker.update_data(self._selected_day)
-        self._day_scrollpicker.set_max_data(max_day)
+        day_list = list(range(1, max_day))
+        self._day_scrollpicker.update_val_list(day_list)
 
     def _update_result_preview(self) -> None:
         """ 更新结果预览"""
@@ -313,13 +377,18 @@ class TimeScrollPickerCtrl(tkControl):
             self._selected_hour = int(now_list[0])
             self._selected_minute = int(now_list[1])
 
-        self._hour_scrollpicker: ScrollPicker = ScrollPicker(self._frame, self._selected_hour,
-            0, 23, self._on_hour_change,
+        hour_list = list(range(0, 24))
+        print(hour_list)
+        self._hour_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
+            hour_list, self._selected_hour,
+            self._on_hour_change,
             background=background
         )
 
-        self._minute_scrollpicker: ScrollPicker = ScrollPicker(self._frame, self._selected_minute,
-            0, 59, self._on_minute_change,
+        minute_list = list(range(0, 60))
+        self._minute_scrollpicker: ScrollPicker[int] = ScrollPicker(self._frame,
+            minute_list, self._selected_minute,
+            self._on_minute_change,
             background=background
         )
 
