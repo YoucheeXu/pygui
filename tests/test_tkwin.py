@@ -21,7 +21,8 @@ from pygui.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
 from pygui.tkwin import DialogCtrl, tkWin
 from pygui.tkslideswitch import SlideSwitchCtrl
 from pygui.tkcalendar import CalendarCtrl, CalendarDialog
-from pygui.tkscrollpicker import TimeScrollPickerCtrl, TimeScrollPickerDialog
+from pygui.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl, TimeScrollPickerDialog
+
 
 def test_gui():
 
@@ -49,7 +50,7 @@ def test_gui():
 
         @override
         def process_message(self, idmsg: str, **kwargs: object):
-            kwargs.update(self._extral_msg)
+            # kwargs.update(self._extral_msg)
             if self.alive:
                 match idmsg:
                     case "lblSelDateEditTodo":
