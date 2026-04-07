@@ -163,6 +163,7 @@
 			<Frame id="frmEndEditTodo" layout="pack" pack="{'pady':2,'expand':1,'fill':'x','anchor':'w'}" options="{'bg':'white'}">
 				<Label id="lblEndEditTodo" text="End of Repeat" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w','padx':4,'pady':2}"/>
 				<Label id="lblSelEndEditTodo" text="Never" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w','padx':(56,4),'pady':2}"/>
+				<Calendar id="cadEndEditTodo" options="{'width':186,'height':150}" layout="grid" grid="{'row':1,'column':0,'columnspan':2, 'pady':4,'padx':4}"/>
 			</Frame>
 		</Frame>
 	</CustomDialog>

@@ -37,6 +37,12 @@ def test_gui():
             calendar.hide()
             time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
             time_scrollerpicker_ctrl.hide()
+            spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryEditTodo"))
+            spr_ctrl.hide()
+            spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqEditTodo"))
+            spr_ctrl.hide()
+            calendar = cast(CalendarCtrl, self.get_control("cadEndEditTodo"))
+            calendar.hide()
 
         @override
         def _confirm(self, **kwargs: object):
@@ -96,6 +102,27 @@ def test_gui():
                         time_text = time.strftime("%H:%M")
                         # print(f"select date: {date_text}")
                         lbl.set_text(time_text)
+                    case "lblSelEveryEditTodo":
+                        spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryEditTodo"))
+                        spr_ctrl.hide(spr_ctrl.visible)
+                    case "sprEveryEditTodo":
+                        val = cast(int, kwargs["val"])
+                        lbl_ctrl = cast(LabelCtrl, self.get_control("lblSelEveryEditTodo"))
+                        lbl_ctrl.set_text(str(val))
+                    case "lblSelFrqEditTodo":
+                        spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqEditTodo"))
+                        spr_ctrl.hide(spr_ctrl.visible)
+                    case "sprFrqEditTodo":
+                        val = cast(str, kwargs["val"])
+                        lbl_ctrl = cast(LabelCtrl, self.get_control("lblSelFrqEditTodo"))
+                        lbl_ctrl.set_text(val)
+                    case "lblSelEndEditTodo":
+                        calendar = cast(CalendarCtrl, self.get_control("cadEndEditTodo"))
+                        calendar.hide(calendar.visible)
+                    case "cadEndEditTodo":
+                        date = cast(datetime.date, kwargs["val"])
+                        lbl_ctrl = cast(LabelCtrl, self.get_control("lblSelEndEditTodo"))
+                        lbl_ctrl.set_text(date.strftime("%Y-%m-%d"))
                     case _:
                         print(f"undeal with idMsg of TodoDetailDlg: {idmsg} with {kwargs}")
                         return super().process_message(idmsg, **kwargs)
