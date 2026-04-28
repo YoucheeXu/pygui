@@ -35,7 +35,7 @@ def test_gui():
 
             # Weekday list
             self.weekdays: list[str] = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
-            self.selected_weekdays: list[int] = [0]  # Default: select Monday
+            self.selected_weekdays: set[int] = {0}  # Default: select Monday
             self.checkmark_labels: list[ttk.Label] = []  # Store references for dynamic updates
 
             # Date grid (1-31)
@@ -44,17 +44,17 @@ def test_gui():
             self.selected_dates.add(19)  # 默认选中19号（与截图一致）
 
         def _configure_styles(self):
-            """Configure iOS-inspired ttk styles for the interface"""
+            """ Configure iOS-inspired ttk styles for the interface"""
             style = ttk.Style()
             # style.theme_use("default")
 
             # Card container style (white background, no border)
-            style.configure(
-                "Card.TFrame",
-                background="white",
-                relief=tk.FLAT,
-                borderwidth=0
-            )
+            # style.configure(
+            #     "Card.TFrame",
+            #     background="white",
+            #     relief=tk.FLAT,
+            #     borderwidth=0
+            # )
 
             style.configure(
                 "CardLabel.TLabel",
@@ -91,9 +91,11 @@ def test_gui():
             )
 
         def _create_weekday_selection_card(self, parent: FrameCtrl):
-            """Create multi-select weekday toggle card"""
-            weekday_card = ttk.Frame(parent.control, style="Card.TFrame", padding=(16, 12, 16, 12))
-            weekday_card.pack(fill=tk.X, padx=16, pady=8)
+            """ Create multi-select weekday toggle card"""
+            # weekday_card = ttk.Frame(parent.control, style="Card.TFrame", padding=(16, 12, 16, 12))
+            # weekday_card.pack(fill=tk.X, padx=16, pady=8)
+            weekday_card = parent.control
+            # _ = weekday_card.grid_columnconfigure(0, weight=1)
 
             for i, day in enumerate(self.weekdays):
                 # Clickable row frame
@@ -121,20 +123,21 @@ def test_gui():
                     ttk.Separator(weekday_card, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
 
         def _toggle_weekday(self, idx: int, _: tk.Event[tk.Widget] | None = None):
-            """Toggle selected state of a weekday when clicked"""
+            """ Toggle selected state of a weekday when clicked"""
             if idx in self.selected_weekdays:
                 # Deselect the weekday
                 self.selected_weekdays.remove(idx)
                 __ = self.checkmark_labels[idx].config(text="")
             else:
                 # Select the weekday
-                self.selected_weekdays.append(idx)
+                self.selected_weekdays.add(idx)
                 __ = self.checkmark_labels[idx].config(text="✓")
 
         def _create_date_selection_card(self, parent: FrameCtrl):
-            """Create multi-select date selection card with grid view"""
+            """ Create multi-select date selection card with grid view"""
             date_card = ttk.Frame(parent.control, style="Card.TFrame", padding=(16, 12, 16, 12))
             date_card.pack(fill=tk.X, padx=16, pady=8)
+            # date_card = parent.control
 
             # "日期" option with checkmark (selected)
             date_option_frame = ttk.Frame(date_card, style="Card.TFrame")
@@ -191,7 +194,7 @@ def test_gui():
                 _ = date_grid_frame.grid_columnconfigure(col, weight=1)
 
         def _toggle_date_selection(self, day: int):
-            """Toggle selected state of a date (supports multi-select)"""
+            """ Toggle selected state of a date (supports multi-select)"""
             label = self.date_labels[day]
 
             if day in self.selected_dates:
@@ -212,6 +215,10 @@ def test_gui():
 
             # Configure custom styles
             self._configure_styles()
+
+            cycle_info = cast(str, kwargs["cycle_info"])
+            lbl = cast(LabelCtrl, self.get_control(idctrl="lblInfoRepeatCycle"))
+            lbl.set_text(cycle_info)
 
             frm_week = cast(FrameCtrl, self.get_control("frmWeekCustomRepeatCycle"))
             self._create_weekday_selection_card(frm_week)
@@ -350,8 +357,10 @@ def test_gui():
                         # print(f"select date: {date_text}")
                         lbl.set_text(time_text)
                     case "lblSelCycleEditTodo":
+                        lbl = cast(LabelCtrl, self.get_control(idctrl="lblSelCycleEditTodo"))
+                        cycle_info = lbl.get_text()
                         x, y = cast(tuple[int, int], kwargs["mousepos"])
-                        return self.show_repeatcycledlg(self, x+20, y+20)
+                        return self.show_repeatcycledlg(self, x+20, y+20, cycle_info=cycle_info)
                     case "lblSelEndEditTodo":
                         calendar = cast(CalendarCtrl, self.get_control("cadEndEditTodo"))
                         calendar.hide(calendar.visible)

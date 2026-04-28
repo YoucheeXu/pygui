@@ -1,5 +1,6 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
+from typing import cast
 from typing import Any, override
 import tkinter as tk
 
@@ -12,6 +13,8 @@ class tkControl(Control):
         self._parent: tk.Misc = parent
         self._tkctrl: tk.Widget = tkctrl
         self._assemble_type: str = ""
+        self._layout_info: tk._PackInfo | tk._PlaceInfo | None = None
+        # self._hidden: bool = True
 
     @property
     def control(self):
@@ -24,40 +27,6 @@ class tkControl(Control):
     @override
     def configure(self, **kwargs: Any):
         self._tkctrl.configure(**kwargs)
-
-    """
-    def grid(self, **options: Any):
-            # cnf: Mapping[str, Any] | None = {},
-            # *,
-            # column: int = ...,
-            # columnspan: int = ...,
-            # row: int = ...,
-            # rowspan: int = ...,
-            # ipadx: _ScreenUnits = ...,
-            # ipady: _ScreenUnits = ...,
-            # padx: _ScreenUnits | tuple[_ScreenUnits, _ScreenUnits] = ...,
-            # pady: _ScreenUnits | tuple[_ScreenUnits, _ScreenUnits] = ...,
-            # sticky: str = ...,
-            # in_: Misc = ...,
-            # **kw: Any
-        self._tkctrl.grid(**options)
-        self._assemble_type = "grid"
-
-    def pack(self, **options: Any):
-        self._tkctrl.pack(**options)
-        self._assemble_type = "pack"
-
-    def place(self, **options: Any):
-        self._tkctrl.place(**options)
-        self._assemble_type = "place"
-
-    def bind(self, *args: Any, **kwargs: Any):
-        self._tkctrl.bind(*args, **kwargs)
-    """
-
-    # def bind(self, sequence: str, func: Callable[[tk.Event[tk.Widget]], object],
-            # add: bool | Literal['', '+'] | None = None):
-        # _ = self._tkctrl.bind(sequence, func, add)
 
     @override
     def __getitem__(self, item: str):
@@ -81,20 +50,23 @@ class tkControl(Control):
         try:
             if widget.tk.call("place", "info", widget):
                 return "place"
-        except tk.TclError as e:
-            print(e)
+        except tk.TclError as _:
+            # print(f"{self._idself}._get_layout_method.place: {e}")
+            pass
         try:
             # 检查是否使用了 pack
             if widget.tk.call("pack", "info", widget):
                 return "pack"
-        except tk.TclError as e:
-            print(e)
+        except tk.TclError as _:
+            # print(f"{self._idself}._get_layout_method.pack: {e}")
+            pass
         try:
             # 检查是否使用了 grid
             if widget.tk.call("grid", "info", widget):
                 return "grid"
-        except tk.TclError as e:
-            print(e)
+        except tk.TclError as _:
+            # print(f"{self._idself}._get_layout_method.grid: {e}")
+            pass
 
         raise ValueError("未使用任何布局管理器")
 
@@ -110,16 +82,31 @@ class tkControl(Control):
                     self._tkctrl.grid()
             case "pack":
                 if is_hide:
-                    self._tkctrl.pack_forget()
+                    # if not self._hidden:
+                    try:
+                        self._layout_info = self._tkctrl.pack_info()
+                        self._tkctrl.pack_forget()
+                    except Exception as _:
+                        # print(f"{self._idself}.hide.pack: {e}")
+                        pass
                 else:
-                    self._tkctrl.pack()
+                    # if self._hidden:
+                    assert self._layout_info is not None
+                    self._tkctrl.pack(**self._layout_info)
             case "place":
                 if is_hide:
-                    self._tkctrl.place_forget()
+                    try:
+                        self._layout_info = self._tkctrl.place_info()
+                        self._tkctrl.place_forget()
+                    except Exception as _:
+                        # print(f"{self._idself}.hide.place: {e}")
+                        pass
                 else:
-                    self._tkctrl.place()
+                    assert self._layout_info is not None
+                    self._tkctrl.place(**self._layout_info)
             case _:
                 raise ValueError(f"unkown layout: {self._assemble_type}")
+        # self._hidden = is_hide
 
     @override
     def destroy(self):
