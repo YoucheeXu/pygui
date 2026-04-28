@@ -1,6 +1,5 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
-from typing import cast
 from typing import Any, override
 import tkinter as tk
 
@@ -45,30 +44,30 @@ class tkControl(Control):
             self._tkctrl.configure(state="normal")
 
     def _get_layout_method(self, widget: tk.Widget):
-        """判断控件使用的布局方式（pack/grid/place）"""
-        # 检查是否使用了 place
+        """ Determine the layout manager used by the widget (pack/grid/place)"""
         try:
+            # Check if place layout is used
             if widget.tk.call("place", "info", widget):
                 return "place"
         except tk.TclError as _:
             # print(f"{self._idself}._get_layout_method.place: {e}")
             pass
         try:
-            # 检查是否使用了 pack
+            # Check if pack layout is used
             if widget.tk.call("pack", "info", widget):
                 return "pack"
         except tk.TclError as _:
             # print(f"{self._idself}._get_layout_method.pack: {e}")
             pass
         try:
-            # 检查是否使用了 grid
+            # Check if grid layout is used
             if widget.tk.call("grid", "info", widget):
                 return "grid"
         except tk.TclError as _:
             # print(f"{self._idself}._get_layout_method.grid: {e}")
             pass
 
-        raise ValueError("未使用任何布局管理器")
+        raise ValueError("No layout manager is used")
 
     @override
     def hide(self, is_hide: bool = True):
