@@ -3,7 +3,7 @@
 from typing import Any, override
 import tkinter as tk
 
-from pygui.winbasic import Control
+from pygui_simple.winbasic import Control
 
 
 class tkControl(Control):

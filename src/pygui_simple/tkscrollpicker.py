@@ -9,8 +9,8 @@ from typing import override, cast
 from typing import TypeAlias, Callable, Any
 from typing import Generic, TypeVar
 
-from pygui.winbasic import Dialog
-from pygui.tkcontrol import tkControl
+from pygui_simple.winbasic import Dialog
+from pygui_simple.tkcontrol import tkControl
 
 
 T = TypeVar("T", bound=int | str)

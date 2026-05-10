@@ -8,7 +8,7 @@ from typing import cast, Literal, Protocol, override
 # from collections.abc import Callable, Mapping
 from collections import OrderedDict
 
-# from src.pygui.logit import pv, pe, po
+# from src.pygui_simple.logit import pv, pe, po
 
 # EventHanlder: TypeAlias = Callable[[tuple[Any, ...], dict[str, Any]], Any]
 # EventHanlder: TypeAlias = Callable[[dict[str, Any]], Any]

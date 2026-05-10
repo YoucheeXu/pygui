@@ -28,13 +28,13 @@ from PIL import ImageTk
 from idlelib.statusbar import MultiStatusBar
 from idlelib.tooltip import Hovertip
 
-from pygui.winbasic import EventHanlder, Widget, Container, Dialog, WinBasic
-from pygui.tkcontrol import tkControl
-from pygui.tkmatplot import MatPlotCtrl
-from pygui.tkslideswitch import SlideSwitchCtrl
-import pygui.cv2_utilities as cv2u
-from pygui.tkcalendar import CalendarCtrl
-from pygui.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl
+from pygui_simple.winbasic import EventHanlder, Widget, Container, Dialog, WinBasic
+from pygui_simple.tkcontrol import tkControl
+from pygui_simple.tkmatplot import MatPlotCtrl
+from pygui_simple.tkslideswitch import SlideSwitchCtrl
+import pygui_simple.cv2_utilities as cv2u
+from pygui_simple.tkcalendar import CalendarCtrl
+from pygui_simple.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl
 
 IS_WINDOWS = platform.system() == "Windows"
 

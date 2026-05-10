@@ -8,8 +8,8 @@ import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import ttk
 
-from pygui.winbasic import Dialog
-from pygui.tkcontrol import tkControl
+from pygui_simple.winbasic import Dialog
+from pygui_simple.tkcontrol import tkControl
 
 
 class CalendarCtrl(tkControl):
