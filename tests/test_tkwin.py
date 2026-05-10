@@ -16,15 +16,15 @@ from tkinter import ttk
 from tkinter import scrolledtext
 from typing import Callable, override, cast
 
-from pygui.winbasic import Widget, Dialog
-from pygui.tkmatplot import LineData, MatPlotCtrl
-from pygui.tkcontrol import tkControl
-from pygui.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
-from pygui.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
-from pygui.tkwin import FrameCtrl, DialogCtrl, tkWin
-from pygui.tkslideswitch import SlideSwitchCtrl
-from pygui.tkcalendar import CalendarCtrl, CalendarDialog
-from pygui.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl, TimeScrollPickerDialog
+from pygui_simple.winbasic import Widget, Dialog
+from pygui_simple.tkmatplot import LineData, MatPlotCtrl
+from pygui_simple.tkcontrol import tkControl
+from pygui_simple.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
+from pygui_simple.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
+from pygui_simple.tkwin import FrameCtrl, DialogCtrl, tkWin
+from pygui_simple.tkslideswitch import SlideSwitchCtrl
+from pygui_simple.tkcalendar import CalendarCtrl, CalendarDialog
+from pygui_simple.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl, TimeScrollPickerDialog
 
 
 def test_gui():
