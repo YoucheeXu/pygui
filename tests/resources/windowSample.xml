@@ -86,7 +86,7 @@
 			</Frame>
 		</Tab>
 	</Notebook>
-    <Dialog id="dlgHourDetail" text="项目详情" Width="400" Height="550">
+    <Dialog id="dlgHourDetail" text="项目详情" Width="400" Height="600">
     	<Label id="lblFatherItemDetail" text="" layout="pack" pack="{'pady':4}"/>
         <Frame id="frmItemDetail1" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
             <ImageButton id="btnImageHourDetail" image="CircleFlagsUsBetsyRoss.png" options="{'height':40,'width':40,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
@@ -103,10 +103,10 @@
         <Frame id="frmItemDetail2" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
             <ImagePanel id="imgClockItemDetail" text="clock" image="VaadinAlarm.png" options="{'width':20,'height':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
 			<Label id="lblClockItemDetail" text="定时提醒" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
-			<Label id="lblSelClockItemDetail" text="选择定时提醒" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+			<Label id="lblSelClockItemDetail" text="选择定时提醒" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
 			<ImagePanel id="imgScheduleItemDetail" text="schedule" image="calendar.png" options="{'width':20,'height': 20,'bg':'white'}" layout="grid" grid="{'row':1,'column':0,'sticky':'w'}"/>
 			<Label id="lblScheduleItemDetail" text="时间投入计划" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1,'sticky':'w'}"/>
-			<Label id="lblSelScheduleItemDetail" text="选择时间投入计划" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':2,'sticky':'e'}"/>
+			<Label id="lblSelScheduleItemDetail" text="选择时间投入计划" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':2,'sticky':'e'}"/>
         </Frame>
         <Frame id="frmAddChild" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
             <ImagePanel id="imgChildren" image="gift.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0}"/>

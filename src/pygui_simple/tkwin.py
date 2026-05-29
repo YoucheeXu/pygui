@@ -656,8 +656,8 @@ class DialogCtrl(Dialog):
             # options = eval(attr_dict["options"])
         self._parent: tk.Tk | tk.Toplevel = app.win
         # self._owner: Dialog | None = None
-        self._xx: int = 0
-        self._yy: int = 0
+        # self._xx: int = 0
+        # self._yy: int = 0
         self._top: tkWM[tk.Toplevel] | None = None
         self._alive: bool = False
         self._idself: str = attr_dict["id"]
@@ -673,7 +673,7 @@ class DialogCtrl(Dialog):
     #         return self._app
 
     def set_title(self, val: str):
-        super().title = val
+        self._title = val
         if self._top is not None:
             self._top.control.title(self._title)
 
@@ -686,7 +686,7 @@ class DialogCtrl(Dialog):
         # self.deiconify()
         self._alive = True
         if owner is not None:
-            super().owner = owner
+            self._owner = owner
 
         self._top = tkWM[tk.Toplevel](tk.Toplevel(self._parent))
 
@@ -943,7 +943,7 @@ class tkWin(WinBasic):
         self._win.geometry(f"{width}x{hight}+{cen_x}+{cen_y}")
 
     def set_title(self, val: str):
-        super().title = val
+        self._title = val
         self._win.title(self._title)
 
     @override

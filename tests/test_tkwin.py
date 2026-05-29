@@ -17,7 +17,7 @@ from tkinter import ttk
 from tkinter import scrolledtext
 from typing import Callable, override, cast
 
-from pygui_simple.winbasic import Widget, Dialog
+from pygui_simple.winbasic import Widget, Container, Dialog
 from pygui_simple.tkmatplot import LineData, MatPlotCtrl
 from pygui_simple.tkcontrol import tkControl
 from pygui_simple.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
@@ -395,7 +395,7 @@ class EditHourDlg(DialogCtrl):
 
         level = 1
 
-        btndel_xml = self.create_xml("ImageButton", {"id": f"btnDel{cid}EditHour",
+        btndel_xml = self.create_xml("ImageButton", {"id": f"btnDelClock{cid}EditHour",
             "image": del_image,
             "options": "{'height': 20, 'width': 20, 'bg':'white'}"})
         _, btn_del = self.create_control(frm_clock, btndel_xml, level)
@@ -522,8 +522,8 @@ class EditHourDlg(DialogCtrl):
         if self.alive:
             kwargs.update(self._extral_msg)
             owner = cast(Dialog, self.owner)
-            if idmsg.startswith("btnDel"):
-                cid = int(idmsg[6:7])
+            if idmsg.startswith("btnDelClock"):
+                cid = int(idmsg[10:11])
                 self._del_reminder(cid)
                 return True
             match idmsg:
@@ -565,36 +565,39 @@ class EditHourDlg(DialogCtrl):
                     # reminder["duration"] = duration
                     pass
                 case "btnDelItemEditHour":
-                    # pv(kwargs)
-                    iid = cast(int, owner.process_message("getId"))
                     self.destroy()
-                    return owner.process_message("deleteItem", id=iid)
+                    return owner.process_message("deleteItem", id=self._hid)
                 case _:
                     return super().process_message(idmsg, **kwargs)
             return True
         return super().process_message(idmsg, **kwargs)
 
 
-class ExampleApp(tkWin):
+class ExampleApp(Container):
     def __init__(self, cur_path: str, xmlfile: str):
-        super().__init__(cur_path, xmlfile)
+        super().__init__()
+        self._app_path: str = cur_path
+
         self._i: int = 0
         self._idx_left_vertical: int = 0
         self._idx_left_horizontal: int = 0
         self._idx_right_vertical: int = 0
         self._idx_right_horizontal: int = 0
 
-        self._hourdetail_dlg: DialogCtrl = cast(DialogCtrl, self.get_control("dlgHourDetail"))
+        self._gui: tkWin = tkWin(self._app_path, xmlfile)
+        self._gui.filter_message(self._process_message)
+
+        self._hourdetail_dlg: DialogCtrl = cast(DialogCtrl, self._gui.get_control("dlgHourDetail"))
         self._hourdetail_dlg.filter_message(self._hourdetaildlg_processmessage)
         self._hourdetail_dlg.register_eventhandler("confirm", self._hourdetaildlg_confirm)
 
     def _create_label(self, parent: tkControl, lid: str, rowid: int, txt: str):
-        lbl_xml = self.create_xml("Label", {"text": txt, "id": lid})
-        _, lbl_ctrl = self.create_control(parent, lbl_xml)
-        self.assemble_control(lbl_ctrl, {"layout":"grid",
+        lbl_xml = self._gui.create_xml("Label", {"text": txt, "id": lid})
+        _, lbl_ctrl = self._gui.create_control(parent, lbl_xml, 0, self)
+        self._gui.assemble_control(lbl_ctrl, {"layout":"grid",
             "grid":f"{{'row':{rowid},'column':0,'sticky':'w'}}"})
 
-    def show_hourdetaildlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
+    def _show_hourdetaildlg(self, owner: Container | None = None, x: int = 0, y: int = 0,
             **kwargs: object):
         kwargs.update({"name": "English Read"})
         self._hourdetail_dlg.do_show(owner, x+20, y+20, **kwargs)
@@ -602,7 +605,7 @@ class ExampleApp(tkWin):
     def _hourdetaildlg_beforego(self, **kwargs: object):
         # po(f"_hourdetaildlg_beforego: {kwargs}")
 
-        lbl_item = cast(LabelCtrl, self.get_control("lblInfoHourDetail"))
+        lbl_item = cast(LabelCtrl, self._gui.get_control("lblInfoHourDetail"))
         lbl_item.set_text(cast(str, kwargs["name"]))
 
         week_day = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
@@ -613,7 +616,7 @@ class ExampleApp(tkWin):
         limit_ydata = [per_minutes, per_minutes, per_minutes, \
             per_minutes, per_minutes, per_minutes, per_minutes]
 
-        plt_everyday = cast(MatPlotCtrl, self.get_control("pltEveryDayHour"))
+        plt_everyday = cast(MatPlotCtrl, self._gui.get_control("pltEveryDayHour"))
         xdata: list[int] = []
         father_ydata: list[float] = []
         children_ydata: dict[int, list[float]] = {}
@@ -673,51 +676,53 @@ class ExampleApp(tkWin):
                     time_scrollpicker_dlg = TimeScrollPickerDialog((x + 20, y + 40))
                     time = time_scrollpicker_dlg.get_time()
                     print(f"hour detail dialog: select time {time}")
+                    timestr = time_scrollpicker_dlg.get_timestr()
+                    lbl_selclock = cast(LabelCtrl, self._gui.get_control("lblSelClockItemDetail"))
+                    lbl_selclock.set_text(timestr)
                 case "cancel":
                     return self._hourdetaildlg_cancel(**kwargs)
                 case _:
-                    return None
+                    print(f"HourDetailDlg: undeal msg of {idmsg} with {kwargs}")
             return True
         return None
 
-    def show_tododetaildlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
+    def _show_tododetaildlg(self, owner: Container | None = None, x: int = 0, y: int = 0,
             **kwargs: object):
         dlg_id = "dlgTodoDetail"
-        dlg_cfg = self.get_customctrlcfg(dlg_id)
-        dlg = TodoDetailDlg(self, dlg_cfg)
+        dlg_cfg = self._gui.get_customctrlcfg(dlg_id)
+        dlg = TodoDetailDlg(self._gui, dlg_cfg)
         # self._gui.register_customctrl(dlg_id, recordhour_dlg)
         dlg.do_show(owner, x+20, y+20, **kwargs)
 
-    def show_edithourdlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
+    def _show_edithourdlg(self, owner: Container | None = None, x: int = 0, y: int = 0,
             **kwargs: object):
         dlg_id = "dlgEditHour"
-        dlg_cfg = self.get_customctrlcfg(dlg_id)
-        dlg = EditHourDlg(self, dlg_cfg)
+        dlg_cfg = self._gui.get_customctrlcfg(dlg_id)
+        dlg = EditHourDlg(self._gui, dlg_cfg)
         # self._gui.register_customctrl(dlg_id, recordhour_dlg)
         dlg.do_show(owner, x+20, y+20, **kwargs)
 
-    @override
-    def process_message(self, idmsg: str, **kwargs: object):
+    def _process_message(self, idmsg: str, **kwargs: object):
         match idmsg:
             case "meuShowInfoBox":
-                self.show_info('Python Message Info Box', '通知：程序运行正常！')
+                self._gui.show_info('Python Message Info Box', '通知：程序运行正常！')
             case "WarnBox":
-                self.show_warn('Python Message Warning Box', '警告：程序出现错误，请检查！')
+                self._gui.show_warn('Python Message Warning Box', '警告：程序出现错误，请检查！')
             case "ErrorBox":
-                self.show_err('Python Message Error Box', '错误：程序出现严重错误，请退出！')
+                self._gui.show_err('Python Message Error Box', '错误：程序出现严重错误，请退出！')
             case "ChoiceBox":
-                answer = self.ask_yesno("Python Message Dual Choice Box", "你喜欢这篇文章吗？\n您的选择是：")
+                answer = self._gui.ask_yesno("Python Message Dual Choice Box", "你喜欢这篇文章吗？\n您的选择是：")
                 if answer:
-                    self.show_info('显示选择结果', '您选择了“是”，谢谢参与！')
+                    self._gui.show_info('显示选择结果', '您选择了“是”，谢谢参与！')
                 else:
-                    self.show_info('显示选择结果', '您选择了“否”，谢谢参与！')
+                    self._gui.show_info('显示选择结果', '您选择了“否”，谢谢参与！')
             case "varRadSel":
                 values = ["富强民主", "文明和谐", "自由平等", "公正法治", "爱国敬业", "诚信友善"]
-                monty2 = cast(LabelFrameCtrl, self.get_control("控件示范区2"))
+                monty2 = cast(LabelFrameCtrl, self._gui.get_control("控件示范区2"))
                 idx = cast(int, kwargs["val"])
                 monty2.configure(text=values[idx])
             case "varChkEna":
-                check_btn = cast(CheckButtonCtrl, self.get_control("遵从内心"))
+                check_btn = cast(CheckButtonCtrl, self._gui.get_control("遵从内心"))
                 if cast(int, kwargs["val"]) == 1:
                     check_btn.disable()
                 else:
@@ -730,82 +735,90 @@ class ExampleApp(tkWin):
                     # check_btn.enable()
                 pass
             case "点击之后_按钮失效":
-                btn = cast(ButtonCtrl, self.get_control("点击之后_按钮失效"))
-                name = cast(EntryCtrl, self.get_control("name"))
+                btn = cast(ButtonCtrl, self._gui.get_control("点击之后_按钮失效"))
+                name = cast(EntryCtrl, self._gui.get_control("name"))
                 btn.configure(text='Hello\n ' + name.get_val())
                 # self.disable_control(btn)
                 btn.disable()
             case "blankSpin":
-                spin = cast(tk.Spinbox, self.get_control("blankSpin"))
+                spin = cast(tk.Spinbox, self._gui.get_control("blankSpin"))
                 value = spin.get()
-                scr = cast(scrolledtext.ScrolledText, self.get_control("scrolledtext"))
+                scr = cast(scrolledtext.ScrolledText, self._gui.get_control("scrolledtext"))
                 scr.insert(tk.INSERT, value + '\n')
             case "bookSpin":
-                spin = cast(tk.Spinbox, self.get_control("bookSpin"))
+                spin = cast(tk.Spinbox, self._gui.get_control("bookSpin"))
                 value = spin.get()
-                scr = cast(scrolledtext.ScrolledText, self.get_control("scrolledtext"))
+                scr = cast(scrolledtext.ScrolledText, self._gui.get_control("scrolledtext"))
                 scr.insert(tk.INSERT, value + '\n')
             case "btnHaa":
-                ctrl = cast(ListboxCtrl, self.get_control("lstHaa"))
+                ctrl = cast(ListboxCtrl, self._gui.get_control("lstHaa"))
                 self._i += 1
                 ctrl.insert("end", f"第{self._i:02}项")
             case "btnLeftVAdd":
-                ctrl = cast(ScrollableFrameCtrl, self.get_control("frmLeftContentArea"))
+                ctrl = cast(ScrollableFrameCtrl, self._gui.get_control("frmLeftContentArea"))
                 self._idx_left_vertical += 1
                 num_row = self._idx_left_vertical
                 id_lbl = f"lblLeftV{num_row}"
                 self._create_label(ctrl, id_lbl, num_row, f"垂直内容{num_row}")
             case "btnLeftVSub":
                 id_lbl = f"lblLeftV{self._idx_left_vertical}"
-                self.delete_control(id_lbl)
+                self._gui.delete_control(id_lbl)
                 self._idx_left_vertical -= 1
             case "btnLeftHAdd":
-                ctrl = cast(ScrollableFrameCtrl, self.get_control("frmLeftContentArea"))
+                ctrl = cast(ScrollableFrameCtrl, self._gui.get_control("frmLeftContentArea"))
                 self._idx_left_horizontal += 1
                 num_row = self._idx_left_horizontal
                 id_lbl = f"lblLeftH{num_row}"
                 self._create_label(ctrl, id_lbl, num_row, f"{'水平内容'*num_row}")
             case "btnLeftHSub":
                 id_lbl = f"lblLeftH{self._idx_left_horizontal}"
-                self.delete_control(id_lbl)
+                self._gui.delete_control(id_lbl)
                 self._idx_left_horizontal -= 1
             case "btnRightVAdd":
-                ctrl = cast(ScrollableFrameCtrl, self.get_control("frmRightContentArea"))
+                ctrl = cast(ScrollableFrameCtrl, self._gui.get_control("frmRightContentArea"))
                 self._idx_right_vertical += 1
                 num_row = self._idx_right_vertical
                 id_lbl = f"lblRightV{num_row}"
                 self._create_label(ctrl, id_lbl, num_row, f"垂直内容{num_row}")
             case "btnRightVSub":
                 id_lbl = f"lblRightV{self._idx_right_vertical}"
-                self.delete_control(id_lbl)
+                self._gui.delete_control(id_lbl)
                 self._idx_right_vertical -= 1
             case "btnRightHAdd":
-                ctrl = cast(ScrollableFrameCtrl, self.get_control("frmRightContentArea"))
+                ctrl = cast(ScrollableFrameCtrl, self._gui.get_control("frmRightContentArea"))
                 self._idx_right_horizontal += 1
                 num_row = self._idx_right_horizontal
                 id_lbl = f"lblRightH{num_row}"
                 self._create_label(ctrl, id_lbl, num_row, f"{'水平内容'*num_row}")
             case "btnRightHSub":
                 id_lbl = f"lblRightH{self._idx_right_horizontal}"
-                self.delete_control(id_lbl)
+                self._gui.delete_control(id_lbl)
                 self._idx_right_horizontal -= 1
             case "About":
                 pass
             case "ShowHourdetailDialog":
                 # x, y = cast(tuple[int, int], kwargs["mousepos"])
-                x, y = self._xx, self._yy
-                self.show_hourdetaildlg(self, x+20, y+20, **kwargs)
+                x, y = self._gui.pos
+                self._show_hourdetaildlg(self, x+20, y+20, **kwargs)
             case "ShowEditHourDialog":
                 # x, y = cast(tuple[int, int], kwargs["mousepos"])
-                x, y = self._xx, self._yy
-                self.show_edithourdlg(self, x+20, y+20, **kwargs)
+                x, y = self._gui.pos
+                self._show_edithourdlg(self, x+20, y+20, **kwargs)
             case "ShowTododetailDialog":
-                x, y = self._xx, self._yy
-                self.show_tododetaildlg(self, x+20, y+20, **kwargs)
+                x, y = self._gui.pos
+                self._show_tododetaildlg(self, x+20, y+20, **kwargs)
             case _:
                 # print(f"unkonwn message: {idmsg}")
                 return super().process_message(idmsg, **kwargs)
         return True
+
+    def go(self):
+        self._gui.go()
+
+    @override
+    def destroy(self, **kwargs: object):
+        pass
+
 
 def test_gui():
 
