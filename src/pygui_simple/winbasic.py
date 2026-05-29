@@ -82,19 +82,13 @@ class Control(Widget, metaclass=abc.ABCMeta):
 
 
 class Container(Widget, metaclass=abc.ABCMeta):
-    def __init__(self, title: str, width: int, height: int, owner: Container | None = None):
+    def __init__(self, owner: Container | None = None):
         super().__init__()
         self._eventhandler_dict: dict[str, list[EventHanlder]] = {}
         self._msgs_hanlders: list[tuple[int, list[str], EventsHanlder]] = []
         self._owner: Container | None = owner
 
         self._backed: bool = True
-
-        self._xx: int = 0
-        self._yy: int = 0
-        self._ww: int = width
-        self._hh: int = height
-        self._title: str = title
 
         self._idctrl_dict: OrderedDict[str, Widget] = OrderedDict()
 
@@ -105,21 +99,6 @@ class Container(Widget, metaclass=abc.ABCMeta):
     @owner.setter
     def owner(self, val: "Container"):
         self._owner = val  
-
-    @property
-    def title(self):
-        return self._title
-
-    def set_title(self, val: str):
-        self._title = val
-
-    @property
-    def pos(self):
-        return self._xx, self._yy
-
-    @property
-    def size(self):
-        return self._ww, self._hh
 
     def back(self, bset: bool = True):
         for idctrl, ctrl in self._idctrl_dict.items():
@@ -210,9 +189,31 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
             w, h = int(win_attr["Width"]), int(win_attr["Height"])
         else:
             w, h = 0, 0
-        super().__init__(win_attr["Title"], w, h)
+        super().__init__()
 
         self._customctrl_dict: dict[str, et.Element] = {}
+
+        self._xx: int = 0
+        self._yy: int = 0
+        self._ww: int = w
+        self._hh: int = h
+        self._title: str = win_attr["Title"]
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, val: str):
+        self._title = val
+
+    @property
+    def pos(self):
+        return self._xx, self._yy
+
+    @property
+    def size(self):
+        return self._ww, self._hh
 
     @abc.abstractmethod
     def create_window(self):
@@ -299,8 +300,30 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
 
 class Dialog(Container, metaclass=abc.ABCMeta):
     def __init__(self, title: str, width: int, height: int, app: WinBasic):
-        super().__init__(title, width, height)
+        super().__init__()
         self._app: WinBasic = app
+
+        self._xx: int = 0
+        self._yy: int = 0
+        self._ww: int = width
+        self._hh: int = height
+        self._title: str = title
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, val: str):
+        self._title = val
+
+    @property
+    def pos(self):
+        return self._xx, self._yy
+
+    @property
+    def size(self):
+        return self._ww, self._hh
 
     @property
     def backed(self):

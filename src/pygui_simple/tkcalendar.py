@@ -452,7 +452,7 @@ class CalendarDialog(Container):
             point: Optional (x, y) screen coordinates for the dialog window;
                 defaults to screen center if None
         """
-        super().__init__("", 0, 0)
+        super().__init__()
 
         # Initialize hidden top-level window
         self._top: tk.Toplevel = tk.Toplevel()

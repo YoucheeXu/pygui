@@ -442,7 +442,7 @@ class TimeScrollPickerCtrl(tkControl):
 class TimeScrollPickerDialog(Container):
     def __init__(self, point: tuple[int, int] | None = None,
             title: str = "", initial: str = ""):
-        super().__init__(title, 0, 0)
+        super().__init__()
 
         self._master: tk.Toplevel = tk.Toplevel()
         self._master.withdraw()
@@ -498,7 +498,6 @@ class TimeScrollPickerDialog(Container):
         self._master.focus_set()
         self._master.wait_window()
 
-    @override
     def _confirm(self, **kwargs: object):
         self._exit()
         return True, ""
@@ -539,6 +538,7 @@ class TimeScrollPickerDialog(Container):
     @override
     def destroy(self, **kwargs: object):
         pass
+
 
 if __name__ == "__main__":
     class ScrollPickerCtrl_test():

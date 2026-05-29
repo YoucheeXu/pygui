@@ -672,9 +672,8 @@ class DialogCtrl(Dialog):
     #     else:
     #         return self._app
 
-    @override
     def set_title(self, val: str):
-        super().set_title(val)
+        super().title = val
         if self._top is not None:
             self._top.control.title(self._title)
 
@@ -687,7 +686,7 @@ class DialogCtrl(Dialog):
         # self.deiconify()
         self._alive = True
         if owner is not None:
-            self._owner = owner
+            super().owner = owner
 
         self._top = tkWM[tk.Toplevel](tk.Toplevel(self._parent))
 
@@ -943,9 +942,8 @@ class tkWin(WinBasic):
         # 设置窗口大小并居中
         self._win.geometry(f"{width}x{hight}+{cen_x}+{cen_y}")
 
-    @override
     def set_title(self, val: str):
-        super().set_title(val)
+        super().title = val
         self._win.title(self._title)
 
     @override
