@@ -586,6 +586,7 @@ class ExampleApp(Container):
 
         self._gui: tkWin = tkWin(self._app_path, xmlfile)
         self._gui.filter_message(self._process_message)
+        self._gui.set_title("Hello tkinter")
 
         self._hourdetail_dlg: DialogCtrl = cast(DialogCtrl, self._gui.get_control("dlgHourDetail"))
         self._hourdetail_dlg.filter_message(self._hourdetaildlg_processmessage)
