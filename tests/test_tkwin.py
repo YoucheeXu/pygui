@@ -390,34 +390,27 @@ class EditHourDlg(DialogCtrl):
     def _add_clockctrl(self, cid: int, clkstr: str):
         del_image = "del.png"
 
-        frmain = cast(Widget, self.get_control("frmClockEditHour"))
+        frm_clock = cast(Widget, self.get_control("frmClockEditHour"))
 
         level = 1
 
-        frmclock_xml = self._app.create_xml("Frame", {"id": f"frmClock{cid}EditHour"})
-        id_frmclock, frm_clock = self._app.create_control(frmain, frmclock_xml,level-1)
-        self._idctrl_dict[id_frmclock] = frm_clock
-
-        delimage_xml = self._app.create_xml("ImagePanel", {"id": f"lblDel{cid}EditHour",
+        btndel_xml = self._app.create_xml("ImageButton", {"id": f"btnDel{cid}EditHour",
             "image": del_image,
-            "options": f"{{'height': {int(20)}, 'width': {int(20)}}}"}, frmclock_xml)
-        id_delimage, lbl_delimage = self._app.create_control(frm_clock, delimage_xml, level)
-        self._idctrl_dict[id_delimage] = lbl_delimage
-        self._app.assemble_control(lbl_delimage, {"layout":"grid",
-            "grid":"{'row':0,'column':0}"})
+            "options": "{'height': 20, 'width': 20, 'bg':'white'}"})
+        id_btndel, btn_del = self._app.create_control(frm_clock, btndel_xml, level)
+        self._idctrl_dict[id_btndel] = btn_del
+        self._app.assemble_control(btn_del, {"layout":"grid",
+            "grid":f"{{'row':{cid+1},'column':0,'sticky':'w'}}"}
+        )
 
         lblclock_xml = self._app.create_xml("Label", {"text": clkstr,
-            "id": f"lblClock{cid}EditHour", "options": "{'width':48}"}, frmclock_xml)
+            "id": f"lblClock{cid}EditHour", "options": "{'style':'BW.TLabel'}"})
         # pv(lbl_item_xml)
         id_lblclock, lbl_clock = self._app.create_control(frm_clock, lblclock_xml, level)
         self._idctrl_dict[id_lblclock] = lbl_clock
         self._app.assemble_control(lbl_clock, {"layout":"grid",
-            "grid":"{'row':0,'column':1,'sticky':'w'}"},
-            f"{'  '*level}")
-
-        self._app.assemble_control(frm_clock, {"layout": "grid",
-            "grid": f"{{'row':{cid+1},'column':0,'columnspan':3}}"},
-            f"{'  '*(level-1)}")
+            "grid":f"{{'row':{cid+1},'column':1,'sticky':'w'}}"}
+        )
 
     @override
     def _beforego(self, **kwargs: object):
@@ -426,9 +419,9 @@ class EditHourDlg(DialogCtrl):
         fid = -1
         # self._old_fid = fid
         # hid = cast(int, kwargs["id"])
-        hid = 0
+        hid = 3
         # db = cast(TimeDatabase, kwargs["db"])
-        owner = cast(Dialog, self.owner)
+        # owner = cast(Dialog, self.owner)
 
         if fid != -1:
             lbl_father = cast(LabelCtrl, self.get_control("lblSelFatherEditHour"))
@@ -465,8 +458,8 @@ class EditHourDlg(DialogCtrl):
             # self._eid = eid
             # self._reminders_dict[eid] = reminder
             # clkstr, schdulestr = reminder2str(reminder)
-            clkstr = ""
-            schdulestr = ""
+            clkstr = "Everyday 13:40"
+            schdulestr = "Everyday 15m"
 
             lbl_clock = cast(LabelCtrl, self.get_control("lblClockEditHour"))
             # self._old_clock = lbl_selclock['text']

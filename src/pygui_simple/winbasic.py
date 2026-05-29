@@ -81,12 +81,22 @@ class Control(Widget, metaclass=abc.ABCMeta):
         pass
 
 
-class Container(Widget):
-    def __init__(self, owner: Container | None = None):
+class Container(Widget, metaclass=abc.ABCMeta):
+    def __init__(self, title: str, width: int, height: int, owner: Container | None = None):
         super().__init__()
         self._eventhandler_dict: dict[str, list[EventHanlder]] = {}
         self._msgs_hanlders: list[tuple[int, list[str], EventsHanlder]] = []
         self._owner: Container | None = owner
+
+        self._backed: bool = True
+
+        self._xx: int = 0
+        self._yy: int = 0
+        self._ww: int = width
+        self._hh: int = height
+        self._title: str = title
+
+        self._idctrl_dict: OrderedDict[str, Widget] = OrderedDict()
 
     @property
     def owner(self):
@@ -95,6 +105,30 @@ class Container(Widget):
     @owner.setter
     def owner(self, val: "Container"):
         self._owner = val  
+
+    @property
+    def title(self):
+        return self._title
+
+    def set_title(self, val: str):
+        self._title = val
+
+    @property
+    def pos(self):
+        return self._xx, self._yy
+
+    @property
+    def size(self):
+        return self._ww, self._hh
+
+    def back(self, bset: bool = True):
+        for idctrl, ctrl in self._idctrl_dict.items():
+            try:
+                ctrl = cast(Control, ctrl).back(bset)
+            except AttributeError as _:
+                # po(f"{idctrl} doesn't support back")
+                print(f"{idctrl} doesn't support back")
+        self._backed = bset
 
     def register_eventhandler(self, idmsg: str, handler: EventHanlder):
         """_summary_
@@ -155,72 +189,8 @@ class Container(Widget):
 
         if self._owner is not None:
             return self._owner.process_message(idmsg, **kwargs)
-        # po(f"undeal msg of {idmsg}: {kwargs}")
+        print(f"Container: undeal msg of {idmsg} with {kwargs}")
         return None
-
-
-class Dialog(Container, metaclass=abc.ABCMeta):
-    def __init__(self, title: str, width: int, height: int):
-        super().__init__()
-        self._xx: int = 0
-        self._yy: int = 0
-        self._title: str = title
-        self._ww: int = width
-        self._hh: int = height
-        self._backed: bool = True
-        self._idctrl_dict: OrderedDict[str, Widget] = OrderedDict()
-
-    @property
-    def title(self):
-        return self._title
-
-    def set_title(self, val: str):
-        self._title = val
-
-    @property
-    def pos(self):
-        return self._xx, self._yy
-
-    @property
-    def size(self):
-        return self._ww, self._hh
-
-    @property
-    def backed(self):
-        return self._backed
-
-    def back(self, bset: bool = True):
-        for idctrl, ctrl in self._idctrl_dict.items():
-            try:
-                ctrl = cast(Control, ctrl).back(bset)
-            except AttributeError as _:
-                # po(f"{idctrl} doesn't support back")
-                print(f"{idctrl} doesn't support back")
-        self._backed = bset
-
-    def _beforego(self, **kwargs: object):
-        _ = super().process_message("beforego", **kwargs)
-
-    def _confirm(self, **kwargs: object) -> tuple[bool, str]:
-        return cast(tuple[bool, str], super().process_message("confirm", **kwargs))
-
-    def _cancel(self, **kwargs: object) -> tuple[bool, str]:
-        return cast(tuple[bool, str], super().process_message("cancel", **kwargs))
-
-    @override
-    def process_message(self, idmsg: str, **kwargs: object):
-        match idmsg:
-            case "beforego":
-                self._beforego(**kwargs)
-            case "confirm":
-                return self._confirm(**kwargs)
-            case "cancel":
-                return self._cancel(**kwargs)
-            case _:
-                # if self._owner is not None:
-                #     return self._owner.process_message(idmsg, **kwargs)
-                return super().process_message(idmsg, **kwargs)
-        return True
 
     @abc.abstractmethod
     def destroy(self, **kwargs: object):
@@ -231,7 +201,7 @@ class Dialog(Container, metaclass=abc.ABCMeta):
         pass
 
 
-class WinBasic(Dialog, metaclass=abc.ABCMeta):
+class WinBasic(Container, metaclass=abc.ABCMeta):
     def __init__(self, xmlfile: str):
         element_tree = et.parse(xmlfile)
         self._wincfg: et.Element[str] = element_tree.getroot()
@@ -240,7 +210,7 @@ class WinBasic(Dialog, metaclass=abc.ABCMeta):
             w, h = int(win_attr["Width"]), int(win_attr["Height"])
         else:
             w, h = 0, 0
-        Dialog.__init__(self, win_attr["Title"], w, h)
+        super().__init__(win_attr["Title"], w, h)
 
         self._customctrl_dict: dict[str, et.Element] = {}
 
@@ -325,3 +295,36 @@ class WinBasic(Dialog, metaclass=abc.ABCMeta):
         self._idctrl_dict.clear()
 
         super().destroy(**kwargs)
+
+
+class Dialog(Container, metaclass=abc.ABCMeta):
+    def __init__(self, title: str, width: int, height: int):
+        super().__init__(title, width, height)
+
+    @property
+    def backed(self):
+        return self._backed
+
+    def _beforego(self, **kwargs: object):
+        _ = super().process_message("beforego", **kwargs)
+
+    def _confirm(self, **kwargs: object) -> tuple[bool, str]:
+        return cast(tuple[bool, str], super().process_message("confirm", **kwargs))
+
+    def _cancel(self, **kwargs: object) -> tuple[bool, str]:
+        return cast(tuple[bool, str], super().process_message("cancel", **kwargs))
+
+    @override
+    def process_message(self, idmsg: str, **kwargs: object):
+        match idmsg:
+            case "beforego":
+                self._beforego(**kwargs)
+            case "confirm":
+                return self._confirm(**kwargs)
+            case "cancel":
+                return self._cancel(**kwargs)
+            case _:
+                # if self._owner is not None:
+                #     return self._owner.process_message(idmsg, **kwargs)
+                return super().process_message(idmsg, **kwargs)
+        return True
