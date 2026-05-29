@@ -13,6 +13,7 @@
 		</MenuItem>
 		<MenuItem Header="Dialog">
 			<MenuItem Command="Show Hourdetail Dialog"/>
+			<MenuItem Command="Show EditHour Dialog"/>
 			<MenuItem Command="Show Tododetail Dialog"/>
 		</MenuItem>
 		<MenuItem Header="Help">
@@ -21,6 +22,7 @@
 	</Menu>
 	<Notebook text="Notebook" layout="pack" pack="{'expand':1,'fill':'both'}">
 		<Tab text="第一页">
+			<Style text="BW.TLabel" options="{'background':'white'}"/>
 			<LabelFrame text="控件示范区1" layout="grid" grid="{'row':0,'column':0,'padx':8,'pady':4}" childOpt="{'padx':3,'pady':1}">
 				<Label text="输入文字:" layout="grid" grid="{'row':0,'column':0,'sticky':'W'}"/>
 				<Entry text="name" tooltip="这是一个Entry" options="{'width':12}" layout="grid" grid="{'row':1,'column':0,'sticky':'W'}"/>
@@ -86,34 +88,40 @@
 	</Notebook>
     <Dialog id="dlgHourDetail" text="项目详情" Width="400" Height="550">
     	<Label id="lblFatherItemDetail" text="" layout="pack" pack="{'pady':4}"/>
-        <Frame id="frmItemDetail1" layout="pack" pack="{'pady':4}">
-            <ImageButton id="btnImageHourDetail" image="CircleFlagsUsBetsyRoss.png" options="{'height':60, 'width':60}" layout="grid" grid="{'row':0,'column':0}"/>"
-            <Label id="lblInfoHourDetail" text="" options="{'width':40}" layout="grid" grid="{'row':0,'column':1,'columnspan':2,'sticky':'w'}"/>
-            <Label id="lblSumHourDetail" text="0" options="{'justify':'center'}" layout="grid" grid="{'row':0,'column':3,'sticky':'e'}"/>
-            <Label id="lblWholeHourDetail" text="0" options="{'justify':'center'}" layout="grid" grid="{'row':1,'column':0}"/>
-            <Label id="lblAvrgHourDetail" text="0" options="{'justify':'center'}" layout="grid" grid="{'row':1,'column':1}"/>
-            <Label id="lblRecentHourDetail" text="0" options="{'justify':'center'}" layout="grid" grid="{'row':1,'column':2}"/>
-            <Label id="lblRestHourDetail" text="0" options="{'justify':'center'}" layout="grid" grid="{'row':1,'column':3}"/>
-            <Button id="btnRecordHourDetail" text="+记录时间" options="{'width':50}" layout="grid" grid="{'row':5,'column':0, 'columnspan':4}"/>
+        <Frame id="frmItemDetail1" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+            <ImageButton id="btnImageHourDetail" image="CircleFlagsUsBetsyRoss.png" options="{'height':40,'width':40,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+            <Label id="lblInfoHourDetail" text="" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'columnspan':2,'sticky':'w'}"/>
+            <Label id="lblSumHourDetail" text="0" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':3,'sticky':'e'}"/>
+		</Frame>
+		<Frame id="frmStatisticsDetail" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(1,1,1,1)'}">
+            <Label id="lblWholeHourDetail" text="0" options="{'justify':'center','style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':0}"/>
+            <Label id="lblAvrgHourDetail" text="0" options="{'justify':'center','style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1}"/>
+            <Label id="lblRecentHourDetail" text="0" options="{'justify':'center','style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':2}"/>
+            <Label id="lblRestHourDetail" text="0" options="{'justify':'center','style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':3}"/>
         </Frame>
-        <Frame id="frmItemDetail2" layout="pack" pack="{'pady':4}">
-            <ImagePanel id="imgClockItemDetail" text="clock" image="VaadinAlarm.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':0,'column':0,'sticky':'W'}"/>
-			<Label id="lblClockItemDetail" text="定时提醒" options="{'width':20}" layout="grid" grid="{'row':0,'column':1,'sticky':'W'}"/>
-			<Label id="lblSelClockItemDetail" text="选择定时提醒" options="{'width':20}" clickable='true' layout="grid" grid="{'row':0,'column':2}"/>
-			<ImagePanel id="imgScheduleItemDetail" text="schedule" image="calendar.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':1,'column':0,'sticky':'W'}"/>
-			<Label id="lblScheduleItemDetail" text="时间投入计划" options="{'width':20}" layout="grid" grid="{'row':1,'column':1,'sticky':'W'}"/>
-			<Label id="lblSelScheduleItemDetail" text="选择时间投入计划" options="{'width':20}" layout="grid" grid="{'row':1,'column':2}"/>
+		<Button id="btnRecordHourDetail" text="+记录时间" options="{'width':50}" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}"/>
+        <Frame id="frmItemDetail2" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+            <ImagePanel id="imgClockItemDetail" text="clock" image="VaadinAlarm.png" options="{'width':20,'height':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+			<Label id="lblClockItemDetail" text="定时提醒" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+			<Label id="lblSelClockItemDetail" text="选择定时提醒" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+			<ImagePanel id="imgScheduleItemDetail" text="schedule" image="calendar.png" options="{'width':20,'height': 20,'bg':'white'}" layout="grid" grid="{'row':1,'column':0,'sticky':'w'}"/>
+			<Label id="lblScheduleItemDetail" text="时间投入计划" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1,'sticky':'w'}"/>
+			<Label id="lblSelScheduleItemDetail" text="选择时间投入计划" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':2,'sticky':'e'}"/>
         </Frame>
-        <Frame id="frmAddChild" layout="pack" pack="{'pady':4}">
-            <ImagePanel id="imgChildren" image="gift.png" options="{'height':20, 'width':20}" layout="grid" grid="{'row':0,'column':0}"></ImagePanel>
-            <Label id="lblTotalChildren" text="共0个子项目" options="{'width':40}" layout="grid" grid="{'row':0,'column':1, 'sticky':'w'}"/>
-            <Button id="btnAddChild" text="+添加" options="{'width':10}" layout="grid" grid="{'row':0,'column':2, 'sticky':'e'}"/>
+        <Frame id="frmAddChild" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+            <ImagePanel id="imgChildren" image="gift.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0}"/>
+            <Label id="lblTotalChildren" text="共0个子项目" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+            <Button id="btnAddChild" text="+添加" options="{'width':10}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
         </Frame>
-        <Frame id="frmSubItmes" layout="pack" pack="{'pady':4}"/>
-		<Notebook id="ntbStatisticsHour" layout="pack" pack="{'expand':1,'fill':'both'}">
-        	<Tab id="tabEveryDayHour" text="每日投入">
-                <MatPlot id="pltEveryDayHour" text="" size="(400,180)" xLabel="" yLabel="" layout="pack" pack="{'pady':2}"/>
-        		<Label id="lblDaySum" text="今日共投入0小时" options="{'width':20}" layout="pack" pack="{'pady':2}"/>
+        <Frame id="frmSubItmes" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}"/>
+		<Notebook id="ntbStatisticsHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}">
+        	<Tab id="tabEveryDayHour" text="每日投入" options="{'bg':'white'}">
+				<ImageButton id="btnPrevDayHour" image="left-arrow.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0}"/>
+        		<ImageButton id="btnPrevWeekHour" image="previous.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':1,'column':0}"/>
+                <MatPlot id="pltEveryDayHour" text="" size="(394,220)" xLabel="" yLabel="" layout="grid" grid="{'row':0,'column':1,'rowspan':2}"/>
+                <ImageButton id="btnNextDayHour" image="right-arrow.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':2}"/>
+                <ImageButton id="btnNextWeekHour" image="next.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':1,'column':2}"/>
+        		<Label id="lblDaySum" text="今日共投入0小时" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':2,'column':0,'columnspan':3}"/>
 			</Tab>
 			<Tab id="tabEveryWeekHour" text="每周投入">
 				<Label id="lblWeekSum" text="本周共投入0小时" options="{'width':20}" layout="pack" pack="{'pady':4}"/>
@@ -126,8 +134,34 @@
 			</Tab>
 		</Notebook>
     </Dialog>
+    <CustomDialog id="dlgEditHour" text="编辑项目" Width="400" Height="600">
+		<Frame id="frmItemEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,1)'}">
+			<ImagePanel id="imgNameEditHour" image="gift.png" options="{'width':20, 'height': 20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+			<Entry id="txtItemEditHour" text="你想要投入时间的事情" layout="grid" grid="{'row':0,'column':1, 'sticky':'ewns'}"/>
+		</Frame>
+		<Frame id="frmFatherEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+			<ImagePanel id="imgFatherEditHour" image="calendar.png" options="{'width':20, 'height': 20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+			<Label id="lblFatherEditHour" text="所属项目" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+			<Label id="lblSelFatherEditHour" text="选择所属项目" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+		</Frame>
+		<Frame id="frmClockEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+			<ImagePanel id="imgClockEditHour" image="VaadinAlarm.png" options="{'width':20, 'height': 20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w','padx':0}"/>
+			<Label id="lblClockEditHour" text="定时提醒" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w','padx':0}"/>
+			<Label id="lblSelClockEditHour" text="选择定时提醒" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+			<SlideSwitch id="slsClockEditHour" text="" options="{'width':40,'height':20}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+		</Frame>
+		<Frame id="frmScheduleEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+			<ImagePanel id="imgScheduleEditHour" image="calendar_green.png" options="{'width':20,'height':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+			<Label id="lblScheduleEditHour" text="时间投入计划" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+			<Label id="lblSelScheduleEditHour" text="选择时间投入计划" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+		</Frame>
+		<Frame id="frmEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'background':'white'}">
+			<Label id="lblSelImgEditHour" text="选择图标" options="{'style':'BW.TLabel'}" layout="pack" pack="{'pady':4,'anchor':'w'}"/>
+			<PicsListview id="lstImageEditHour" num_column="7" pic_size="40" layout="pack" pack="{'pady':4}"/>
+		</Frame>
+		<Button id="btnDelItemEditHour" text="删除项目" options="{'width':40}" layout="pack" pack="{'padx':12,'pady':4}"/>
+    </CustomDialog>
     <CustomDialog id="dlgTodoDetail" text="Todo Details" Width="400" Height="600">
-		<Style text="BW.TLabel" options="{'background':'white'}"/>
 		<Frame id="frmInfoEditTodo" layout="pack" pack="{'padx':8,'pady':4,'expand':1,'fill':'x','anchor':'w'}" options="{'background':'white'}">
 			<Entry id="txtNameEditTodo" text="" layout="pack" pack="{'fill':'x','padx':4,'pady':2}"/>
 			<Entry id="txtNoteEditTodo" text="" layout="pack" pack="{'fill':'x','padx':4,'pady':2}"/>

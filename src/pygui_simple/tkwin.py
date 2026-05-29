@@ -340,9 +340,15 @@ class NotebookCtrl(tkControl):
 
 # TODO: not fininsed
 class FrameCtrl(tkControl):
-    def __init__(self, parent: tk.Misc, idself: str, **options):
+    def __init__(self, parent: tk.Misc, idself: str, columnconfigure: str = "", **options):
         ctrl = tk.Frame(parent, **options)
         tkControl.__init__(self, parent, "", idself, ctrl)
+
+        if columnconfigure:
+            lst = columnconfigure.strip('()').split(',')
+            colcfgs = tuple(int(x) for x in lst)
+            for i, wgh in enumerate(colcfgs):
+                _ = ctrl.columnconfigure(i, weight=wgh)
 
     @override
     def destroy(self):

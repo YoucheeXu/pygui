@@ -21,577 +21,778 @@ from pygui_simple.tkmatplot import LineData, MatPlotCtrl
 from pygui_simple.tkcontrol import tkControl
 from pygui_simple.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
 from pygui_simple.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
-from pygui_simple.tkwin import FrameCtrl, DialogCtrl, tkWin
+from pygui_simple.tkwin import PicsListviewCtrl, FrameCtrl, DialogCtrl, tkWin
 from pygui_simple.tkslideswitch import SlideSwitchCtrl
 from pygui_simple.tkcalendar import CalendarCtrl, CalendarDialog
 from pygui_simple.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl, TimeScrollPickerDialog
 
 
-def test_gui():
+class RepeatCycleDlg(DialogCtrl):
+    def __init__(self, app: tkWin, dlg_cfg: et.Element):
+        super().__init__(app, dlg_cfg)
 
-    class RepeatCycleDlg(DialogCtrl):
-        def __init__(self, app: tkWin, dlg_cfg: et.Element):
-            super().__init__(app, dlg_cfg)
+        # Weekday list
+        self.weekdays: list[str] = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
+        self.selected_weekdays: set[int] = {0}  # Default: select Monday
+        self.checkmark_labels: list[ttk.Label] = []  # Store references for dynamic updates
 
-            # Weekday list
-            self.weekdays: list[str] = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
-            self.selected_weekdays: set[int] = {0}  # Default: select Monday
-            self.checkmark_labels: list[ttk.Label] = []  # Store references for dynamic updates
+        # Date grid (1-31)
+        self.date_labels: dict [int, ttk.Label] = {}  # Store references to date labels for updates
+        self.selected_dates: set[int] = set()  # 存储所有选中的日期，支持多选
+        self.selected_dates.add(19)  # 默认选中19号（与截图一致）
 
-            # Date grid (1-31)
-            self.date_labels: dict [int, ttk.Label] = {}  # Store references to date labels for updates
-            self.selected_dates: set[int] = set()  # 存储所有选中的日期，支持多选
-            self.selected_dates.add(19)  # 默认选中19号（与截图一致）
+    def _configure_styles(self):
+        """ Configure iOS-inspired ttk styles for the interface"""
+        style = ttk.Style()
+        # style.theme_use("default")
 
-        def _configure_styles(self):
-            """ Configure iOS-inspired ttk styles for the interface"""
-            style = ttk.Style()
-            # style.theme_use("default")
+        # Card container style (white background, no border)
+        # style.configure(
+        #     "Card.TFrame",
+        #     background="white",
+        #     relief=tk.FLAT,
+        #     borderwidth=0
+        # )
 
-            # Card container style (white background, no border)
-            # style.configure(
-            #     "Card.TFrame",
-            #     background="white",
-            #     relief=tk.FLAT,
-            #     borderwidth=0
-            # )
+        style.configure(
+            "CardLabel.TLabel",
+            background="white",
+            font=("Helvetica", 16)  # Fallback cross-platform font
+        )
 
-            style.configure(
-                "CardLabel.TLabel",
-                background="white",
-                font=("Helvetica", 16)  # Fallback cross-platform font
-            )
+        style.configure(
+            "WeekdayLabel.TLabel",
+            background="white",
+            font=("Helvetica", 16)
+        )
+        style.configure(
+            "CheckmarkLabel.TLabel",
+            background="white",
+            font=("Helvetica", 16),
+            foreground="#007aff"
+        )
 
-            style.configure(
-                "WeekdayLabel.TLabel",
-                background="white",
-                font=("Helvetica", 16)
-            )
-            style.configure(
-                "CheckmarkLabel.TLabel",
-                background="white",
-                font=("Helvetica", 16),
-                foreground="#007aff"
-            )
+        # Date number styles
+        style.configure(
+            "DateNormal.TLabel",
+            background="white",
+            foreground="black",
+            font=("Helvetica", 18),
+            anchor=tk.CENTER
+        )
+        style.configure(
+            "DateSelected.TLabel",
+            background="#007aff",
+            foreground="white",
+            font=("Helvetica", 18),
+            anchor=tk.CENTER
+        )
 
-            # Date number styles
-            style.configure(
-                "DateNormal.TLabel",
-                background="white",
-                foreground="black",
-                font=("Helvetica", 18),
-                anchor=tk.CENTER
-            )
-            style.configure(
-                "DateSelected.TLabel",
-                background="#007aff",
-                foreground="white",
-                font=("Helvetica", 18),
-                anchor=tk.CENTER
-            )
+    def _create_weekday_selection_card(self, parent: FrameCtrl):
+        """ Create multi-select weekday toggle card"""
+        # weekday_card = ttk.Frame(parent.control, style="Card.TFrame", padding=(16, 12, 16, 12))
+        # weekday_card.pack(fill=tk.X, padx=16, pady=8)
+        weekday_card = parent.control
+        # _ = weekday_card.grid_columnconfigure(0, weight=1)
 
-        def _create_weekday_selection_card(self, parent: FrameCtrl):
-            """ Create multi-select weekday toggle card"""
-            # weekday_card = ttk.Frame(parent.control, style="Card.TFrame", padding=(16, 12, 16, 12))
-            # weekday_card.pack(fill=tk.X, padx=16, pady=8)
-            weekday_card = parent.control
-            # _ = weekday_card.grid_columnconfigure(0, weight=1)
+        for i, day in enumerate(self.weekdays):
+            # Clickable row frame
+            row = ttk.Frame(weekday_card, style="Card.TFrame", cursor="hand2")
+            row.pack(fill=tk.X, pady=4)
 
-            for i, day in enumerate(self.weekdays):
-                # Clickable row frame
-                row = ttk.Frame(weekday_card, style="Card.TFrame", cursor="hand2")
-                row.pack(fill=tk.X, pady=4)
+            # Weekday label (left-aligned)
+            day_label = ttk.Label(row, text=day, style="WeekdayLabel.TLabel")
+            day_label.pack(side=tk.LEFT)
 
-                # Weekday label (left-aligned)
-                day_label = ttk.Label(row, text=day, style="WeekdayLabel.TLabel")
-                day_label.pack(side=tk.LEFT)
+            # Checkmark (right-aligned, only visible when selected)
+            checkmark_text = "✓" if i in self.selected_weekdays else ""
+            checkmark_label = ttk.Label(row, text=checkmark_text, style="CheckmarkLabel.TLabel")
+            checkmark_label.pack(side=tk.RIGHT)
+            self.checkmark_labels.append(checkmark_label)
 
-                # Checkmark (right-aligned, only visible when selected)
-                checkmark_text = "✓" if i in self.selected_weekdays else ""
-                checkmark_label = ttk.Label(row, text=checkmark_text, style="CheckmarkLabel.TLabel")
-                checkmark_label.pack(side=tk.RIGHT)
-                self.checkmark_labels.append(checkmark_label)
+            # Bind click events to all elements in the row
+            toggle_callback = partial(self._toggle_weekday, i)
+            _ = row.bind("<Button-1>", toggle_callback)
+            _ = day_label.bind("<Button-1>", toggle_callback)
+            _ = checkmark_label.bind("<Button-1>", toggle_callback)
 
-                # Bind click events to all elements in the row
-                toggle_callback = partial(self._toggle_weekday, i)
-                _ = row.bind("<Button-1>", toggle_callback)
-                _ = day_label.bind("<Button-1>", toggle_callback)
-                _ = checkmark_label.bind("<Button-1>", toggle_callback)
+            # Add divider line (except after last row)
+            if i < len(self.weekdays) - 1:
+                ttk.Separator(weekday_card, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
 
-                # Add divider line (except after last row)
-                if i < len(self.weekdays) - 1:
-                    ttk.Separator(weekday_card, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
+    def _toggle_weekday(self, idx: int, _: tk.Event[tk.Widget] | None = None):
+        """ Toggle selected state of a weekday when clicked"""
+        if idx in self.selected_weekdays:
+            # Deselect the weekday
+            self.selected_weekdays.remove(idx)
+            __ = self.checkmark_labels[idx].config(text="")
+        else:
+            # Select the weekday
+            self.selected_weekdays.add(idx)
+            __ = self.checkmark_labels[idx].config(text="✓")
 
-        def _toggle_weekday(self, idx: int, _: tk.Event[tk.Widget] | None = None):
-            """ Toggle selected state of a weekday when clicked"""
-            if idx in self.selected_weekdays:
-                # Deselect the weekday
-                self.selected_weekdays.remove(idx)
-                __ = self.checkmark_labels[idx].config(text="")
-            else:
-                # Select the weekday
-                self.selected_weekdays.add(idx)
-                __ = self.checkmark_labels[idx].config(text="✓")
+    def _create_date_selection_card(self, parent: FrameCtrl):
+        """ Create multi-select date selection card with grid view"""
+        date_card = ttk.Frame(parent.control, style="Card.TFrame", padding=(16, 12, 16, 12))
+        date_card.pack(fill=tk.X, padx=16, pady=8)
+        # date_card = parent.control
 
-        def _create_date_selection_card(self, parent: FrameCtrl):
-            """ Create multi-select date selection card with grid view"""
-            date_card = ttk.Frame(parent.control, style="Card.TFrame", padding=(16, 12, 16, 12))
-            date_card.pack(fill=tk.X, padx=16, pady=8)
-            # date_card = parent.control
+        # "日期" option with checkmark (selected)
+        date_option_frame = ttk.Frame(date_card, style="Card.TFrame")
+        date_option_frame.pack(fill=tk.X, pady=4)
+        ttk.Label(date_option_frame, text="日期", style="CardLabel.TLabel").pack(side=tk.LEFT)
+        ttk.Label(date_option_frame, text="✓", style="CheckmarkLabel.TLabel").pack(side=tk.RIGHT)
 
-            # "日期" option with checkmark (selected)
-            date_option_frame = ttk.Frame(date_card, style="Card.TFrame")
-            date_option_frame.pack(fill=tk.X, pady=4)
-            ttk.Label(date_option_frame, text="日期", style="CardLabel.TLabel").pack(side=tk.LEFT)
-            ttk.Label(date_option_frame, text="✓", style="CheckmarkLabel.TLabel").pack(side=tk.RIGHT)
+        # Divider line
+        ttk.Separator(date_card, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
 
-            # Divider line
-            ttk.Separator(date_card, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
+        # "在..." option (placeholder for future use)
+        ttk.Label(date_card, text="在...", style="CardLabel.TLabel").pack(anchor=tk.W, pady=4)
 
-            # "在..." option (placeholder for future use)
-            ttk.Label(date_card, text="在...", style="CardLabel.TLabel").pack(anchor=tk.W, pady=4)
+        # Divider line before date grid
+        ttk.Separator(date_card, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
 
-            # Divider line before date grid
-            ttk.Separator(date_card, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
+        # Create grid frame for dates
+        date_grid_frame = ttk.Frame(date_card, style="Card.TFrame")
+        date_grid_frame.pack(fill=tk.X, pady=4)
 
-            # Create grid frame for dates
-            date_grid_frame = ttk.Frame(date_card, style="Card.TFrame")
-            date_grid_frame.pack(fill=tk.X, pady=4)
+        # Populate dates 1-31 in a 7-column grid
+        for day in range(1, 32):
+            row = (day - 1) // 7
+            col = (day - 1) % 7
 
-            # Populate dates 1-31 in a 7-column grid
-            for day in range(1, 32):
-                row = (day - 1) // 7
-                col = (day - 1) % 7
-
-                # 根据初始选中状态设置样式
-                if day in self.selected_dates:
-                    label = ttk.Label(
-                        date_grid_frame,
-                        text=str(day),
-                        style="DateSelected.TLabel",
-                        width=4,
-                        padding=(0, 12),
-                        cursor="hand2"  # 保持可点击状态，支持取消选择
-                    )
-                else:
-                    label = ttk.Label(
-                        date_grid_frame,
-                        text=str(day),
-                        style="DateNormal.TLabel",
-                        width=4,
-                        padding=(0, 12),
-                        cursor="hand2"
-                    )
-
-                label.grid(row=row, column=col, sticky="nsew")
-                self.date_labels[day] = label
-
-                # 绑定点击事件，支持切换选中状态
-                _ = label.bind("<Button-1>", lambda e, d=day: self._toggle_date_selection(d))
-
-            # Configure grid weights to make cells equal width
-            for col in range(7):
-                _ = date_grid_frame.grid_columnconfigure(col, weight=1)
-
-        def _toggle_date_selection(self, day: int):
-            """ Toggle selected state of a date (supports multi-select)"""
-            label = self.date_labels[day]
-
+            # 根据初始选中状态设置样式
             if day in self.selected_dates:
-                # 取消选中：从集合中移除，切换为普通样式
-                self.selected_dates.remove(day)
-                _ = label.config(style="DateNormal.TLabel")
+                label = ttk.Label(
+                    date_grid_frame,
+                    text=str(day),
+                    style="DateSelected.TLabel",
+                    width=4,
+                    padding=(0, 12),
+                    cursor="hand2"  # 保持可点击状态，支持取消选择
+                )
             else:
-                # 选中日期：添加到集合中，切换为高亮样式
-                self.selected_dates.add(day)
-                _ = label.config(style="DateSelected.TLabel")
+                label = ttk.Label(
+                    date_grid_frame,
+                    text=str(day),
+                    style="DateNormal.TLabel",
+                    width=4,
+                    padding=(0, 12),
+                    cursor="hand2"
+                )
 
-        @override
-        def _beforego(self, **kwargs: object):
-            spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryRepeatCycle"))
-            spr_ctrl.hide()
-            spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqRepeatCycle"))
-            spr_ctrl.hide()
+            label.grid(row=row, column=col, sticky="nsew")
+            self.date_labels[day] = label
 
-            # Configure custom styles
-            self._configure_styles()
+            # 绑定点击事件，支持切换选中状态
+            _ = label.bind("<Button-1>", lambda e, d=day: self._toggle_date_selection(d))
 
-            cycle_info = cast(str, kwargs["cycle_info"])
-            lbl = cast(LabelCtrl, self.get_control(idctrl="lblInfoRepeatCycle"))
-            lbl.set_text(cycle_info)
+        # Configure grid weights to make cells equal width
+        for col in range(7):
+            _ = date_grid_frame.grid_columnconfigure(col, weight=1)
 
-            frm_week = cast(FrameCtrl, self.get_control("frmWeekCustomRepeatCycle"))
-            self._create_weekday_selection_card(frm_week)
-            frm_week.hide()
+    def _toggle_date_selection(self, day: int):
+        """ Toggle selected state of a date (supports multi-select)"""
+        label = self.date_labels[day]
 
-            frm_month = cast(FrameCtrl, self.get_control("frmMonthCustomRepeatCycle"))
-            self._create_date_selection_card(frm_month)
-            frm_month.hide()
+        if day in self.selected_dates:
+            # 取消选中：从集合中移除，切换为普通样式
+            self.selected_dates.remove(day)
+            _ = label.config(style="DateNormal.TLabel")
+        else:
+            # 选中日期：添加到集合中，切换为高亮样式
+            self.selected_dates.add(day)
+            _ = label.config(style="DateSelected.TLabel")
 
-        @override
-        def process_message(self, idmsg: str, **kwargs: object):
-            # kwargs.update(self._extral_msg)
-            if self.alive:
-                match idmsg:
-                    case "lblSelEveryRepeatCycle":
-                        spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryRepeatCycle"))
-                        spr_ctrl.hide(spr_ctrl.visible)
-                    case "sprEveryRepeatCycle":
-                        val = cast(int, kwargs["val"])
-                        lbl_ctrl = cast(LabelCtrl, self.get_control("lblSelEveryRepeatCycle"))
-                        lbl_ctrl.set_text(str(val))
-                    case "lblSelFrqRepeatCycle":
-                        spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqRepeatCycle"))
-                        spr_ctrl.hide(spr_ctrl.visible)
-                    case "sprFrqRepeatCycle":
-                        val = cast(str, kwargs["val"])
-                        lbl_ctrl = cast(LabelCtrl, self.get_control("lblSelFrqRepeatCycle"))
-                        lbl_ctrl.set_text(val)
-                        
-                        frm_week = cast(FrameCtrl, self.get_control("frmWeekCustomRepeatCycle"))
-                        frm_month = cast(FrameCtrl, self.get_control("frmMonthCustomRepeatCycle"))
-                        if val == "Week":
-                            frm_month.hide()
-                            frm_week.show()
-                        elif val == "Month":
-                            frm_week.hide()
-                            frm_month.show()
-                        else:
-                            frm_week.hide()
-                            frm_month.hide()
-                    case _:
-                        print(f"undeal with idMsg of RepeatCyclekDlg: {idmsg} with {kwargs}")
-                        return super().process_message(idmsg, **kwargs)
-                return True
-            return super().process_message(idmsg, **kwargs)                    
+    @override
+    def _beforego(self, **kwargs: object):
+        spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryRepeatCycle"))
+        spr_ctrl.hide()
+        spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqRepeatCycle"))
+        spr_ctrl.hide()
 
-        @override
-        def _confirm(self, **kwargs: object):
-            # po(f"{self._idself} confirm")
-            return True, ""
+        # Configure custom styles
+        self._configure_styles()
 
-        @override
-        def _cancel(self, **kwargs: object):
-            # po(f"{self._idself} cancel")
-            return True, ""
+        cycle_info = cast(str, kwargs["cycle_info"])
+        lbl = cast(LabelCtrl, self.get_control(idctrl="lblInfoRepeatCycle"))
+        lbl.set_text(cycle_info)
 
+        frm_week = cast(FrameCtrl, self.get_control("frmWeekCustomRepeatCycle"))
+        self._create_weekday_selection_card(frm_week)
+        frm_week.hide()
 
-    class TodoDetailDlg(DialogCtrl):
-        def __init__(self, app: tkWin, dlg_cfg: et.Element):
-            super().__init__(app, dlg_cfg)
+        frm_month = cast(FrameCtrl, self.get_control("frmMonthCustomRepeatCycle"))
+        self._create_date_selection_card(frm_month)
+        frm_month.hide()
 
-        @override
-        def _beforego(self, **kwargs: object):
-            # po(f"{self._idself} beforego")
-            calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
-            calendar.hide()
-            time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
-            time_scrollerpicker_ctrl.hide()
-            calendar = cast(CalendarCtrl, self.get_control("cadEndEditTodo"))
-            calendar.hide()
-
-        @override
-        def _confirm(self, **kwargs: object):
-            # po(f"{self._idself} confirm")
-            return True, ""
-
-        @override
-        def _cancel(self, **kwargs: object):
-            # po(f"{self._idself} cancel")
-            return True, ""
-
-        def show_repeatcycledlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
-                **kwargs: object):
-            dlg_id = "dlgRepeatCycle"
-            dlg_cfg = self._app.get_customctrlcfg(dlg_id)
-            dlg = RepeatCycleDlg(self._app, dlg_cfg)
-            # self._gui.register_customctrl(dlg_id, recordhour_dlg)
-            dlg.do_show(owner, x+20, y+20, **kwargs)
-
-        @override
-        def process_message(self, idmsg: str, **kwargs: object):
-            # kwargs.update(self._extral_msg)
-            if self.alive:
-                match idmsg:
-                    case "lblSelDateEditTodo":
-                        lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
-                        calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
-                        if lbl.get_text():
-                            calendar.hide(calendar.visible)
-                            # slideswitch = cast(SlideSwitchCtrl, self.get_control("slsDateEditTodo"))
-                            # slideswitch.set_state(calendar.visible)
-                    case "slsDateEditTodo":
-                        val = cast(bool, kwargs['val'])
-                        calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
-                        if not val:
-                            calendar.cancel_select()
-                            lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
-                            lbl.set_text("")
-                        calendar.hide(not val)
-                    case "cadDateEditTodo":
-                        lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
-                        date = cast(datetime.date, kwargs['val'])
-                        # date_text = f"{date.year}年{date.month:02d}月{date.day:02d}日"
-                        date_text = date.strftime("%B %d, %Y\t%A")
-                        # print(f"select date: {date_text}")
-                        lbl.set_text(date_text)
-                    case "lblSelTimeEditTodo":
-                        lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
-                        time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
-                        if lbl.get_text():
-                            time_scrollerpicker_ctrl.hide(time_scrollerpicker_ctrl.visible)
-                            # slideswitch = cast(SlideSwitchCtrl, self.get_control("slsDateEditTodo"))
-                            # slideswitch.set_state(calendar.visible)
-                    case "slsTimeEditTodo":
-                        val = cast(bool, kwargs['val'])
-                        time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
-                        if not val:
-                            lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
-                            lbl.set_text("")
-                        time_scrollerpicker_ctrl.hide(not val)
-                    case "tspTimeEditTodo":
-                        lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
-                        time = cast(datetime.time, kwargs['val'])
-                        # date_text = f"{date.year}年{date.month:02d}月{date.day:02d}日"
-                        time_text = time.strftime("%H:%M")
-                        # print(f"select date: {date_text}")
-                        lbl.set_text(time_text)
-                    case "lblSelCycleEditTodo":
-                        lbl = cast(LabelCtrl, self.get_control(idctrl="lblSelCycleEditTodo"))
-                        cycle_info = lbl.get_text()
-                        x, y = cast(tuple[int, int], kwargs["mousepos"])
-                        return self.show_repeatcycledlg(self, x+20, y+20, cycle_info=cycle_info)
-                    case "lblSelEndEditTodo":
-                        calendar = cast(CalendarCtrl, self.get_control("cadEndEditTodo"))
-                        calendar.hide(calendar.visible)
-                    case "cadEndEditTodo":
-                        date = cast(datetime.date, kwargs["val"])
-                        lbl_ctrl = cast(LabelCtrl, self.get_control("lblSelEndEditTodo"))
-                        lbl_ctrl.set_text(date.strftime("%Y-%m-%d"))
-                    case _:
-                        print(f"undeal with idMsg of TodoDetailDlg: {idmsg} with {kwargs}")
-                        return super().process_message(idmsg, **kwargs)
-                return True
-            return super().process_message(idmsg, **kwargs)
-
-    class ExampleApp(tkWin):
-        def __init__(self, cur_path: str, xmlfile: str):
-            super().__init__(cur_path, xmlfile)
-            self._i: int = 0
-            self._idx_left_vertical: int = 0
-            self._idx_left_horizontal: int = 0
-            self._idx_right_vertical: int = 0
-            self._idx_right_horizontal: int = 0
-
-            self._hourdetail_dlg: DialogCtrl = cast(DialogCtrl, self.get_control("dlgHourDetail"))
-            self._hourdetail_dlg.filter_message(self._hourdetaildlg_processmessage)
-            self._hourdetail_dlg.register_eventhandler("confirm", self._hourdetaildlg_confirm)
-
-        def _create_label(self, parent: tkControl, lid: str, rowid: int, txt: str):
-            lbl_xml = self.create_xml("Label", {"text": txt, "id": lid})
-            _, lbl_ctrl = self.create_control(parent, lbl_xml)
-            self.assemble_control(lbl_ctrl, {"layout":"grid",
-                "grid":f"{{'row':{rowid},'column':0,'sticky':'w'}}"})
-
-        def show_hourdetaildlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
-                **kwargs: object):
-            kwargs.update({"name": "English Read"})
-            self._hourdetail_dlg.do_show(owner, x+20, y+20, **kwargs)
-
-        def _hourdetaildlg_beforego(self, **kwargs: object):
-            # po(f"_hourdetaildlg_beforego: {kwargs}")
-
-            lbl_item = cast(LabelCtrl, self.get_control("lblInfoHourDetail"))
-            lbl_item.set_text(cast(str, kwargs["name"]))
-
-            week_day = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
-
-            limit_ydata: list[float] = [0] * 7
-
-            per_minutes = 60
-            limit_ydata = [per_minutes, per_minutes, per_minutes, \
-                per_minutes, per_minutes, per_minutes, per_minutes]
-
-            plt_everyday = cast(MatPlotCtrl, self.get_control("pltEveryDayHour"))
-            xdata: list[int] = []
-            father_ydata: list[float] = []
-            children_ydata: dict[int, list[float]] = {}
-            labels: list[str] = []
-            today = datetime.datetime.today().date()
-            monday = today + datetime.timedelta(days=-today.weekday())
-            for i in range(7):
-                day = monday + datetime.timedelta(days=i)
-                weekday = day.weekday()
-                labels.append(f"{week_day[weekday]}\n{day.day}")
-                xdata.append(i)
-                minutes = random.randint(0, 15)
-                father_ydata.append(minutes)
-                # limit_ydata.append(1.0)
-                # po(f"minutes of {day} is {minutes}")
-                for sid in range(3):
-                    minutes = random.randint(0, 15)
-                    if children_ydata.get(sid) is None:
-                        children_ydata[sid] = [minutes]
-                    else:
-                        children_ydata[sid].append(minutes)
-            plt_everyday.xdata = xdata
-            father_yline = LineData(father_ydata,
-                {"tick_label":labels,"width":0.4,"facecolor":"green"}, "bar")
-                # {"width":0.4,"facecolor":"green"}, "bar")
-            _ = plt_everyday.add_line(father_yline)
-            bottom = father_ydata
-            for sid, child_ydata in children_ydata.items():
-                child_yline = LineData(child_ydata, {"width":0.4,"bottom":bottom}, "bar")
-                bottom = child_ydata
-                _ = plt_everyday.add_line(child_yline)
-            limit_yline = LineData(limit_ydata, {"linestyle":"dotted","color":"red"})
-            _ = plt_everyday.add_line(limit_yline)
-            plt_everyday.draw()
-
-        def _hourdetaildlg_confirm(self, **kwargs: object) -> tuple[bool, str]:
-            # po(f"_hourdetaildlg_confirm: {kwargs}")
-            return True, ""
-
-        def _hourdetaildlg_cancel(self, **kwargs: object) -> tuple[bool, str]:
-            # po(f"_hourdetaildlg_cancel: {kwargs}")
-            return True, ""
-
-        def _hourdetaildlg_processmessage(self, idmsg: str, **kwargs: object):
-            if self._hourdetail_dlg.alive:
-                match idmsg:
-                    case "beforego":
-                        self._hourdetaildlg_beforego(**kwargs)
-                    case "btnRecordHourDetail":
-                        x, y = cast(tuple[int, int], kwargs["mousepos"])
-                        calendar_dlg = CalendarDialog((x + 20, y + 40))
-                        date = calendar_dlg.get_datestr()
-                        if date:
-                            print(f"hour detail dialog: select date {date}")
-                    case "lblSelClockItemDetail":
-                        x, y = cast(tuple[int, int], kwargs["mousepos"])
-                        time_scrollpicker_dlg = TimeScrollPickerDialog((x + 20, y + 40))
-                        time = time_scrollpicker_dlg.get_time()
-                        print(f"hour detail dialog: select time {time}")
-                    case "cancel":
-                        return self._hourdetaildlg_cancel(**kwargs)
-                    case _:
-                        return None
-                return True
-            return None
-
-        def show_tododetaildlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
-                **kwargs: object):
-            dlg_id = "dlgTodoDetail"
-            dlg_cfg = self.get_customctrlcfg(dlg_id)
-            dlg = TodoDetailDlg(self, dlg_cfg)
-            # self._gui.register_customctrl(dlg_id, recordhour_dlg)
-            dlg.do_show(owner, x+20, y+20, **kwargs)
-
-        @override
-        def process_message(self, idmsg: str, **kwargs: object):
+    @override
+    def process_message(self, idmsg: str, **kwargs: object):
+        # kwargs.update(self._extral_msg)
+        if self.alive:
             match idmsg:
-                case "meuShowInfoBox":
-                    self.show_info('Python Message Info Box', '通知：程序运行正常！')
-                case "WarnBox":
-                    self.show_warn('Python Message Warning Box', '警告：程序出现错误，请检查！')
-                case "ErrorBox":
-                    self.show_err('Python Message Error Box', '错误：程序出现严重错误，请退出！')
-                case "ChoiceBox":
-                    answer = self.ask_yesno("Python Message Dual Choice Box", "你喜欢这篇文章吗？\n您的选择是：")
-                    if answer:
-                        self.show_info('显示选择结果', '您选择了“是”，谢谢参与！')
+                case "lblSelEveryRepeatCycle":
+                    spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryRepeatCycle"))
+                    spr_ctrl.hide(spr_ctrl.visible)
+                case "sprEveryRepeatCycle":
+                    val = cast(int, kwargs["val"])
+                    lbl_ctrl = cast(LabelCtrl, self.get_control("lblSelEveryRepeatCycle"))
+                    lbl_ctrl.set_text(str(val))
+                case "lblSelFrqRepeatCycle":
+                    spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqRepeatCycle"))
+                    spr_ctrl.hide(spr_ctrl.visible)
+                case "sprFrqRepeatCycle":
+                    val = cast(str, kwargs["val"])
+                    lbl_ctrl = cast(LabelCtrl, self.get_control("lblSelFrqRepeatCycle"))
+                    lbl_ctrl.set_text(val)
+                    
+                    frm_week = cast(FrameCtrl, self.get_control("frmWeekCustomRepeatCycle"))
+                    frm_month = cast(FrameCtrl, self.get_control("frmMonthCustomRepeatCycle"))
+                    if val == "Week":
+                        frm_month.hide()
+                        frm_week.show()
+                    elif val == "Month":
+                        frm_week.hide()
+                        frm_month.show()
                     else:
-                        self.show_info('显示选择结果', '您选择了“否”，谢谢参与！')
-                case "varRadSel":
-                    values = ["富强民主", "文明和谐", "自由平等", "公正法治", "爱国敬业", "诚信友善"]
-                    monty2 = cast(LabelFrameCtrl, self.get_control("控件示范区2"))
-                    idx = cast(int, kwargs["val"])
-                    monty2.configure(text=values[idx])
-                case "varChkEna":
-                    check_btn = cast(CheckButtonCtrl, self.get_control("遵从内心"))
-                    if cast(int, kwargs["val"]) == 1:
-                        check_btn.disable()
-                    else:
-                        check_btn.enable()
-                case "varChkUne":
-                    # check_btn = cast(CheckButtonCtrl, self.get_control("屈于现实"))
-                    # if int(kwargs["val"]) == 1:
-                        # check_btn.disable()
+                        frm_week.hide()
+                        frm_month.hide()
+                case _:
+                    print(f"undeal with idMsg of RepeatCyclekDlg: {idmsg} with {kwargs}")
+                    return super().process_message(idmsg, **kwargs)
+            return True
+        return super().process_message(idmsg, **kwargs)                    
+
+    @override
+    def _confirm(self, **kwargs: object):
+        # po(f"{self._idself} confirm")
+        return True, ""
+
+    @override
+    def _cancel(self, **kwargs: object):
+        # po(f"{self._idself} cancel")
+        return True, ""
+
+class TodoDetailDlg(DialogCtrl):
+    def __init__(self, app: tkWin, dlg_cfg: et.Element):
+        super().__init__(app, dlg_cfg)
+
+    @override
+    def _beforego(self, **kwargs: object):
+        # po(f"{self._idself} beforego")
+        calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
+        calendar.hide()
+        time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
+        time_scrollerpicker_ctrl.hide()
+        calendar = cast(CalendarCtrl, self.get_control("cadEndEditTodo"))
+        calendar.hide()
+
+    @override
+    def _confirm(self, **kwargs: object):
+        # po(f"{self._idself} confirm")
+        return True, ""
+
+    @override
+    def _cancel(self, **kwargs: object):
+        # po(f"{self._idself} cancel")
+        return True, ""
+
+    def show_repeatcycledlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
+            **kwargs: object):
+        dlg_id = "dlgRepeatCycle"
+        dlg_cfg = self._app.get_customctrlcfg(dlg_id)
+        dlg = RepeatCycleDlg(self._app, dlg_cfg)
+        # self._gui.register_customctrl(dlg_id, recordhour_dlg)
+        dlg.do_show(owner, x+20, y+20, **kwargs)
+
+    @override
+    def process_message(self, idmsg: str, **kwargs: object):
+        # kwargs.update(self._extral_msg)
+        if self.alive:
+            match idmsg:
+                case "lblSelDateEditTodo":
+                    lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
+                    calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
+                    if lbl.get_text():
+                        calendar.hide(calendar.visible)
+                        # slideswitch = cast(SlideSwitchCtrl, self.get_control("slsDateEditTodo"))
+                        # slideswitch.set_state(calendar.visible)
+                case "slsDateEditTodo":
+                    val = cast(bool, kwargs['val'])
+                    calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
+                    if not val:
+                        calendar.cancel_select()
+                        lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
+                        lbl.set_text("")
+                    calendar.hide(not val)
+                case "cadDateEditTodo":
+                    lbl = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
+                    date = cast(datetime.date, kwargs['val'])
+                    # date_text = f"{date.year}年{date.month:02d}月{date.day:02d}日"
+                    date_text = date.strftime("%B %d, %Y\t%A")
+                    # print(f"select date: {date_text}")
+                    lbl.set_text(date_text)
+                case "lblSelTimeEditTodo":
+                    lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
+                    time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
+                    if lbl.get_text():
+                        time_scrollerpicker_ctrl.hide(time_scrollerpicker_ctrl.visible)
+                        # slideswitch = cast(SlideSwitchCtrl, self.get_control("slsDateEditTodo"))
+                        # slideswitch.set_state(calendar.visible)
+                case "slsTimeEditTodo":
+                    val = cast(bool, kwargs['val'])
+                    time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
+                    if not val:
+                        lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
+                        lbl.set_text("")
+                    time_scrollerpicker_ctrl.hide(not val)
+                case "tspTimeEditTodo":
+                    lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
+                    time = cast(datetime.time, kwargs['val'])
+                    # date_text = f"{date.year}年{date.month:02d}月{date.day:02d}日"
+                    time_text = time.strftime("%H:%M")
+                    # print(f"select date: {date_text}")
+                    lbl.set_text(time_text)
+                case "lblSelCycleEditTodo":
+                    lbl = cast(LabelCtrl, self.get_control(idctrl="lblSelCycleEditTodo"))
+                    cycle_info = lbl.get_text()
+                    x, y = cast(tuple[int, int], kwargs["mousepos"])
+                    return self.show_repeatcycledlg(self, x+20, y+20, cycle_info=cycle_info)
+                case "lblSelEndEditTodo":
+                    calendar = cast(CalendarCtrl, self.get_control("cadEndEditTodo"))
+                    calendar.hide(calendar.visible)
+                case "cadEndEditTodo":
+                    date = cast(datetime.date, kwargs["val"])
+                    lbl_ctrl = cast(LabelCtrl, self.get_control("lblSelEndEditTodo"))
+                    lbl_ctrl.set_text(date.strftime("%Y-%m-%d"))
+                case _:
+                    print(f"undeal with idMsg of TodoDetailDlg: {idmsg} with {kwargs}")
+                    return super().process_message(idmsg, **kwargs)
+            return True
+        return super().process_message(idmsg, **kwargs)
+
+
+class EditHourDlg(DialogCtrl):
+    """_summary_
+
+    """
+    def __init__(self, app: tkWin, dlg_cfg: et.Element):
+        """_summary_
+
+        Args:
+            app (tkWin): _description_
+            dlg_cfg (et.Element): _description_
+        """
+        super().__init__(app, dlg_cfg)
+        # self._eid: int = 0
+        # self._reminders_dict: dict[int, ReminderDataDict] = {}
+
+    def _add_clockctrl(self, cid: int, clkstr: str):
+        del_image = "del.png"
+
+        frmain = cast(Widget, self.get_control("frmClockEditHour"))
+
+        level = 1
+
+        frmclock_xml = self._app.create_xml("Frame", {"id": f"frmClock{cid}EditHour"})
+        id_frmclock, frm_clock = self._app.create_control(frmain, frmclock_xml,level-1)
+        self._idctrl_dict[id_frmclock] = frm_clock
+
+        delimage_xml = self._app.create_xml("ImagePanel", {"id": f"lblDel{cid}EditHour",
+            "image": del_image,
+            "options": f"{{'height': {int(20)}, 'width': {int(20)}}}"}, frmclock_xml)
+        id_delimage, lbl_delimage = self._app.create_control(frm_clock, delimage_xml, level)
+        self._idctrl_dict[id_delimage] = lbl_delimage
+        self._app.assemble_control(lbl_delimage, {"layout":"grid",
+            "grid":"{'row':0,'column':0}"})
+
+        lblclock_xml = self._app.create_xml("Label", {"text": clkstr,
+            "id": f"lblClock{cid}EditHour", "options": "{'width':48}"}, frmclock_xml)
+        # pv(lbl_item_xml)
+        id_lblclock, lbl_clock = self._app.create_control(frm_clock, lblclock_xml, level)
+        self._idctrl_dict[id_lblclock] = lbl_clock
+        self._app.assemble_control(lbl_clock, {"layout":"grid",
+            "grid":"{'row':0,'column':1,'sticky':'w'}"},
+            f"{'  '*level}")
+
+        self._app.assemble_control(frm_clock, {"layout": "grid",
+            "grid": f"{{'row':{cid+1},'column':0,'columnspan':3}}"},
+            f"{'  '*(level-1)}")
+
+    @override
+    def _beforego(self, **kwargs: object):
+        # po(f"_edithourdlg_beforego: {kwargs}")
+        # fid = cast(int, kwargs["fid"])
+        fid = -1
+        # self._old_fid = fid
+        # hid = cast(int, kwargs["id"])
+        hid = 0
+        # db = cast(TimeDatabase, kwargs["db"])
+        owner = cast(Dialog, self.owner)
+
+        if fid != -1:
+            lbl_father = cast(LabelCtrl, self.get_control("lblSelFatherEditHour"))
+            # detail_father = self._get_hourdetail(db, fid)
+            # name_father = detail_father["name"]
+            # pv(name_father)
+            # lbl_father['text'] = name_father
+            lbl_father['text'] = ""
+
+        lbl_selclock = cast(LabelCtrl, self.get_control("lblSelClockEditHour"))
+        sls_clock = cast(SlideSwitchCtrl, self.get_control("slsClockEditHour"))
+
+        if hid == 0:
+            self.set_title("New Item")
+
+            lbl_selclock.show()
+            sls_clock.hide()
+
+            btn_delhour = cast(ButtonCtrl, self.get_control("btnDelItemEditHour"))
+            btn_delhour.hide()
+            grp, idx = 0, 0
+        else:
+            self.set_title("Edit Item")
+            # detail = self._get_hourdetail(db, hid)
+            # pv(detail)
+
+            ent_name = cast(EntryCtrl, self.get_control("txtItemEditHour"))
+            # ent_name.set_val(detail["name"])
+            ent_name.set_val("English")
+            ent_name.disable()
+
+            # eid = list(detail["reminders"].k eys())[0]
+            # reminder = detail["reminders"][eid]
+            # self._eid = eid
+            # self._reminders_dict[eid] = reminder
+            # clkstr, schdulestr = reminder2str(reminder)
+            clkstr = ""
+            schdulestr = ""
+
+            lbl_clock = cast(LabelCtrl, self.get_control("lblClockEditHour"))
+            # self._old_clock = lbl_selclock['text']
+            # pv(clkstr)
+            if clkstr:
+                lbl_clock['text'] = "提醒已开启"
+                lbl_selclock.hide()
+                sls_clock.show()
+                sls_clock.set_state(True)
+                self._add_clockctrl(0, clkstr)
+            else:
+                lbl_clock['text'] = "定时提醒"
+                lbl_selclock['text'] = "选择定时提醒"
+                lbl_selclock.show()
+                sls_clock.hide()
+            lbl_selschedule = cast(LabelCtrl, self.get_control("lblSelScheduleEditHour"))
+            # self._old_schedule = lbl_selschedule['text']
+            lbl_selschedule['text'] = schdulestr if schdulestr else "选择时间投入计划"
+
+            # icon = detail["iid"] if detail["iid"] is not None else IconTuple(0, 0)
+            # self._old_iid = icon
+            # grp, idx = tuple(icon)
+            grp = 0
+            idx =0
+
+        # images_dict = cast(dict[int, dict[int, str]], owner.process_message("GetImagesDict"))
+        # list_itemimage = cast(PicsListviewCtrl, self.get_control("lstImageEditHour"))
+        # list_itemimage.add_imagegroup("一般", list(images_dict[0].values()))
+        # list_itemimage.add_imagegroup("课程", list(images_dict[1].values()))
+        # list_itemimage.add_imagegroup("锻炼", list(images_dict[2].values()))
+        # list_itemimage.add_imagegroup("语言", list(images_dict[3].values()))
+        # list_itemimage.add_imagegroup("考试", list(images_dict[4].values()))
+
+        # list_itemimage.select(grp, idx)
+
+    @override
+    def _confirm(self, **kwargs: object):
+        return True, ""
+
+    @override
+    def process_message(self, idmsg: str, **kwargs: object):
+        if self.alive:
+            kwargs.update(self._extral_msg)
+            owner = cast(Dialog, self.owner)
+            match idmsg:
+                case "lblSelClockEditHour":
+                    # pv(kwargs)
+                    x, y = cast(tuple[int, int], kwargs["mousepos"])
+                    return owner.process_message("showSelClockDlg", owner=self,
+                        pos=(x+20,y+20), options=kwargs)
+                case "changeClock": # come from `SelClockDlg`
+                    lbl_selclock = cast(LabelCtrl, self.get_control("lblSelClockEditHour"))
+                    # clk_time = cast(datetime.time | None, kwargs["clk_time"])
+                    # if clk_time is None:
+                    #     lbl_selclock['text'] = ""
                     # else:
-                        # check_btn.enable()
+                    #     custom = cast(DayType, kwargs["custom"])
+                    #     reminder = default_reminder_data()
+                    #     reminder["clk_time"] = clk_time
+                    #     reminder["custom"] = custom
+                    #     reminder["unit"] = TimeUnit.WEEK
+                    #     reminder["every"] = 1
+                    #     clk_str, _ = reminder2str(reminder)
+                    clk_str = cast(str, kwargs["clk_str"])
+                    lbl_selclock['text'] = clk_str
+                case "lblSelScheduleEditHour":
+                    # pv(kwargs)
+                    x, y = cast(tuple[int, int], kwargs["mousepos"])
+                    return owner.process_message("showSelScheduleDlg", owner=self,
+                        pos=(x+20,y+20), options=kwargs)
+                case "changeSchedule":  # come from `SelScheduleDlg`
+                    # schedule_str = cast(str, kwargs["schedule_str"])
+                    # lbl_selschedule = cast(LabelCtrl, self.get_control("lblSelScheduleEditHour"))
+                    # lbl_selschedule['text'] = schedule_str
+                    # every = cast(int, kwargs["every"])
+                    # unit = cast(TimeUnit, kwargs["unit"])
+                    # duration = cast(int, kwargs['duration'])
+                    # reminder = self._reminders_dict[self._eid]
+                    # reminder["every"] = every
+                    # reminder["unit"] = unit
+                    # reminder["duration"] = duration
                     pass
-                case "点击之后_按钮失效":
-                    btn = cast(ButtonCtrl, self.get_control("点击之后_按钮失效"))
-                    name = cast(EntryCtrl, self.get_control("name"))
-                    btn.configure(text='Hello\n ' + name.get_val())
-                    # self.disable_control(btn)
-                    btn.disable()
-                case "blankSpin":
-                    spin = cast(tk.Spinbox, self.get_control("blankSpin"))
-                    value = spin.get()
-                    scr = cast(scrolledtext.ScrolledText, self.get_control("scrolledtext"))
-                    scr.insert(tk.INSERT, value + '\n')
-                case "bookSpin":
-                    spin = cast(tk.Spinbox, self.get_control("bookSpin"))
-                    value = spin.get()
-                    scr = cast(scrolledtext.ScrolledText, self.get_control("scrolledtext"))
-                    scr.insert(tk.INSERT, value + '\n')
-                case "btnHaa":
-                    ctrl = cast(ListboxCtrl, self.get_control("lstHaa"))
-                    self._i += 1
-                    ctrl.insert("end", f"第{self._i:02}项")
-                case "btnLeftVAdd":
-                    ctrl = cast(ScrollableFrameCtrl, self.get_control("frmLeftContentArea"))
-                    self._idx_left_vertical += 1
-                    num_row = self._idx_left_vertical
-                    id_lbl = f"lblLeftV{num_row}"
-                    self._create_label(ctrl, id_lbl, num_row, f"垂直内容{num_row}")
-                case "btnLeftVSub":
-                    id_lbl = f"lblLeftV{self._idx_left_vertical}"
-                    self.delete_control(id_lbl)
-                    self._idx_left_vertical -= 1
-                case "btnLeftHAdd":
-                    ctrl = cast(ScrollableFrameCtrl, self.get_control("frmLeftContentArea"))
-                    self._idx_left_horizontal += 1
-                    num_row = self._idx_left_horizontal
-                    id_lbl = f"lblLeftH{num_row}"
-                    self._create_label(ctrl, id_lbl, num_row, f"{'水平内容'*num_row}")
-                case "btnLeftHSub":
-                    id_lbl = f"lblLeftH{self._idx_left_horizontal}"
-                    self.delete_control(id_lbl)
-                    self._idx_left_horizontal -= 1
-                case "btnRightVAdd":
-                    ctrl = cast(ScrollableFrameCtrl, self.get_control("frmRightContentArea"))
-                    self._idx_right_vertical += 1
-                    num_row = self._idx_right_vertical
-                    id_lbl = f"lblRightV{num_row}"
-                    self._create_label(ctrl, id_lbl, num_row, f"垂直内容{num_row}")
-                case "btnRightVSub":
-                    id_lbl = f"lblRightV{self._idx_right_vertical}"
-                    self.delete_control(id_lbl)
-                    self._idx_right_vertical -= 1
-                case "btnRightHAdd":
-                    ctrl = cast(ScrollableFrameCtrl, self.get_control("frmRightContentArea"))
-                    self._idx_right_horizontal += 1
-                    num_row = self._idx_right_horizontal
-                    id_lbl = f"lblRightH{num_row}"
-                    self._create_label(ctrl, id_lbl, num_row, f"{'水平内容'*num_row}")
-                case "btnRightHSub":
-                    id_lbl = f"lblRightH{self._idx_right_horizontal}"
-                    self.delete_control(id_lbl)
-                    self._idx_right_horizontal -= 1
-                case "About":
-                    pass
-                case "ShowHourdetailDialog":
-                    # x, y = cast(tuple[int, int], kwargs["mousepos"])
-                    x, y = self._xx, self._yy
-                    self.show_hourdetaildlg(self, x+20, y+20, **kwargs)
-                case "ShowTododetailDialog":
-                    x, y = self._xx, self._yy
-                    self.show_tododetaildlg(self, x+20, y+20, **kwargs)
+                case "btnDelItemEditHour":
+                    # pv(kwargs)
+                    iid = cast(int, owner.process_message("getId"))
+                    self.destroy()
+                    return owner.process_message("deleteItem", id=iid)
                 case _:
                     return super().process_message(idmsg, **kwargs)
             return True
+        return super().process_message(idmsg, **kwargs)
+
+
+class ExampleApp(tkWin):
+    def __init__(self, cur_path: str, xmlfile: str):
+        super().__init__(cur_path, xmlfile)
+        self._i: int = 0
+        self._idx_left_vertical: int = 0
+        self._idx_left_horizontal: int = 0
+        self._idx_right_vertical: int = 0
+        self._idx_right_horizontal: int = 0
+
+        self._hourdetail_dlg: DialogCtrl = cast(DialogCtrl, self.get_control("dlgHourDetail"))
+        self._hourdetail_dlg.filter_message(self._hourdetaildlg_processmessage)
+        self._hourdetail_dlg.register_eventhandler("confirm", self._hourdetaildlg_confirm)
+
+    def _create_label(self, parent: tkControl, lid: str, rowid: int, txt: str):
+        lbl_xml = self.create_xml("Label", {"text": txt, "id": lid})
+        _, lbl_ctrl = self.create_control(parent, lbl_xml)
+        self.assemble_control(lbl_ctrl, {"layout":"grid",
+            "grid":f"{{'row':{rowid},'column':0,'sticky':'w'}}"})
+
+    def show_hourdetaildlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
+            **kwargs: object):
+        kwargs.update({"name": "English Read"})
+        self._hourdetail_dlg.do_show(owner, x+20, y+20, **kwargs)
+
+    def _hourdetaildlg_beforego(self, **kwargs: object):
+        # po(f"_hourdetaildlg_beforego: {kwargs}")
+
+        lbl_item = cast(LabelCtrl, self.get_control("lblInfoHourDetail"))
+        lbl_item.set_text(cast(str, kwargs["name"]))
+
+        week_day = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+
+        limit_ydata: list[float] = [0] * 7
+
+        per_minutes = 60
+        limit_ydata = [per_minutes, per_minutes, per_minutes, \
+            per_minutes, per_minutes, per_minutes, per_minutes]
+
+        plt_everyday = cast(MatPlotCtrl, self.get_control("pltEveryDayHour"))
+        xdata: list[int] = []
+        father_ydata: list[float] = []
+        children_ydata: dict[int, list[float]] = {}
+        labels: list[str] = []
+        today = datetime.datetime.today().date()
+        monday = today + datetime.timedelta(days=-today.weekday())
+        for i in range(7):
+            day = monday + datetime.timedelta(days=i)
+            weekday = day.weekday()
+            labels.append(f"{week_day[weekday]}\n{day.day}")
+            xdata.append(i)
+            minutes = random.randint(0, 15)
+            father_ydata.append(minutes)
+            # limit_ydata.append(1.0)
+            # po(f"minutes of {day} is {minutes}")
+            for sid in range(3):
+                minutes = random.randint(0, 15)
+                if children_ydata.get(sid) is None:
+                    children_ydata[sid] = [minutes]
+                else:
+                    children_ydata[sid].append(minutes)
+        plt_everyday.xdata = xdata
+        father_yline = LineData(father_ydata,
+            {"tick_label":labels,"width":0.4,"facecolor":"green"}, "bar")
+            # {"width":0.4,"facecolor":"green"}, "bar")
+        _ = plt_everyday.add_line(father_yline)
+        bottom = father_ydata
+        for sid, child_ydata in children_ydata.items():
+            child_yline = LineData(child_ydata, {"width":0.4,"bottom":bottom}, "bar")
+            bottom = child_ydata
+            _ = plt_everyday.add_line(child_yline)
+        limit_yline = LineData(limit_ydata, {"linestyle":"dotted","color":"red"})
+        _ = plt_everyday.add_line(limit_yline)
+        plt_everyday.draw()
+
+    def _hourdetaildlg_confirm(self, **kwargs: object) -> tuple[bool, str]:
+        # po(f"_hourdetaildlg_confirm: {kwargs}")
+        return True, ""
+
+    def _hourdetaildlg_cancel(self, **kwargs: object) -> tuple[bool, str]:
+        # po(f"_hourdetaildlg_cancel: {kwargs}")
+        return True, ""
+
+    def _hourdetaildlg_processmessage(self, idmsg: str, **kwargs: object):
+        if self._hourdetail_dlg.alive:
+            match idmsg:
+                case "beforego":
+                    self._hourdetaildlg_beforego(**kwargs)
+                case "btnRecordHourDetail":
+                    x, y = cast(tuple[int, int], kwargs["mousepos"])
+                    calendar_dlg = CalendarDialog((x + 20, y + 40))
+                    date = calendar_dlg.get_datestr()
+                    if date:
+                        print(f"hour detail dialog: select date {date}")
+                case "lblSelClockItemDetail":
+                    x, y = cast(tuple[int, int], kwargs["mousepos"])
+                    time_scrollpicker_dlg = TimeScrollPickerDialog((x + 20, y + 40))
+                    time = time_scrollpicker_dlg.get_time()
+                    print(f"hour detail dialog: select time {time}")
+                case "cancel":
+                    return self._hourdetaildlg_cancel(**kwargs)
+                case _:
+                    return None
+            return True
+        return None
+
+    def show_tododetaildlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
+            **kwargs: object):
+        dlg_id = "dlgTodoDetail"
+        dlg_cfg = self.get_customctrlcfg(dlg_id)
+        dlg = TodoDetailDlg(self, dlg_cfg)
+        # self._gui.register_customctrl(dlg_id, recordhour_dlg)
+        dlg.do_show(owner, x+20, y+20, **kwargs)
+
+    def show_edithourdlg(self, owner: Dialog | None = None, x: int = 0, y: int = 0,
+            **kwargs: object):
+        dlg_id = "dlgEditHour"
+        dlg_cfg = self.get_customctrlcfg(dlg_id)
+        dlg = EditHourDlg(self, dlg_cfg)
+        # self._gui.register_customctrl(dlg_id, recordhour_dlg)
+        dlg.do_show(owner, x+20, y+20, **kwargs)
+
+    @override
+    def process_message(self, idmsg: str, **kwargs: object):
+        match idmsg:
+            case "meuShowInfoBox":
+                self.show_info('Python Message Info Box', '通知：程序运行正常！')
+            case "WarnBox":
+                self.show_warn('Python Message Warning Box', '警告：程序出现错误，请检查！')
+            case "ErrorBox":
+                self.show_err('Python Message Error Box', '错误：程序出现严重错误，请退出！')
+            case "ChoiceBox":
+                answer = self.ask_yesno("Python Message Dual Choice Box", "你喜欢这篇文章吗？\n您的选择是：")
+                if answer:
+                    self.show_info('显示选择结果', '您选择了“是”，谢谢参与！')
+                else:
+                    self.show_info('显示选择结果', '您选择了“否”，谢谢参与！')
+            case "varRadSel":
+                values = ["富强民主", "文明和谐", "自由平等", "公正法治", "爱国敬业", "诚信友善"]
+                monty2 = cast(LabelFrameCtrl, self.get_control("控件示范区2"))
+                idx = cast(int, kwargs["val"])
+                monty2.configure(text=values[idx])
+            case "varChkEna":
+                check_btn = cast(CheckButtonCtrl, self.get_control("遵从内心"))
+                if cast(int, kwargs["val"]) == 1:
+                    check_btn.disable()
+                else:
+                    check_btn.enable()
+            case "varChkUne":
+                # check_btn = cast(CheckButtonCtrl, self.get_control("屈于现实"))
+                # if int(kwargs["val"]) == 1:
+                    # check_btn.disable()
+                # else:
+                    # check_btn.enable()
+                pass
+            case "点击之后_按钮失效":
+                btn = cast(ButtonCtrl, self.get_control("点击之后_按钮失效"))
+                name = cast(EntryCtrl, self.get_control("name"))
+                btn.configure(text='Hello\n ' + name.get_val())
+                # self.disable_control(btn)
+                btn.disable()
+            case "blankSpin":
+                spin = cast(tk.Spinbox, self.get_control("blankSpin"))
+                value = spin.get()
+                scr = cast(scrolledtext.ScrolledText, self.get_control("scrolledtext"))
+                scr.insert(tk.INSERT, value + '\n')
+            case "bookSpin":
+                spin = cast(tk.Spinbox, self.get_control("bookSpin"))
+                value = spin.get()
+                scr = cast(scrolledtext.ScrolledText, self.get_control("scrolledtext"))
+                scr.insert(tk.INSERT, value + '\n')
+            case "btnHaa":
+                ctrl = cast(ListboxCtrl, self.get_control("lstHaa"))
+                self._i += 1
+                ctrl.insert("end", f"第{self._i:02}项")
+            case "btnLeftVAdd":
+                ctrl = cast(ScrollableFrameCtrl, self.get_control("frmLeftContentArea"))
+                self._idx_left_vertical += 1
+                num_row = self._idx_left_vertical
+                id_lbl = f"lblLeftV{num_row}"
+                self._create_label(ctrl, id_lbl, num_row, f"垂直内容{num_row}")
+            case "btnLeftVSub":
+                id_lbl = f"lblLeftV{self._idx_left_vertical}"
+                self.delete_control(id_lbl)
+                self._idx_left_vertical -= 1
+            case "btnLeftHAdd":
+                ctrl = cast(ScrollableFrameCtrl, self.get_control("frmLeftContentArea"))
+                self._idx_left_horizontal += 1
+                num_row = self._idx_left_horizontal
+                id_lbl = f"lblLeftH{num_row}"
+                self._create_label(ctrl, id_lbl, num_row, f"{'水平内容'*num_row}")
+            case "btnLeftHSub":
+                id_lbl = f"lblLeftH{self._idx_left_horizontal}"
+                self.delete_control(id_lbl)
+                self._idx_left_horizontal -= 1
+            case "btnRightVAdd":
+                ctrl = cast(ScrollableFrameCtrl, self.get_control("frmRightContentArea"))
+                self._idx_right_vertical += 1
+                num_row = self._idx_right_vertical
+                id_lbl = f"lblRightV{num_row}"
+                self._create_label(ctrl, id_lbl, num_row, f"垂直内容{num_row}")
+            case "btnRightVSub":
+                id_lbl = f"lblRightV{self._idx_right_vertical}"
+                self.delete_control(id_lbl)
+                self._idx_right_vertical -= 1
+            case "btnRightHAdd":
+                ctrl = cast(ScrollableFrameCtrl, self.get_control("frmRightContentArea"))
+                self._idx_right_horizontal += 1
+                num_row = self._idx_right_horizontal
+                id_lbl = f"lblRightH{num_row}"
+                self._create_label(ctrl, id_lbl, num_row, f"{'水平内容'*num_row}")
+            case "btnRightHSub":
+                id_lbl = f"lblRightH{self._idx_right_horizontal}"
+                self.delete_control(id_lbl)
+                self._idx_right_horizontal -= 1
+            case "About":
+                pass
+            case "ShowHourdetailDialog":
+                # x, y = cast(tuple[int, int], kwargs["mousepos"])
+                x, y = self._xx, self._yy
+                self.show_hourdetaildlg(self, x+20, y+20, **kwargs)
+            case "ShowEditHourDialog":
+                # x, y = cast(tuple[int, int], kwargs["mousepos"])
+                x, y = self._xx, self._yy
+                self.show_edithourdlg(self, x+20, y+20, **kwargs)
+            case "ShowTododetailDialog":
+                x, y = self._xx, self._yy
+                self.show_tododetaildlg(self, x+20, y+20, **kwargs)
+            case _:
+                # print(f"unkonwn message: {idmsg}")
+                return super().process_message(idmsg, **kwargs)
+        return True
+
+def test_gui():
 
     filepath = os.path.dirname(os.path.abspath(__file__))
     if getattr(sys, "frozen", False):
