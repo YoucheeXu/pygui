@@ -9,7 +9,7 @@ from typing import override, cast
 from typing import TypeAlias, Callable, Any
 from typing import Generic, TypeVar
 
-from pygui_simple.winbasic import Dialog
+from pygui_simple.winbasic import Container
 from pygui_simple.tkcontrol import tkControl
 
 
@@ -171,13 +171,13 @@ class ScrollPicker(tk.Frame, Generic[T]):
 
 
 class ScrollPickerCtrl(tkControl, Generic[T]):
-    def __init__(self, parent: tk.Misc, owner: Dialog, idself: str,
+    def __init__(self, parent: tk.Misc, owner: Container, idself: str,
             width: int, height: int,
             val_list: list[T],
             initial: T | None = None,
             background: str = "white"):
         self._master: tk.Misc = parent
-        self._owner: Dialog = owner
+        self._owner: Container = owner
 
         self._frame: tk.Frame = tk.Frame(self._master,
             background=background,
@@ -355,12 +355,12 @@ class DateScrollPickerDialog:
 
 
 class TimeScrollPickerCtrl(tkControl):
-    def __init__(self, parent: tk.Misc, owner: Dialog, idself: str,
+    def __init__(self, parent: tk.Misc, owner: Container, idself: str,
             width: int, height: int,
             background: str = "white",
             title: str = "", initial: str = ""):
         self._master: tk.Misc = parent
-        self._owner: Dialog = owner
+        self._owner: Container = owner
 
         self._frame: tk.Frame = tk.Frame(self._master,
             background=background,
@@ -439,7 +439,7 @@ class TimeScrollPickerCtrl(tkControl):
         return f"{self._selected_hour:02d}:{self._selected_minute:02d}"
 
 
-class TimeScrollPickerDialog(Dialog):
+class TimeScrollPickerDialog(Container):
     def __init__(self, point: tuple[int, int] | None = None,
             title: str = "", initial: str = ""):
         super().__init__(title, 0, 0)

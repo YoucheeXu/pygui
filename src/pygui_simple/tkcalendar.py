@@ -8,7 +8,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import ttk
 
-from pygui_simple.winbasic import Dialog
+from pygui_simple.winbasic import Container
 from pygui_simple.tkcontrol import tkControl
 
 
@@ -34,7 +34,7 @@ class CalendarCtrl(tkControl):
         _cmb_month: ttk Combobox for month selection
         _items: List of Treeview item IDs for calendar week rows
     """
-    def __init__(self, parent: tk.Misc, owner: Dialog, idself: str, **kwargs: object):
+    def __init__(self, parent: tk.Misc, owner: Container, idself: str, **kwargs: object):
         """ Initialize the calendar control widget.
 
         Args:
@@ -48,7 +48,7 @@ class CalendarCtrl(tkControl):
         super().__init__(parent, "", idself, ctrl)
 
         self._master: tk.Misc = parent
-        self._owner: Dialog = owner
+        self._owner: Container = owner
 
         # first day of week, default to Monday)
         fwday = cast(int, kwargs.get("fwday", 0))
@@ -429,7 +429,7 @@ class CalendarCtrl(tkControl):
         self._canvas.place_forget()
 
 
-class CalendarDialog(Dialog):
+class CalendarDialog(Container):
     """ A modal, borderless pop-up dialog for date selection.
 
     This class creates a top-level tkinter window containing a CalendarCtrl widget

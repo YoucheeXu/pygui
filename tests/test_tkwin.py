@@ -10,6 +10,7 @@ import os
 import sys
 import random
 import datetime
+import uuid
 import xml.etree.ElementTree as et
 import tkinter as tk
 from tkinter import ttk
@@ -384,7 +385,7 @@ class EditHourDlg(DialogCtrl):
             dlg_cfg (et.Element): _description_
         """
         super().__init__(app, dlg_cfg)
-        # self._eid: int = 0
+        self._hid: int = 0
         # self._reminders_dict: dict[int, ReminderDataDict] = {}
 
     def _add_clockctrl(self, cid: int, clkstr: str):
@@ -394,21 +395,19 @@ class EditHourDlg(DialogCtrl):
 
         level = 1
 
-        btndel_xml = self._app.create_xml("ImageButton", {"id": f"btnDel{cid}EditHour",
+        btndel_xml = self.create_xml("ImageButton", {"id": f"btnDel{cid}EditHour",
             "image": del_image,
             "options": "{'height': 20, 'width': 20, 'bg':'white'}"})
-        id_btndel, btn_del = self._app.create_control(frm_clock, btndel_xml, level)
-        self._idctrl_dict[id_btndel] = btn_del
-        self._app.assemble_control(btn_del, {"layout":"grid",
+        _, btn_del = self.create_control(frm_clock, btndel_xml, level)
+        self.assemble_control(btn_del, {"layout":"grid",
             "grid":f"{{'row':{cid+1},'column':0,'sticky':'w'}}"}
         )
 
-        lblclock_xml = self._app.create_xml("Label", {"text": clkstr,
+        lblclock_xml = self.create_xml("Label", {"text": clkstr,
             "id": f"lblClock{cid}EditHour", "options": "{'style':'BW.TLabel'}"})
         # pv(lbl_item_xml)
-        id_lblclock, lbl_clock = self._app.create_control(frm_clock, lblclock_xml, level)
-        self._idctrl_dict[id_lblclock] = lbl_clock
-        self._app.assemble_control(lbl_clock, {"layout":"grid",
+        _, lbl_clock = self.create_control(frm_clock, lblclock_xml, level)
+        self.assemble_control(lbl_clock, {"layout":"grid",
             "grid":f"{{'row':{cid+1},'column':1,'sticky':'w'}}"}
         )
 
@@ -499,11 +498,34 @@ class EditHourDlg(DialogCtrl):
     def _confirm(self, **kwargs: object):
         return True, ""
 
+    def _del_reminder(self, cid: int):
+        # eid = list(self._reminders_dict.keys())[cid]
+        # del self._reminders_dict[eid]
+        eid = cid
+
+        lbl_clock = cast(LabelCtrl, self.get_control("lblClockEditHour"))
+        lbl_clock['text'] = "定时提醒"
+        lbl_selclock = cast(LabelCtrl, self.get_control("lblSelClockEditHour"))
+        lbl_selclock['text'] = "选择定时提醒"
+        lbl_selclock.show()
+        sls_clock = cast(SlideSwitchCtrl, self.get_control("slsClockEditHour"))
+        sls_clock.hide()
+
+        self.delete_control(f"btnDel{cid}EditHour")
+        self.delete_control(f"lblClock{cid}EditHour")
+
+        assert self._owner is not None
+        _ = self._owner.process_message("DelReminder", hid=self._hid, eid=eid)
+
     @override
     def process_message(self, idmsg: str, **kwargs: object):
         if self.alive:
             kwargs.update(self._extral_msg)
             owner = cast(Dialog, self.owner)
+            if idmsg.startswith("btnDel"):
+                cid = int(idmsg[6:7])
+                self._del_reminder(cid)
+                return True
             match idmsg:
                 case "lblSelClockEditHour":
                     # pv(kwargs)

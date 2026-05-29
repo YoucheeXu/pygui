@@ -3,7 +3,7 @@
 import tkinter as tk
 from typing import Callable, cast, override
 
-from pygui_simple.winbasic import Dialog
+from pygui_simple.winbasic import Container
 from pygui_simple.tkcontrol import tkControl
 
 
@@ -27,7 +27,7 @@ class SlideSwitchCtrl(tkControl):
     def __init__(
         self,
         parent: tk.Misc,
-        owner: Dialog,
+        owner: Container,
         idself: str,
         width: int = 80,
         height: int = 40,
@@ -59,7 +59,7 @@ class SlideSwitchCtrl(tkControl):
         """
         ctrl = tk.Canvas(parent, width=width, height=height, highlightthickness=0)
         super().__init__(parent, "", idself, ctrl)
-        self._master: Dialog = owner
+        self._master: Container = owner
 
         self._width: int = width
         self._height: int = height
@@ -364,7 +364,7 @@ class SlideSwitchCtrl(tkControl):
 
 
 if __name__ == "__main__":
-    class tkBasic(Dialog):
+    class tkBasic(Container):
         """Demonstration application for the SlideSwitch widget.
 
         Creates a simple Tkinter window with the SlideSwitch widget,

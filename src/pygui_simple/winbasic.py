@@ -228,7 +228,7 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def create_control(self, parent: Widget, ctrl_cfg: et.Element,
-            level: int = 0, owner: Dialog | None = None) -> tuple[str, Widget]:
+            level: int = 0, owner: Container | None = None) -> tuple[str, Widget]:
         pass
 
     @abc.abstractmethod
@@ -236,7 +236,7 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         pass
 
     def create_controls(self, parent: Widget, ctrl_cfg: et.Element,
-            level: int = 0, owner: Dialog | None = None) -> OrderedDict[str, Widget]:
+            level: int = 0, owner: Container | None = None) -> OrderedDict[str, Widget]:
         idctrl_dict: OrderedDict[str, Widget] = OrderedDict()
         tag = ctrl_cfg.tag
         if tag == "CustomDialog":
@@ -263,7 +263,7 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
             ctrl.destroy()
         except AttributeError:
             # po(f"Warnning: {idctrl} doesn't have destroy")
-            print(f"Warnning: {idctrl} doesn't have destroy")            
+            print(f"WinBasic warnning: {idctrl} doesn't have destroy")            
         del self._idctrl_dict[idctrl]
 
     def get_control(self, idctrl: str):
@@ -298,8 +298,9 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
 
 
 class Dialog(Container, metaclass=abc.ABCMeta):
-    def __init__(self, title: str, width: int, height: int):
+    def __init__(self, title: str, width: int, height: int, app: WinBasic):
         super().__init__(title, width, height)
+        self._app: WinBasic = app
 
     @property
     def backed(self):
@@ -307,6 +308,31 @@ class Dialog(Container, metaclass=abc.ABCMeta):
 
     def _beforego(self, **kwargs: object):
         _ = super().process_message("beforego", **kwargs)
+
+    def create_xml(self, tag: str, attr_dict: dict[str, str], root: et.Element | None = None) -> et.Element:
+        return self._app.create_xml(tag, attr_dict, root)
+
+    def create_controls(self, parent: Widget, ctrl_cfg: et.Element,
+            level: int = 0) -> OrderedDict[str, Widget]:
+        subidctrl_dict = self._app.create_controls(parent,ctrl_cfg, level, self)
+        self._idctrl_dict.update(subidctrl_dict)
+        return subidctrl_dict
+
+    def create_control(self, parent: Widget, ctrl_cfg: et.Element,
+            level: int = 0) -> tuple[str, Widget]:
+        id_ctrl, ctrl = self._app.create_control(parent, ctrl_cfg, level, self)
+        self._idctrl_dict[id_ctrl] = ctrl
+        return id_ctrl, ctrl
+
+    def assemble_control(self, ctrl: Widget, attr_dict: dict[str, str], prefix: str = ""):
+        return self._app.assemble_control(ctrl, attr_dict, prefix)
+
+    def get_control(self, idctrl: str) -> object:
+        return self._app.get_control(idctrl)
+
+    def delete_control(self, idctrl: str):
+        self._app.delete_control(idctrl)
+        del self._idctrl_dict[idctrl]
 
     def _confirm(self, **kwargs: object) -> tuple[bool, str]:
         return cast(tuple[bool, str], super().process_message("confirm", **kwargs))
