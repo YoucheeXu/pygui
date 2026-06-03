@@ -21,9 +21,7 @@ from tkinter import scrolledtext
 import xml.etree.ElementTree as et
 from ast import literal_eval
 
-import cv2
-# from PIL import Image
-from PIL import ImageTk
+from PIL import Image, ImageTk
 
 from idlelib.statusbar import MultiStatusBar
 from idlelib.tooltip import Hovertip
@@ -32,7 +30,6 @@ from pygui_simple.winbasic import EventHanlder, Widget, Container, Dialog, WinBa
 from pygui_simple.tkcontrol import tkControl
 from pygui_simple.tkmatplot import MatPlotCtrl
 from pygui_simple.tkslideswitch import SlideSwitchCtrl
-import pygui_simple.cv2_utilities as cv2u
 from pygui_simple.tkcalendar import CalendarCtrl
 from pygui_simple.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl
 
@@ -87,19 +84,16 @@ class ImagePanelCtrl(tkControl):
             _ = ctrl.configure(text="", anchor=tk.CENTER, **options)
 
     def _read_image(self, imagepath: str, w: int, h: int):
-        image = cv2u.read_image(imagepath)
+        img_raw  = Image.open(imagepath).convert("RGBA")
         if w:
             # pv(w)
             # pv(h)
-            image = cv2u.scale_image(image, w, h)
-        image2 = cv2u.image2photo(image)
-        return image2
+            img_raw = img_raw.resize((w, h))
+        return ImageTk.PhotoImage(img_raw)
 
-    def display_image(self, image: cv2.typing.MatLike):
-        image2 = cv2u.image2photo(image)
-
-        _ = cast(tk.Label, super().control).configure(image=image2)
-        self._image = image2
+    def display_image(self, image: ImageTk.PhotoImage):
+        _ = cast(tk.Label, super().control).configure(image=image)
+        self._image = image
 
 
 class ButtonCtrl(tkControl):
@@ -148,12 +142,11 @@ class ImageBtttonCtrl(tkControl):
 
     def _read_image(self, imagepath: str, w: int, h: int):
         # image = cv2.imread(imagepath, cv2.IMREAD_UNCHANGED)
-        image = cv2u.read_image(imagepath)
+        img_raw = Image.open(fp=imagepath).convert("RGBA")
         if w:
             # image = cv2.resize(image, (w, h), interpolation=cv2.INTER_CUBIC)
-            image = cv2u.scale_image(image, w, h, cv2.INTER_CUBIC)
-        image2 = cv2u.image2photo(image)
-        return image2
+            img_raw = img_raw.resize(size=(w, h))
+        return ImageTk.PhotoImage(image=img_raw)
 
     # TODO: wait to test
     def change_image(self, imagefile: str, w: int = 0, h: int = 0):
