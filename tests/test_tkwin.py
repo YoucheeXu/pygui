@@ -28,6 +28,7 @@ from pygui_simple.tkcontrol import tkControl
 from pygui_simple.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
 from pygui_simple.tkwin import ListboxCtrl, LabelFrameCtrl, ScrollableFrameCtrl
 from pygui_simple.tkwin import PicsListviewCtrl, FrameCtrl, DialogCtrl, tkWin
+from pygui_simple.tkwin import CanvasCtrl
 from pygui_simple.tkslideswitch import SlideSwitchCtrl
 from pygui_simple.tkcalendar import CalendarCtrl, CalendarDialog
 from pygui_simple.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl, TimeScrollPickerDialog
@@ -649,11 +650,11 @@ class ExampleApp(Container):
         father_ydata_aim: list[float] = [15, 15, 15, 15, 15, 15, 15]
         children_ydata[0] = [0, 45, 45, 0, 0, 0, 0]
         children_ydata[1] = [0, 0, 0, 45, 0, 0, 0]
-        # children_ydata[2] = [0, 0, 0, 0, 0, 45, 45]
-        children_ydata[2] = [0, 0, 0, 0, 0, 0, 0]
+        children_ydata[2] = [0, 0, 0, 0, 0, 45, 45]
+        children_ydata[3] = [0, 0, 0, 0, 0, 0, 0]
         children_ydata_aim: list[float] = [45, 45, 45, 45, 45, 45, 45]
 
-        name_labels: list[str] = ["English", "Read", "Listen", "Oral"]
+        name_labels: list[str] = ["English", "Read", "Listen", "Oral", "write"]
 
         actual_data: list[list[float]] = []
         actual_data.append(father_ydata)
@@ -724,14 +725,23 @@ class ExampleApp(Container):
         plt_everyday.event_callback('motion_notify_event', on_mouse_move)
 
         # progress bar
+        # File path list for each subject's independent icon image
+        icon_path_list: list[str] = [
+			"items\\Language\\English.png",
+			"items\\Language\\Listen.png",
+			"items\\Language\\Read.png",
+			"items\\Language\\Oral.png",
+			"items\\Language\\Write.png",
+        ]
         main_frame = cast(FrameCtrl, self._gui.get_control("tabEveryDayHour"))
         # chart_total_w = main_frame.control.winfo_width()
         chart_total_w = 340        
         # Bottom Tk canvas for dynamic auto-wrap progress bar panel
         # progress_canvas: tk.Canvas = tk.Canvas(main_frame.control, height=320, bg="white", width=chart_total_w)
         # progress_canvas.grid(row=3, column=0, columnspan=3)
-        progress_canvas = cast(tk.Canvas, self._gui.get_control("cvsDetailEveryDayHour"))
-        _ = progress_canvas.config(width=chart_total_w)
+        # progress_canvas = cast(tk.Canvas, self._gui.get_control("cvsDetailEveryDayHour"))
+        progress_canvas = cast(CanvasCtrl, self._gui.get_control("cvsDetailEveryDayHour"))
+        _ = cast(tk.Canvas, progress_canvas.control).config(width=chart_total_w)
 
         # Fixed layout constants for progress item styling
         ICON_WIDTH: int = 32
@@ -747,9 +757,9 @@ class ExampleApp(Container):
         per_row_max: int = int(chart_total_w / ITEM_FIXED_WIDTH)
         per_row_max = max(1, per_row_max)
 
-        all_items: list[tuple[str, str, list[float], list[float]]] = list(zip(name_labels, color_list, actual_data, aim_data))
+        all_items = list(zip(name_labels, color_list, actual_data, aim_data, icon_path_list))
 
-        for col_idx, (lab, col, act_list, aim_list) in enumerate(all_items):
+        for col_idx, (lab, col, act_list, aim_list, icon_path) in enumerate(all_items):
             cur_row = col_idx // per_row_max
             cur_col = col_idx % per_row_max
 
@@ -764,13 +774,31 @@ class ExampleApp(Container):
             ratio: float = sum_act / sum_aim if sum_aim != 0 else 0.0
             fill_len: float = BAR_TOTAL_LENGTH * ratio
 
+            # Calculate vertical bound of left side full-height subject icon (covers name + progress bar area)
+            icon_top = base_y
+            icon_bottom = base_y + NAME_TEXT_HEIGHT + BAR_HEIGHT + 6
+            icon_h = int(icon_bottom - icon_top)
+            icon_center_x = base_x + ICON_WIDTH / 2
+            icon_center_y = (icon_top + icon_bottom) / 2
+
             # Draw tall left sidebar icon (covers both name area and progress bar vertically)
             icon_top = base_y
             icon_bottom = base_y + NAME_TEXT_HEIGHT + BAR_HEIGHT + 6
-            _ = progress_canvas.create_rectangle(
-                base_x, icon_top, base_x + ICON_WIDTH, icon_bottom, fill=col, outline="black"
+            _ = progress_canvas.create_image(
+                icon_center_x, icon_center_y,
+                file_path=icon_path,
+                target_w=ICON_WIDTH,
+                target_h=icon_h,
+                fallback_fill=col,
+                anchor="center"
             )
+
             bar_start_x = base_x + ICON_WIDTH + 12
+            name_y_center = base_y + NAME_TEXT_HEIGHT / 2
+            right_text_x = bar_start_x + BAR_TOTAL_LENGTH + 12
+            bar_top = base_y + NAME_TEXT_HEIGHT + 4
+            bar_bottom = bar_top + BAR_HEIGHT
+            bar_center_y = (bar_top + bar_bottom) / 2
 
             # Draw subject name above progress bar, left aligned
             name_y_center = base_y + NAME_TEXT_HEIGHT / 2
