@@ -15,7 +15,12 @@ import xml.etree.ElementTree as et
 import tkinter as tk
 from tkinter import ttk
 from tkinter import scrolledtext
-from typing import Callable, override, cast
+from typing import override, cast
+
+from matplotlib import backend_bases
+from matplotlib.colors import to_hex
+from matplotlib.container import BarContainer
+from matplotlib.patches import Rectangle
 
 from pygui_simple.winbasic import Widget, Container, Dialog
 from pygui_simple.tkmatplot import LineData, MatPlotCtrl
@@ -609,6 +614,7 @@ class ExampleApp(Container):
         lbl_item = cast(LabelCtrl, self._gui.get_control("lblInfoHourDetail"))
         lbl_item.set_text(cast(str, kwargs["name"]))
 
+        # prepare data
         week_day = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
 
         limit_ydata: list[float] = [0] * 7
@@ -617,7 +623,6 @@ class ExampleApp(Container):
         limit_ydata = [per_minutes, per_minutes, per_minutes, \
             per_minutes, per_minutes, per_minutes, per_minutes]
 
-        plt_everyday = cast(MatPlotCtrl, self._gui.get_control("pltEveryDayHour"))
         xdata: list[int] = []
         father_ydata: list[float] = []
         children_ydata: dict[int, list[float]] = {}
@@ -629,29 +634,171 @@ class ExampleApp(Container):
             weekday = day.weekday()
             labels.append(f"{week_day[weekday]}\n{day.day}")
             xdata.append(i)
-            minutes = random.randint(0, 15)
-            father_ydata.append(minutes)
+            # minutes = random.randint(0, 15)
+            # father_ydata.append(minutes)
             # limit_ydata.append(1.0)
             # po(f"minutes of {day} is {minutes}")
-            for sid in range(3):
-                minutes = random.randint(0, 15)
-                if children_ydata.get(sid) is None:
-                    children_ydata[sid] = [minutes]
-                else:
-                    children_ydata[sid].append(minutes)
+            # for sid in range(3):
+            #     minutes = random.randint(0, 15)
+            #     if children_ydata.get(sid) is None:
+            #         children_ydata[sid] = [minutes]
+            #     else:
+            #         children_ydata[sid].append(minutes)
+
+        father_ydata = [15, 15, 15, 15, 0, 0, 0]
+        father_ydata_aim: list[float] = [15, 15, 15, 15, 15, 15, 15]
+        children_ydata[0] = [0, 45, 45, 0, 0, 0, 0]
+        children_ydata[1] = [0, 0, 0, 45, 0, 0, 0]
+        # children_ydata[2] = [0, 0, 0, 0, 0, 45, 45]
+        children_ydata[2] = [0, 0, 0, 0, 0, 0, 0]
+        children_ydata_aim: list[float] = [45, 45, 45, 45, 45, 45, 45]
+
+        name_labels: list[str] = ["English", "Read", "Listen", "Oral"]
+
+        actual_data: list[list[float]] = []
+        actual_data.append(father_ydata)
+
+        aim_data: list[list[float]] = [father_ydata_aim, children_ydata_aim, children_ydata_aim, children_ydata_aim]
+
+        # draw bar
+        plt_everyday = cast(MatPlotCtrl, self._gui.get_control("pltEveryDayHour"))
+        bar_list: list[BarContainer] = []
+        color_list: list[str] = []
         plt_everyday.xdata = xdata
+
         father_yline = LineData(father_ydata,
             {"tick_label":labels,"width":0.4,"facecolor":"green"}, "bar")
             # {"width":0.4,"facecolor":"green"}, "bar")
         _ = plt_everyday.add_line(father_yline)
-        bottom = father_ydata
-        for sid, child_ydata in children_ydata.items():
-            child_yline = LineData(child_ydata, {"width":0.4,"bottom":bottom}, "bar")
-            bottom = child_ydata
+        bar = cast(BarContainer, father_yline.line)
+        bar_list.append(bar)
+        color_list.append(to_hex(bar.patches[0].get_facecolor()))
+
+        bottom_ydata = father_ydata.copy()
+        for _, child_ydata in children_ydata.items():
+            actual_data.append(child_ydata)
+            child_yline = LineData(child_ydata, {"width":0.4,"bottom":bottom_ydata}, "bar")
             _ = plt_everyday.add_line(child_yline)
+            bar = cast(BarContainer, child_yline.line)
+            bar_list.append(bar)
+            color_list.append(to_hex(bar.patches[0].get_facecolor()))
+            for i in range(7):
+                bottom_ydata[i] += child_ydata[i]
         limit_yline = LineData(limit_ydata, {"linestyle":"dotted","color":"red"})
         _ = plt_everyday.add_line(limit_yline)
         plt_everyday.draw()
+
+        # Hover tip
+        patch_map: dict[Rectangle, tuple[str, float]] = {}
+        for idx, bar_container in enumerate(bar_list):
+            item_name = name_labels[idx]
+            item_y_list = actual_data[idx]
+            # Bind each single bar patch with its subject name and daily value
+            for patch, val in zip(bar_container.patches, item_y_list):
+                patch_map[patch] = (item_name, val)
+
+        fig_canvas = plt_everyday.canvas
+
+        tooltip = plt_everyday.add_tooltip(0,0,"", bbox=dict(boxstyle="round,pad=0.3", fc="white", alpha=0.8), visible=False)
+        def on_mouse_move(e: backend_bases.Event):
+            e = cast(backend_bases.MouseEvent, e)
+            if e.inaxes != plt_everyday.ax:
+                tooltip.set_visible(False)
+                fig_canvas.draw()
+                return
+            hover_patch = None
+            for patch in patch_map:
+                if patch.contains(e)[0]:
+                    hover_patch = patch
+                    break
+            if hover_patch is not None:
+                name, cur_val = patch_map[hover_patch]
+                # 格式：第一行项目名，第二行时间
+                tip_content = f"{name}\n{cur_val}min"
+                tooltip.set_text(tip_content)
+                tooltip.set_position((e.xdata if e.xdata else 0, e.ydata if e.ydata else 0))
+                tooltip.set_visible(True)
+            else:
+                tooltip.set_visible(False)
+            fig_canvas.draw()
+        plt_everyday.event_callback('motion_notify_event', on_mouse_move)
+
+        # progress bar
+        main_frame = cast(FrameCtrl, self._gui.get_control("tabEveryDayHour"))
+        # chart_total_w = main_frame.control.winfo_width()
+        chart_total_w = 340        
+        # Bottom Tk canvas for dynamic auto-wrap progress bar panel
+        # progress_canvas: tk.Canvas = tk.Canvas(main_frame.control, height=320, bg="white", width=chart_total_w)
+        # progress_canvas.grid(row=3, column=0, columnspan=3)
+        progress_canvas = cast(tk.Canvas, self._gui.get_control("cvsDetailEveryDayHour"))
+        _ = progress_canvas.config(width=chart_total_w)
+
+        # Fixed layout constants for progress item styling
+        ICON_WIDTH: int = 32
+        BAR_TOTAL_LENGTH: int = 70
+        BAR_HEIGHT: int = 11  # Progress bar height set to half of original size
+        ITEM_FIXED_WIDTH: int = BAR_TOTAL_LENGTH + ICON_WIDTH + 50
+        ROW_GAP: int = 40
+        COL_GAP: int = 20
+        NAME_TEXT_HEIGHT: int = 18
+        GRAY_BG_COLOR: str = "#cccccc"
+
+        # Calculate max items per single row, auto wrap to new line when over width limit
+        per_row_max: int = int(chart_total_w / ITEM_FIXED_WIDTH)
+        per_row_max = max(1, per_row_max)
+
+        all_items: list[tuple[str, str, list[float], list[float]]] = list(zip(name_labels, color_list, actual_data, aim_data))
+
+        for col_idx, (lab, col, act_list, aim_list) in enumerate(all_items):
+            cur_row = col_idx // per_row_max
+            cur_col = col_idx % per_row_max
+
+            # Calculate left margin for horizontal even distribution in one row
+            row_total_used_width = per_row_max * ITEM_FIXED_WIDTH + (per_row_max - 1) * COL_GAP
+            row_left_margin = (chart_total_w - row_total_used_width) / 2 if per_row_max > 1 else 15
+            base_x = row_left_margin + cur_col * (ITEM_FIXED_WIDTH + COL_GAP)
+            base_y = 15 + cur_row * ROW_GAP
+
+            sum_act = sum(act_list)
+            sum_aim = sum(aim_list)
+            ratio: float = sum_act / sum_aim if sum_aim != 0 else 0.0
+            fill_len: float = BAR_TOTAL_LENGTH * ratio
+
+            # Draw tall left sidebar icon (covers both name area and progress bar vertically)
+            icon_top = base_y
+            icon_bottom = base_y + NAME_TEXT_HEIGHT + BAR_HEIGHT + 6
+            _ = progress_canvas.create_rectangle(
+                base_x, icon_top, base_x + ICON_WIDTH, icon_bottom, fill=col, outline="black"
+            )
+            bar_start_x = base_x + ICON_WIDTH + 12
+
+            # Draw subject name above progress bar, left aligned
+            name_y_center = base_y + NAME_TEXT_HEIGHT / 2
+            _ = progress_canvas.create_text(
+                bar_start_x, name_y_center, text=lab, anchor="w", font=("Microsoft YaHei", 10, "bold")
+            )
+
+            # Draw total consumed time text on same horizontal level as subject name
+            right_text_x = bar_start_x + BAR_TOTAL_LENGTH + 12
+            _ = progress_canvas.create_text(
+                right_text_x, name_y_center, text=f"{sum_act}min", anchor="w", font=("Microsoft YaHei", 9)
+            )
+
+            # Draw gray background base bar + colored progress fill bar
+            bar_top = base_y + NAME_TEXT_HEIGHT + 4
+            bar_bottom = bar_top + BAR_HEIGHT
+            _ = progress_canvas.create_rectangle(
+                bar_start_x, bar_top, bar_start_x + BAR_TOTAL_LENGTH, bar_bottom, fill=GRAY_BG_COLOR, outline="#888888"
+            )
+            _ = progress_canvas.create_rectangle(
+                bar_start_x, bar_top, bar_start_x + fill_len, bar_bottom, fill=col, outline="black"
+            )
+
+            # Draw completion rate text aligned vertically with progress bar center
+            bar_center_y = (bar_top + bar_bottom) / 2
+            _ = progress_canvas.create_text(
+                right_text_x, bar_center_y, text=f"{ratio:.0%}", anchor="w", font=("Microsoft YaHei", 9)
+            )
 
     def _hourdetaildlg_confirm(self, **kwargs: object) -> tuple[bool, str]:
         # po(f"_hourdetaildlg_confirm: {kwargs}")

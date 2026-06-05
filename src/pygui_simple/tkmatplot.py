@@ -3,7 +3,10 @@
 from dataclasses import dataclass, field
 import tkinter as tk
 from typing import cast, Any
+from typing import TypeAlias
+from collections.abc import Callable
 
+from matplotlib import backend_bases
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from matplotlib.container import Container
@@ -16,7 +19,7 @@ import numpy as np
 from pygui_simple.tkcontrol import tkControl
 
 
-__version__ = "2.4.0"
+__version__ = "2.5.0"
 
 
 font = {'family' : 'SimHei',
@@ -34,6 +37,7 @@ class LineData:
     visible: bool = True
     line: Line2D | Container | None = None
 
+Event_Callback: TypeAlias = Callable[[backend_bases.Event], object]
 
 class MatPlotCtrl(tkControl):
     def __init__(
@@ -61,11 +65,11 @@ class MatPlotCtrl(tkControl):
         self._xlabel: str = xlabel
         self._ylabel: str = ylabel
 
-        fig: Figure = Figure(figsize=self._size, dpi=self._dpi)
-        self._canvas: FigureCanvasTkAgg = FigureCanvasTkAgg(fig, parent)
+        self._fig: Figure = Figure(figsize=self._size, dpi=self._dpi)
+        self._canvas: FigureCanvasTkAgg = FigureCanvasTkAgg(self._fig, parent)
         super().__init__(parent, title, idself, self._canvas.get_tk_widget())
-        self._ax: Axes = fig.add_subplot()
-        fig.subplots_adjust(bottom=0.25)
+        self._ax: Axes = self._fig.add_subplot()
+        self._fig.subplots_adjust(bottom=0.25)
         self._create()
 
     def _create(self):
@@ -84,12 +88,32 @@ class MatPlotCtrl(tkControl):
     def xdata(self, xdata: ArrayLike):
         self._xdata = xdata
 
+    @property
+    def ax(self):
+        return self._ax
+
+    @property
+    def canvas(self):
+        return self._canvas
+
+    def add_tooltip(self, x: float,
+                        y: float,
+                        s: str,
+                        fontdict: dict[str, Any] | None = None,
+                        **kwargs: Any):
+        return self._ax.text(x, y, s, fontdict, **kwargs)
+
+    def event_callback(self, s: str, func: Event_Callback):
+        _ = self._fig.canvas.mpl_connect(s, func)
+
     def _bar(self, xdata: ArrayLike, ydata: ArrayLike, **style_dict: Any):
         bar = self._ax.bar(xdata, ydata, **style_dict)
-        if isinstance(bar, list):
-            return bar[0]
-        else:
-            return bar
+        # if isinstance(bar, list):
+        #     return bar[0]
+        # else:
+        #     return bar
+
+        return bar
 
     def _plot(self, xdata: ArrayLike, ydata: ArrayLike, **style_dict: Any):
         line = self._ax.plot(xdata, ydata, **style_dict)
