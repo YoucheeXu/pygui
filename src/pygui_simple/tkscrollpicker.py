@@ -30,12 +30,15 @@ class ScrollPicker(tk.Frame, Generic[T]):
         self._on_select: OnSelect[T] | None = on_select
         if initial:
             self._selected_data: T = initial
+            try:
+                self._index: int = self._val_list.index(initial)
+            except ValueError:
+                self._index = 0
         else:
             self._selected_data = val_list[0]
+            self._index = 0
 
         self._background: str = cast(str, kwargs.get('background', 'white'))
-
-        self._index: int = 0
 
         # 创建UI组件
         self._create_widgets()
@@ -378,7 +381,7 @@ class TimeScrollPickerCtrl(tkControl):
             self._selected_minute = int(now_list[1])
 
         hour_list = list(range(0, 24))
-        print(hour_list)
+        # print(hour_list)
         self._hour_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
             hour_list, self._selected_hour,
             self._on_hour_change,
@@ -461,7 +464,6 @@ class TimeScrollPickerDialog(Container):
             selected_hour = int(now_list[0])
             selected_minute = int(now_list[1])
 
-        # ttk.Label(self._frame, text=self._title, font=("SimHei", 12)).grid(row=0, column=0, pady=5)
         ttk.Label(self._frame, text=self._title, font=("SimHei", 12)).pack()
 
         self._time_scrollpicker_ctrl: TimeScrollPickerCtrl = TimeScrollPickerCtrl(self._frame, self,
