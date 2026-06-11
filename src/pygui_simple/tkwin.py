@@ -797,13 +797,13 @@ class tkWM(Generic[T], Widget):
 
 # TODO: auto scrollable or not
 class DialogCtrl(Dialog):
-    def __init__(self, app: tkWin, dlg_cfg: et.Element):
+    def __init__(self, app: WinBasic, dlg_cfg: et.Element):
         attr_dict = dlg_cfg.attrib
         super().__init__(attr_dict.get("text", ""), int(attr_dict["Width"]), int(attr_dict["Height"]), app)
         # options: dict[str, Any] = {}
         # if "options" in attr_dict:
             # options = eval(attr_dict["options"])
-        self._parent: tk.Tk | tk.Toplevel = app.win
+        self._parent: tk.Tk | tk.Toplevel = cast(tk.Tk, app.win)
         # self._owner: Dialog | None = None
         # self._xx: int = 0
         # self._yy: int = 0
@@ -1056,6 +1056,7 @@ class tkWin(WinBasic):
             return 1.0  # 异常时使用默认值
 
     @property
+    @override
     def win(self):
         return self._win
 

@@ -219,6 +219,10 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
     def create_window(self):
         pass
 
+    @property
+    def win(self) -> object:
+        pass
+
     def create_xml(self, tag: str, attr_dict: dict[str, str], root: et.Element | None = None) -> et.Element:
         if root is not None:
             item_xml = et.SubElement(root, tag)

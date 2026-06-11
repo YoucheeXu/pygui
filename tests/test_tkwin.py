@@ -22,7 +22,7 @@ from matplotlib.colors import to_hex
 from matplotlib.container import BarContainer
 from matplotlib.patches import Rectangle
 
-from pygui_simple.winbasic import Widget, Container, Dialog
+from pygui_simple.winbasic import Widget, Container, Dialog, WinBasic
 from pygui_simple.tkmatplot import LineData, MatPlotCtrl
 from pygui_simple.tkcontrol import tkControl
 from pygui_simple.tkwin import LabelCtrl, EntryCtrl, ButtonCtrl, CheckButtonCtrl
@@ -35,7 +35,7 @@ from pygui_simple.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl, 
 
 
 class RepeatCycleDlg(DialogCtrl):
-    def __init__(self, app: tkWin, dlg_cfg: et.Element):
+    def __init__(self, app: WinBasic, dlg_cfg: et.Element):
         super().__init__(app, dlg_cfg)
 
         # Weekday list
