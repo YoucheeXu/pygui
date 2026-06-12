@@ -348,19 +348,21 @@ class TodoDetailDlg(DialogCtrl):
                     # print(f"select date: {date_text}")
                     lbl.set_text(date_text)
                 case "lblSelTimeEditTodo":
-                    lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
-                    time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
-                    if lbl.get_text():
-                        time_scrollerpicker_ctrl.hide(time_scrollerpicker_ctrl.visible)
+                    lbl_seltime = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
+                    time_scrollerpicker = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
+                    if time_text := lbl_seltime.get_text():
+                        time_scrollerpicker.hide(time_scrollerpicker.visible)
                         # slideswitch = cast(SlideSwitchCtrl, self.get_control("slsDateEditTodo"))
                         # slideswitch.set_state(calendar.visible)
+                        print(f"select time: {time_text}")
+                        time_scrollerpicker.set_initial(time_text)
                 case "slsTimeEditTodo":
                     val = cast(bool, kwargs['val'])
-                    time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
+                    time_scrollerpicker = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
                     if not val:
                         lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
                         lbl.set_text("")
-                    time_scrollerpicker_ctrl.hide(not val)
+                    time_scrollerpicker.hide(not val)
                 case "tspTimeEditTodo":
                     lbl = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
                     time = cast(datetime.time, kwargs['val'])

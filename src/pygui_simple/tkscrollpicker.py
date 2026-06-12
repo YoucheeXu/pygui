@@ -115,17 +115,19 @@ class ScrollPicker(tk.Frame, Generic[T]):
         _ = self._data_label.bind("<Enter>", self._on_enter)
         _ = self._data_label.bind("<Leave>", self._on_leave)
 
-    def _on_enter(self, event: tk.Event[tk.Label]) -> None:  # 保护方法
+    def _on_enter(self, event: tk.Event[tk.Label]) -> None:
         """ 鼠标进入时的样式变化"""
         if hasattr(event.widget, 'config'):
             _ = event.widget.config(bg="#e0f0ff")
 
-    def _on_leave(self, event: tk.Event[tk.Label]) -> None:  # 保护方法
+    def _on_leave(self, event: tk.Event[tk.Label]) -> None:
         """ 鼠标离开时的样式恢复"""
         if hasattr(event.widget, 'config'):
             _ = event.widget.config(bg="white")
 
-    def _update_previews(self) -> None:  # 保护方法
+    def _update_previews(self) -> None:
+        self._data_label["text"] = self._selected_data
+
         """ 更新上下预览内容"""
         # 上方预览（+1和+2，受限于上限）
         up1 = self._get_data(self._index + 1)
@@ -140,7 +142,7 @@ class ScrollPicker(tk.Frame, Generic[T]):
         _ = self._data_down1.config(text=str(down1))
         _ = self._data_down2.config(text=str(down2))
 
-    def _on_data_scroll(self, event: tk.Event) -> None:  # 保护方法
+    def _on_data_scroll(self, event: tk.Event) -> None:
         """ 处理滚动"""
         if event.delta > 0 or getattr(event, 'num', 0) == 4:  # 上滚增加
             self._selected_data = self._get_data(self._index + 1, True)
@@ -166,6 +168,8 @@ class ScrollPicker(tk.Frame, Generic[T]):
 
     def update_data(self, data: T):
         self._selected_data = data
+        print(f"data = {data}")
+        self._index = self._val_list.index(self._selected_data)
         self._update_previews()
 
     def update_val_list(self, val_list: list[T]):
@@ -365,17 +369,21 @@ class TimeScrollPickerCtrl(tkControl):
             title: str = "", initial: str = ""):
         self._master: tk.Misc = parent
         self._owner: Container = owner
+        self._stp: int = stp
+
+        self._selected_hour: int = 0
+        self._selected_minute: int = 0
 
         self._frame: tk.Frame = tk.Frame(self._master,
             background=background,
             width=width, height=height)
         super().__init__(parent, "", idself, self._frame)
 
-        # 初始时间设置
+        # self.set_initial(initial)
         if not initial:
             now: datetime.datetime = datetime.datetime.now()
-            self._selected_hour: int = now.hour
-            self._selected_minute: int = now.minute
+            self._selected_hour = now.hour
+            self._selected_minute = now.minute
         else:
             now_list = initial.split(":")
             self._selected_hour = int(now_list[0])
@@ -446,6 +454,23 @@ class TimeScrollPickerCtrl(tkControl):
         """ 更新结果预览"""
         formatted_time: str = f"{self._selected_hour:02d}:{self._selected_minute:02d}"
         self._result_var.set(f"当前选择: {formatted_time}")
+
+    def set_initial(self, initial: str = ""):
+        if not initial:
+            now: datetime.datetime = datetime.datetime.now()
+            self._selected_hour = now.hour
+            self._selected_minute = now.minute
+        else:
+            now_list = initial.split(":")
+            self._selected_hour = int(now_list[0])
+            self._selected_minute = int(now_list[1])
+        stp_hour, stp_minute = divmod(self._stp, 60)
+        if stp_hour:
+            self._selected_hour = (self._selected_hour // stp_hour) * stp_hour
+        if stp_minute:
+            self._selected_minute = (self._selected_minute // stp_minute) * stp_minute
+        self._hour_scrollpicker.update_data(self._selected_hour)
+        self._minute_scrollpicker.update_data(self._selected_minute)
 
     def get_time(self):
         """ 获取当前选择的时间"""
@@ -627,7 +652,7 @@ if __name__ == "__main__":
             self._var_time.set(res)
 
         def ask_time(self, x: int, y: int):
-            scrollpicker = TimeScrollPickerDialog((x, y), "wahaha")
+            scrollpicker = TimeScrollPickerDialog((x, y), title="wahaha")
             return scrollpicker.get_timestr()
 
 
