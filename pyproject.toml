@@ -1,6 +1,6 @@
 [project]
 name = "pygui_simple"
-version = "0.5.1"
+version = "0.5.2"
 description = "A simple gui library"
 readme = "README.md"
 authors = [
