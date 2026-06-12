@@ -344,6 +344,7 @@ class SlideSwitchCtrl(tkControl):
         # Exit if no state change needed
         if state == self._state:
             return
+        self._state = state
 
         # Animate to new state or set directly
         if animate:
@@ -356,7 +357,7 @@ class SlideSwitchCtrl(tkControl):
             self._on_state_changed(state)
 
     def _on_state_changed(self, state: bool):
-        self._state = state
+        # self._state = state
         # Trigger callback if state changed
         if self._callback:
             self._callback(state)
