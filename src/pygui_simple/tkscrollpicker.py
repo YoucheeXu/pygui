@@ -359,7 +359,8 @@ class DateScrollPickerDialog:
 
 class TimeScrollPickerCtrl(tkControl):
     def __init__(self, parent: tk.Misc, owner: Container, idself: str,
-            width: int, height: int,
+            width: int, height: int, *,
+            stp: int = 0,
             background: str = "white",
             title: str = "", initial: str = ""):
         self._master: tk.Misc = parent
@@ -380,15 +381,28 @@ class TimeScrollPickerCtrl(tkControl):
             self._selected_hour = int(now_list[0])
             self._selected_minute = int(now_list[1])
 
-        hour_list = list(range(0, 24))
-        # print(hour_list)
+        stp_hour, stp_minute = divmod(stp, 60)
+
+        print(f"step: {stp_hour} {stp_minute}")
+
+        if stp_hour:
+            hour_list = list(range(0, 24, stp_hour))
+            self._selected_hour = (self._selected_hour // stp_hour) * stp_hour
+        else:
+            hour_list = list(range(0, 24))
+        print(f"hour_list :{hour_list}")
         self._hour_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
             hour_list, self._selected_hour,
             self._on_hour_change,
             background=background
         )
 
-        minute_list = list(range(0, 60))
+        if stp_minute:
+            minute_list = list(range(0, 60, stp_minute))
+            self._selected_minute = (self._selected_minute // stp_minute) * stp_minute
+        else:
+            minute_list = list(range(0, 60))
+        print(f"minute_list :{minute_list}")
         self._minute_scrollpicker: ScrollPicker[int] = ScrollPicker(self._frame,
             minute_list, self._selected_minute,
             self._on_minute_change,
@@ -443,7 +457,7 @@ class TimeScrollPickerCtrl(tkControl):
 
 
 class TimeScrollPickerDialog(Container):
-    def __init__(self, point: tuple[int, int] | None = None,
+    def __init__(self, point: tuple[int, int] | None = None, *, stp: int = 0,
             title: str = "", initial: str = ""):
         super().__init__()
 
@@ -469,6 +483,7 @@ class TimeScrollPickerDialog(Container):
         self._time_scrollpicker_ctrl: TimeScrollPickerCtrl = TimeScrollPickerCtrl(self._frame, self,
             "tspSelectTime",
             100, 50,
+            stp=stp,
             initial=f"{selected_hour}:{selected_minute}"
         )
         self._time_scrollpicker_ctrl.control.pack(pady=5)

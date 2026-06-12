@@ -292,6 +292,8 @@ class TodoDetailDlg(DialogCtrl):
         calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
         calendar.hide()
 
+        lbl_seltime = cast(LabelCtrl, self.get_control("lblSelTimeEditTodo"))
+        lbl_seltime.set_text("10:30")
         sls_time = cast(SlideSwitchCtrl, self.get_control("slsTimeEditTodo"))
         sls_time.set_state(True)
         time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
@@ -855,7 +857,7 @@ class ExampleApp(Container):
                         print(f"hour detail dialog: select date {date}")
                 case "lblSelClockItemDetail":
                     x, y = cast(tuple[int, int], kwargs["mousepos"])
-                    time_scrollpicker_dlg = TimeScrollPickerDialog((x + 20, y + 40))
+                    time_scrollpicker_dlg = TimeScrollPickerDialog((x + 20, y + 40), stp=5)
                     time = time_scrollpicker_dlg.get_time()
                     print(f"hour detail dialog: select time {time}")
                     timestr = time_scrollpicker_dlg.get_timestr()
