@@ -288,12 +288,12 @@ class TodoDetailDlg(DialogCtrl):
     def _beforego(self, **kwargs: object):
 
         sls_date = cast(SlideSwitchCtrl, self.get_control("slsDateEditTodo"))
-        sls_date.set_state(True, False)
+        sls_date.set_state(True)
         calendar = cast(CalendarCtrl, self.get_control("cadDateEditTodo"))
         calendar.hide()
 
         sls_time = cast(SlideSwitchCtrl, self.get_control("slsTimeEditTodo"))
-        sls_time.set_state(True, False)
+        sls_time.set_state(True)
         time_scrollerpicker_ctrl = cast(TimeScrollPickerCtrl, self.get_control("tspTimeEditTodo"))
         time_scrollerpicker_ctrl.hide()
 

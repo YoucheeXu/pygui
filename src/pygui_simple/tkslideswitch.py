@@ -289,8 +289,6 @@ class SlideSwitchCtrl(tkControl):
         if abs(distance) < 1:
             self._current_slider_x = target_x
             self._redraw_all()
-
-            self._on_state_changed(target_state)
             return
 
         # Calculate animation step (smooth movement over 10 frames)
@@ -306,7 +304,6 @@ class SlideSwitchCtrl(tkControl):
                 (step < 0 and self._current_slider_x <= target_x)):
                 self._current_slider_x = target_x
 
-                self._on_state_changed(target_state)
                 self._redraw_all()
                 return
 
@@ -354,7 +351,7 @@ class SlideSwitchCtrl(tkControl):
             self._current_slider_x = float(self.__slider_on_x) if state else float(self.__slider_off_x)
             self._redraw_all()
 
-            self._on_state_changed(state)
+        self._on_state_changed(state)
 
     def _on_state_changed(self, state: bool):
         # self._state = state
