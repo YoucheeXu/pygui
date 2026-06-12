@@ -1,7 +1,6 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
 from __future__ import annotations
-import builtins as __builtin__
 # from _typeshed import SupportsWrite
 import sys
 import os
@@ -979,15 +978,7 @@ class DialogCtrl(Dialog):
 
 _T_contra = TypeVar("_T_contra", contravariant=True)
 class SupportsWrite(Protocol[_T_contra]):
-    """自定义协议：表示支持 write(str) 方法的对象"""
-    def write(self, s: str) -> object: ...
-
-
-# class Root(tkControl):
-    # def __init__(self):
-        # self._win: tk.Tk = tk.Tk()
-        # super().__init__(self._win, "", "", self._win)
-
+    def write(self, s: _T_contra, /) -> object: ...
 
 class tkWin(WinBasic):
     def __init__(self, cur_path: str, xmlfile: str):
@@ -1064,9 +1055,13 @@ class tkWin(WinBasic):
     def path(self):
         return self._cur_path
 
-    def debug_print(self, *args: object, **kwargs: object):
+    def debug_print(self, *values: object,
+        sep: str | None = " ",
+        end: str | None = "\n",
+        file: SupportsWrite[str] | None = None,
+        flush: Literal[False] = False):
         if self._is_debug:
-            __builtin__.print(*args, **kwargs)
+            print(*values, sep, end, file, flush)
 
     def _center_window(self, width: int, hight: int):
         """设置窗口居中和宽高
