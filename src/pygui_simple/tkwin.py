@@ -1300,8 +1300,8 @@ class tkWin(WinBasic):
         # pe(ctrl_type)
         if ctrl_type in [tk.Menu, DialogCtrl]:
             return
-        elif ctrl_type in [tk.Canvas,  scrolledtext.ScrolledText, tk.Spinbox, \
-            ttk.Style, tk.Scrollbar]:
+        elif ctrl_type in [tk.Canvas, scrolledtext.ScrolledText, tk.Spinbox, \
+            ttk.Style, tk.Scrollbar, MultiStatusBar]:
             widget = cast(tk.Widget, ctrl)
         elif ctrl_type is ScrollableFrameCtrl:
             widget = cast(ScrollableFrameCtrl, ctrl).outter
