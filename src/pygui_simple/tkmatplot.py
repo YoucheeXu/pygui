@@ -14,20 +14,14 @@ from matplotlib.axes._axes import Axes
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from numpy.typing import ArrayLike
-import numpy as np
 
 from pygui_simple.tkcontrol import tkControl
-
-
-__version__ = "2.5.0"
-
 
 font = {'family' : 'SimHei',
         'weight' : 'bold',
         'size'   : '16'}
 plt.rc('font', **font)               # 步骤一（设置字体的更多属性）
 plt.rc('axes', unicode_minus=False)  # 步骤二（解决坐标轴负数的负号显示问题）
-
 
 @dataclass
 class LineData:

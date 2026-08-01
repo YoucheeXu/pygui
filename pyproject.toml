@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "matplotlib>=3.10.8",
+    "pyutilities-simple>=0.1.1",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

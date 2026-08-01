@@ -62,10 +62,10 @@ class EntryCtrl(tkControl):
         self._var: tk.StringVar = tk.StringVar()
         _= ctrl.configure(textvariable=self._var, **options)
 
-    def get_val(self) -> str:
+    def get_text(self) -> str:
         return self._var.get()
 
-    def set_val(self, val: str):
+    def set_text(self, val: str):
         self._var.set(val)
 
 
@@ -1176,7 +1176,7 @@ class tkWin(WinBasic):
             case "Entry":
                 ctrl = EntryCtrl(master, **options)
                 if text is not None:
-                    ctrl.set_val(text)
+                    ctrl.set_text(text)
             case "ImageButton":
                 ctrl = ImageBtttonCtrl(master, owner, idctrl,
                     respath=self._res_path, imagefile=attr_dict["image"],

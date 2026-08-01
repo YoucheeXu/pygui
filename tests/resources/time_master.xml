@@ -1,0 +1,205 @@
+<Window Title="Time Master" Width="400" Height="600">
+	<Menu DockPanel.Dock="Top" text="Menubar">
+		<MenuItem Header="User" options="{'underline':0}">
+			<MenuItem Command="OpenUser" options="{'accelerator':'Ctrl+O','underline':0}"/>
+			<MenuItem Command="NewUser" options="{'accelerator':'Ctrl+U','underline':0}"/>
+            <Separator />
+            <MenuItem Command="Exit" options="{'accelerator':'Ctrl+E','underline':0}"/>
+		</MenuItem>
+		<MenuItem Header="Message Box">
+			<MenuItem Command="Info Box" options="{'accelerator':'Ctrl+I','underline':0}"/>
+			<MenuItem Command="Warn Box" options="{'accelerator':'Ctrl+W','underline':0}"/>
+			<MenuItem Command="Error Box" options="{'accelerator':'Ctrl+L','underline':0}"/>
+			<MenuItem Command="Choice Box" options="{'accelerator':'Ctrl+K','underline':0}"/>
+		</MenuItem>		
+		<MenuItem Header="Help">
+			<MenuItem Command="About"/>
+		</MenuItem>
+	</Menu>
+	<Notebook id="ntbMain" text="Notebook" layout="pack" pack="{'expand':True,'fill':'both'}">
+		<Tab id="tabHour" text="Hour">
+			<Style text="BW.TLabel" options="{'background':'white'}"/>
+            <Frame id="frmHourHead" Width="400" Height="50" layout="pack" pack="{'side':'top','expand':True,'fill':'x'}" options="{'bg':'white'}">
+                <Label id="lblTitleHour" text="时间投资计划" layout="pack" pack="{'side':'left'}"/>
+                <Button id="btnNewHour" text="+" layout="pack" pack="{'side':'right'}"/>
+			</Frame>
+			<ScrollableFrame id="frmHourMain" Width="400" Height="500" layout="pack" pack="{'side':'top','expand':True,'fill':'both'}" options="{'bg':'white'}"/>
+		</Tab>
+		<Tab id="tabTodo" text="Todo">
+			<Frame id="frmMainTodo" layout="grid" grid="{'row':0,'column':0,'sticky':'nsew'}">
+				<Frame id="frmTodayTodo" options="{'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'nsew','padx':8,'pady':8}">
+					<Label id="lblTitleToday" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="Today" layout="grid" grid="{'row':0,'column':0,'sticky':'s','pady':(0,20)}"/>
+					<Label id="lblNumberToday" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="7" layout="grid" grid="{'row':0,'column':0,'sticky':'n','pady':(20,0)}"/>
+				</Frame>
+				<Frame id="frmPlanedTodo" options="{'bg':'white'}" layout="grid" grid="{'row':0,'column':1,'sticky':'nsew','padx':(4,12),'pady':8}">
+					<Label id="lblTitlePlaned" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="Planed" layout="grid" grid="{'row':0,'column':0,'sticky':'s','pady':(0,20)}"/>
+					<Label id="lblNumberPlaned" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="15" layout="grid" grid="{'row':0,'column':0,'sticky':'n','pady':(20,0)}"/>
+				</Frame>
+				<Frame id="frmAllTodo" options="{'bg':'white'}" layout="grid" grid="{'row':1,'column':0,'sticky':'nsew','padx':8,'pady':8}">
+					<Label id="lblTitleAll" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="All" layout="grid" grid="{'row':0,'column':0,'sticky':'s','pady':(0,20)}"/>
+					<Label id="lblNumberAll" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="174" layout="grid" grid="{'row':0,'column':0,'sticky':'n','pady':(20,0)}"/>
+				</Frame>
+				<Frame id="frmFnshdTodo" options="{'bg':'white'}" layout="grid" grid="{'row':1,'column':1,'sticky':'nsew','padx':(4,12),'pady':8}">
+					<Label id="lblTitleFnshd" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="Finished" layout="grid" grid="{'row':0,'column':0,'sticky':'s','pady':(0,20)}"/>
+					<Label id="lblNumberFnshd" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="15" layout="grid" grid="{'row':0,'column':0,'sticky':'n','pady':(20,0)}"/>
+				</Frame>
+				<Frame id="frmShoppingTodo" options="{'bg':'white'}" layout="grid" grid="{'row':2,'column':0,'sticky':'nsew','padx':8,'pady':8}">
+					<Label id="lblTitleShopping" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="Shopping List" layout="grid" grid="{'row':0,'column':0,'sticky':'s','pady':(0,20)}"/>
+					<Label id="lblNumberShopping" clickable="true" options="{'width':36,'style':'BW.TLabel'}" text="15" layout="grid" grid="{'row':0,'column':0,'sticky':'n','pady':(20,0)}"/>
+				</Frame>
+			</Frame>
+		</Tab>
+		<Tab id="tabCalendar" text="Calendar"/>
+	</Notebook>
+	<Dialog id="dlgSelClock" text="选择定时提醒" Width="400" Height="120">
+		<Combobox id="cmbSelDay" default="0" options="{'values':['Everyday','Workday','Holiday'],'state':'readonly','width':16}" layout="pack" pack="{'side':'left'}"/>
+		<Combobox id="cmbSelHour" default="0" options="{'values':['0点','1点','2点','3点','4点','5点','6点','7点','8点','9点','10点','11点','12点','13点','14点','15点','16点','17点','18点','19点','20点','21点','22点','23点'],'state':'readonly','width':17}" layout="pack" pack="{'side':'left'}"/>
+		<Combobox id="cmbSelMinute" text="SelMinute" default="0" options="{'values':['0分','5分','10分','15分','20分','25分','30分','35分','40分','45分','50分','55分'],'state':'readonly','width':17}" layout="pack" pack="{'side':'right'}"/>
+	</Dialog>
+	<Dialog id="dlgSelSchedule" text="时间投入计划" Width="400" Height="120">
+		<Combobox id="cmbSelUnit" default="0" options="{'values':['Every day','Every week'],'state':'readonly','width':20}" layout="pack" pack="{'side':'left'}"/>
+		<Combobox id="cmbSelVal" default="0" options="{'values':['5m','10m','15m','30m','45m','1h','1h30m','2h','3h','4h','5h','6h','7h','14h','21h','28h'],'state':'readonly','width':20}" layout="pack" pack="{'side':'right'}"/>
+		<!-- <Button id="btnSelSchedule" text="Confirm" options="{'width':20}" layout="grid" grid="{'row':1,'column':1}"/> -->
+	</Dialog>
+	<CustomDialog id="dlgRecordHour" text="记录项目时间" Width="360" Height="200">
+		<ImagePanel id="imgNameRecordHour" image="gift.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':0,'column':0,'sticky':'W'}"/>
+        <Label id="lblItemRecordHour" text="" layout="grid" grid="{'row':0,'column':1,'sticky':'W'}"/>
+		<ImagePanel id="imgScheduleRecordHour" image="calendar.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':1,'column':0,'sticky':'W'}"/>
+		<Label id="lblDayRecordHour" text="日期" options="{'width':20}" layout="grid" grid="{'row':1,'column':1,'sticky':'W'}"/>
+		<Label id="lblSelDayRecordHour" text="选择日期" clickable="true" options="{'width':20}" layout="grid" grid="{'row':1,'column':2}"/>
+        <ImagePanel id="imgStrtRecordHour" image="VaadinAlarm.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':2,'column':0,'sticky':'W'}"/>
+		<Label id="lblStrtRecordHour" text="开始时间" options="{'width':20}" layout="grid" grid="{'row':2,'column':1,'sticky':'W'}"/>
+		<Label id="lblSelStrtRecordHour" text="选择开始时间" clickable="true" options="{'width':20}" layout="grid" grid="{'row':2,'column':2}"/>
+		<ImagePanel id="imgLastRecordHour" image="calendar_green.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':3,'column':0,'sticky':'W'}"/>
+		<Label id="lblLastRecordHour" text="持续时间" layout="grid" grid="{'row':3,'column':1,'sticky':'W'}"/>
+		<Label id="lblSelLastRecordHour" text="选择持续时间" clickable="true" options="{'width':20}" layout="grid" grid="{'row':3,'column':2}"/>
+	</CustomDialog>
+    <CustomDialog id="dlgHourDetail" text="项目详情" Width="400" Height="550">
+    	<Label id="lblFatherItemDetail" text="" layout="pack" pack="{'pady':4}"/>
+        <Frame id="frmItemDetail1" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+            <ImageButton id="btnImageHourDetail" image="CircleFlagsUsBetsyRoss.png" options="{'height':40,'width':40,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+            <Label id="lblInfoHourDetail" text="" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'columnspan':2,'sticky':'w'}"/>
+            <Label id="lblSumHourDetail" text="0" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':3,'sticky':'e'}"/>
+		</Frame>
+		<Frame id="frmStatisticsDetail" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(1,1,1,1)'}">
+            <Label id="lblWholeHourDetail" text="0" options="{'justify':'center','style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':0}"/>
+            <Label id="lblAvrgHourDetail" text="0" options="{'justify':'center','style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1}"/>
+            <Label id="lblRecentHourDetail" text="0" options="{'justify':'center','style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':2}"/>
+            <Label id="lblRestHourDetail" text="0" options="{'justify':'center','style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':3}"/>
+        </Frame>
+		<Button id="btnRecordHourDetail" text="+记录时间" options="{'width':50}" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}"/>
+        <Frame id="frmItemDetail2" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+            <ImagePanel id="imgClockItemDetail" text="clock" image="VaadinAlarm.png" options="{'width':20,'height':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+			<Label id="lblClockItemDetail" text="定时提醒" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+			<Label id="lblSelClockItemDetail" text="选择定时提醒" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+			<ImagePanel id="imgScheduleItemDetail" text="schedule" image="calendar.png" options="{'width':20,'height': 20,'bg':'white'}" layout="grid" grid="{'row':1,'column':0,'sticky':'w'}"/>
+			<Label id="lblScheduleItemDetail" text="时间投入计划" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1,'sticky':'w'}"/>
+			<Label id="lblSelScheduleItemDetail" text="选择时间投入计划" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':2,'sticky':'e'}"/>
+        </Frame>
+        <Frame id="frmAddChild" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+            <ImagePanel id="imgChildren" image="gift.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0}"/>
+            <Label id="lblTotalChildren" text="共0个子项目" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+            <Button id="btnAddChild" text="+添加" options="{'width':10}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+        </Frame>
+        <Frame id="frmSubItmes" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}"/>
+		<Notebook id="ntbStatisticsHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1}">
+        	<Tab id="tabEveryDayHour" text="每日投入" options="{'bg':'white'}">
+				<ImageButton id="btnPrevDayHour" image="left-arrow.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0}"/>
+        		<ImageButton id="btnPrevWeekHour" image="previous.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':1,'column':0}"/>
+                <MatPlot id="pltEveryDayHour" text="" size="(394,220)" xLabel="" yLabel="" layout="grid" grid="{'row':0,'column':1,'rowspan':2}"/>
+                <ImageButton id="btnNextDayHour" image="right-arrow.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':2}"/>
+                <ImageButton id="btnNextWeekHour" image="next.png" options="{'height':20,'width':20,'bg':'white'}" layout="grid" grid="{'row':1,'column':2}"/>
+        		<Label id="lblDaySum" text="今日共投入0小时" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':2,'column':0,'columnspan':3}"/>
+				<Canvas id="cvsDetailEveryDayHour" layout="grid" grid="{'row':3,'column':0,'columnspan':3}"/>
+			</Tab>
+			<Tab id="tabEveryWeekHour" text="每周投入">
+				<Label id="lblWeekSum" text="本周共投入0小时" options="{'width':20}" layout="pack" pack="{'pady':4}"/>
+			</Tab>
+			<Tab id="tabEveryMonthHour" text="每月投入">
+				<Label id="lblMonthSum" text="本月共投入0小时" options="{'width':20}" layout="pack" pack="{'pady':4}"/>
+			</Tab>
+			<Tab id="tabEveryYearHour" text="每年投入">
+				<Label id="lblYearSum" text="本年共投入0小时" options="{'width':20}" layout="pack" pack="{'pady':4}"/>
+			</Tab>
+		</Notebook>
+    </CustomDialog>
+    <CustomDialog id="dlgEditHour" text="编辑项目" Width="400" Height="600">
+		<Frame id="frmItemEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,1)'}">
+			<ImagePanel id="imgNameEditHour" image="gift.png" options="{'width':20, 'height': 20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+			<Entry id="txtItemEditHour" text="你想要投入时间的事情" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1, 'sticky':'ewns'}"/>
+		</Frame>
+		<Frame id="frmFatherEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+			<ImagePanel id="imgFatherEditHour" image="calendar.png" options="{'width':20, 'height': 20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+			<Label id="lblFatherEditHour" text="所属项目" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+			<Label id="lblSelFatherEditHour" text="选择所属项目" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+		</Frame>
+		<Frame id="frmClockEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+			<ImagePanel id="imgClockEditHour" image="VaadinAlarm.png" options="{'width':20, 'height': 20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w','padx':0}"/>
+			<Label id="lblClockEditHour" text="定时提醒" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w','padx':0}"/>
+			<Label id="lblAddClockEditHour" text="点击添加" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+			<SlideSwitch id="slsClockEditHour" text="" options="{'width':40,'height':20}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+		</Frame>
+		<Frame id="frmScheduleEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+			<ImagePanel id="imgScheduleEditHour" image="calendar_green.png" options="{'width':20,'height':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+			<Label id="lblScheduleEditHour" text="时间投入计划" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+			<Label id="lblSelScheduleEditHour" text="选择时间投入计划" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+		</Frame>
+		<Frame id="frmEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'background':'white'}">
+			<Label id="lblSelImgEditHour" text="选择图标" options="{'style':'BW.TLabel'}" layout="pack" pack="{'pady':4,'anchor':'w'}"/>
+			<PicsListview id="lstImageEditHour" num_column="6" pic_size="40" layout="pack" pack="{'pady':4}"/>
+		</Frame>
+		<Button id="btnDelItemEditHour" text="删除项目" options="{'width':40}" layout="pack" pack="{'padx':12,'pady':4}"/>
+    </CustomDialog>
+    <CustomDialog id="dlgEditTodo" text="Todo Details" Width="400" Height="600">
+		<Frame id="frmInfoEditTodo" layout="pack" pack="{'padx':8,'pady':4,'expand':1,'fill':'x','anchor':'w'}" options="{'bg':'white'}">
+			<Entry id="txtNameEditTodo" text="" layout="pack" pack="{'fill':'x','padx':4,'pady':2}"/>
+			<Entry id="txtNoteEditTodo" text="" layout="pack" pack="{'fill':'x','padx':4,'pady':2}"/>
+		</Frame>
+		<Frame id="frmReminderEditTodo" layout="pack" pack="{'padx':8,'pady':4,'expand':1,'fill':'x','anchor':'w'}" options="{'bg':'white'}">
+			<Frame id="frmDateEditTodo" layout="pack" pack="{'pady':2,'expand':1,'fill':'x','anchor':'w'}" options="{'bg':'white'}">
+				<ImagePanel id="imgDateEditTodo" image="calendar.png" options="{'width':40,'height':40,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'rowspan':2,'padx':4,'pady':2}"/>
+				<Label id="lblDateEditTodo" text="日期" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w','padx':4,'pady':2}"/>
+				<Label id="lblSelDateEditTodo" text="" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1,'sticky':'w','padx':4,'pady':2}"/>
+				<SlideSwitch id="slsDateEditTodo" text="" options="{'width':50,'height':25}" layout="grid" grid="{'row':0,'column':2,'rowspan':2,'sticky':'w','padx':4,'pady':2}"/>
+				<Calendar id="cadDateEditTodo" options="{'width':186,'height':150}" layout="grid" grid="{'row':2,'column':0,'columnspan':3, 'pady':4,'padx':4}"/>
+			</Frame>
+			<Frame id="frmTimeEditTodo" layout="pack" pack="{'pady':2,'expand':1,'fill':'x','anchor':'w'}" options="{'bg':'white'}">
+				<ImagePanel id="imgTimeEditTodo" image="VaadinAlarm.png" options="{'width':40,'height':40,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'rowspan':2,'padx':4,'pady':2}"/>
+				<Label id="lblTimeEditTodo" text="时间" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w','padx':4,'pady':2}"/>
+				<Label id="lblSelTimeEditTodo" text="" clickable="true" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':1,'sticky':'w','padx':4,'pady':2}"/>
+				<SlideSwitch id="slsTimeEditTodo" text="" options="{'width':50,'height':25}" layout="grid" grid="{'row':0,'column':2,'rowspan':2,'sticky':'w','padx':4,'pady':2}"/>
+				<TimeScrollPicker id="tspTimeEditTodo" options="{'width':186,'height':150}" layout="grid" grid="{'row':2,'column':0,'columnspan':3, 'pady':4,'padx':4}"/>
+			</Frame>
+		</Frame>
+		<Frame id="frmRepeatEditTodo" layout="pack" pack="{'padx':8,'pady':4,'expand':1,'fill':'x','anchor':'w'}" options="{'bg':'white'}">
+			<Frame id="frmCycleEditTodo" layout="pack" pack="{'pady':2,'expand':1,'fill':'x','anchor':'w'}" options="{'bg':'white'}">
+				<ImagePanel id="imgCycleEditTodo" image="calendar.png" options="{'width':40,'height':40,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'padx':4,'pady':2}"/>
+				<Label id="lblCycleEditTodo" text="Repeat" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w','padx':4,'pady':2}"/>
+				<Label id="lblSelCycleEditTodo" text="Never" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e','padx':4,'pady':2}"/>
+			</Frame>
+			<Frame id="frmEndEditTodo" 
+				layout="pack" 
+				pack="{'pady':2,'expand':1,'fill':'x','anchor':'w'}" 
+				options="{'bg':'white'}">
+				<Label id="lblEndEditTodo" text="End of Repeat" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w','padx':4,'pady':2}"/>
+				<Label id="lblSelEndEditTodo" text="Never" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'w','padx':(56,4),'pady':2}"/>
+			</Frame>
+		</Frame>
+	</CustomDialog>
+	<CustomDialog id="dlgRepeatCycle" text="Repeat Cycle" Width="400" Height="600">
+		<Frame id="frmCycleRepeatCycle" layout="pack" pack="{'padx':8,'pady':4,'fill':'x','expand':True}" options="{'background':'white'}">
+			<Label id="lblEveryRepeatCycle" text="Every" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':0,'columnspan':2,'sticky':'w','padx':4,'pady':2}"/>
+			<Label id="lblSelEveryRepeatCycle" text="0" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':1,'column':2,'sticky':'w','padx':4,'pady':2}"/>
+			<ScrollPicker id="sprEveryRepeatCycle" width="400" height="150" type="int" options="{'start':0,'end':100}" layout="grid" grid="{'row':2,'column':0,'columnspan':3,'padx':4,'pady':2}"/>
+			<Label id="lblFrequencyRepeatCycle" text="Frequency" options="{'width':48,'style':'BW.TLabel'}" layout="grid" grid="{'row':3,'column':0,'columnspan':2,'sticky':'w','padx':4,'pady':2}"/>
+			<Label id="lblSelFrqRepeatCycle" text="Hour" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':3,'column':2,'sticky':'w','padx':4,'pady':2}"/>
+			<ScrollPicker id="sprFrqRepeatCycle" width="400" height="150" type="str" options="{'value_list':['Hour','Day','Week','Month','Season','Year']}" layout="grid" grid="{'row':4,'column':0,'columnspan':3,'padx':4,'pady':2}"/>
+		</Frame>
+		<Label id="lblInfoRepeatCycle" text="..." options="{'width':48}" layout="pack" pack="{'padx':8,'pady':4,'fill':'both','expand':True}"/>
+		<Style text="Card.TFrame" options="{'background':'white','relief':'flat','borderwidth':0}"/>
+		<Frame id="frmWeekCustomRepeatCycle" layout="pack" pack="{'padx':8,'pady':4,'fill':'both','expand':True}" options="{'background':'white','relief':'flat','borderwidth':0}">
+		</Frame>
+		<Frame id="frmMonthCustomRepeatCycle" layout="pack" pack="{'padx':8,'pady':4,'fill':'x','expand':True}" options="{'background':'white','relief':'flat','borderwidth':0}">
+		</Frame>
+	</CustomDialog>
+</Window>

@@ -121,7 +121,6 @@ class Container(Widget, metaclass=abc.ABCMeta):
             self._eventhandler_dict[idmsg].append(handler)
         else:
             self._eventhandler_dict[idmsg] = [handler]
-        # pv(self._eventhandler_dict)
 
     def filter_message(self, hanlder: EventsHanlder,
             typ: Literal[-1, 0, 1] = 0, msglst: list[str] | None = None):
@@ -164,7 +163,6 @@ class Container(Widget, metaclass=abc.ABCMeta):
             for func in funcs:
                 ret = func(**kwargs)
             return ret
-        # pv(self._eventhandler_dict)
 
         if self._owner is not None:
             return self._owner.process_message(idmsg, **kwargs)
@@ -173,10 +171,6 @@ class Container(Widget, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def destroy(self, **kwargs: object):
-        # self._eventhandler_dict.clear()
-        # self._eventhandler_dict = {}
-        # self._msgs_hanlders.clear()
-        # self._msgs_hanlders = []
         pass
 
 

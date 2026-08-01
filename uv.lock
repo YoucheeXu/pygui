@@ -403,6 +403,7 @@ version = "0.5.2"
 source = { editable = "." }
 dependencies = [
     { name = "matplotlib" },
+    { name = "pyutilities-simple" },
 ]
 
 [package.dev-dependencies]
@@ -412,7 +413,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "matplotlib", specifier = ">=3.10.8" }]
+requires-dist = [
+    { name = "matplotlib", specifier = ">=3.10.8" },
+    { name = "pyutilities-simple", specifier = ">=0.1.1" },
+]
 
 [package.metadata.requires-dev]
 dev = [
@@ -469,6 +473,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/66/c0/0c8b6ad9f17a802ee498c46e004a0eb49bc148f2fd230864601a86dcf6db/python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3", size = 342432, upload-time = "2024-03-01T18:36:20.211Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl", hash = "sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427", size = 229892, upload-time = "2024-03-01T18:36:18.57Z" },
+]
+
+[[package]]
+name = "pyutilities-simple"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f5/f5/b2d7c9502fd6f879c1da35d433ae64e34004ccc6ec818fa156b4e40bb5dc/pyutilities_simple-0.1.1.tar.gz", hash = "sha256:35ef4c6c039762d45f19bc9ae377454880cf379307d97c9f549cd1f9098e0053", size = 49330, upload-time = "2026-07-04T13:12:43.61Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d4/5b/1116e8fa3b3587c66523260bbcd65cb32f64928770e87c493bc80a49ea16/pyutilities_simple-0.1.1-py3-none-any.whl", hash = "sha256:9dc0102f0346d092c8d1642ae254d2452db09afc8203aecbdfb650f58fd0de4b", size = 21999, upload-time = "2026-07-04T13:12:42.259Z" },
 ]
 
 [[package]]
