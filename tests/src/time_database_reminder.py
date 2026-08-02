@@ -5,8 +5,8 @@ import datetime
 from typing import TypedDict, TypeAlias, TypeGuard
 from typing import cast
 
-from time_database_type import TimeUnit, DayType
-from time_database_type import ReminderDataDict
+from src.time_database_type import TimeUnit, DayType
+from src.time_database_type import ReminderDataDict
 
 # Type alias for reminder collection (business layer)
 ReminderCollection: TypeAlias = dict[int, ReminderDataDict]
