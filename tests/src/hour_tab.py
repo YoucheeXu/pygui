@@ -161,7 +161,8 @@ class RecordHourDlg(DialogCtrl):
         lbl_lastime = cast(LabelCtrl, self.get_control("lblSelLastRecordHour"))
         lastime = self._schedule_txt2clk(lbl_lastime.get_text())
         x, y = cast(tuple[int, int], kwargs["mousepos"])
-        scrollpicker = TimeScrollPickerDialog((x, y+20), "持续时间", lastime)
+        scrollpicker = TimeScrollPickerDialog((x, y+20), title="持续时间", stp=5,
+            initial=lastime)
         lastime = scrollpicker.get_timestr()
         if lastime.startswith("00"):
             lastime = lastime[3:]
