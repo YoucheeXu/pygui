@@ -4,6 +4,8 @@ import os
 import sys
 
 from src.hour_tab import HourTab
+from src.schedule import Schedule
+from src.todo_tab import TodoTab
 
 from pygui_simple.tkwin import tkWin
 
@@ -21,8 +23,13 @@ class TimeMasterApp:
 
         self._gui: tkWin = tkWin(self._app_path, xmlfile)
         self._gui.filter_message(self.process_message)
+
+        bell_path = os.path.join(self._app_path, "resources", "bell.mp3")
+        wather_mp3 = os.path.join(self._app_path, "resources", "water-drop-close-sonorous.mp3")
+        self._schedule: Schedule = Schedule(bell_path, wather_mp3)
     
-        self._tab_hour: HourTab = HourTab(self._gui)
+        self._tab_hour: HourTab = HourTab(self._gui, self._schedule)
+        self._tab_todo: TodoTab = TodoTab(self._gui, self._schedule)
 
     def open(self):
         hours_db_path = os.path.join(self._app_path, "data", "hours.db")
@@ -30,6 +37,14 @@ class TimeMasterApp:
             self._tab_hour.new_hours(hours_db_path)
         else:
             self._tab_hour.open_hours(hours_db_path)
+
+        todo_db_path = os.path.join(self._app_path, "data", "todos.db")
+        if not os.path.isfile(todo_db_path):
+            self._tab_todo.new_todos(todo_db_path)
+        else:
+            self._tab_todo.open_todos(todo_db_path)
+
+        self._schedule.event_to_agenda()
 
     def process_message(self, idmsg: str, **kwargs: object):
         match idmsg:
