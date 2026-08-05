@@ -15,24 +15,6 @@ from matplotlib import backend_bases
 from matplotlib.colors import to_hex
 from matplotlib.container import BarContainer
 from matplotlib.patches import Rectangle
-from pygui_simple.tkmatplot import LineData, MatPlotCtrl
-
-from pygui_simple.tkscrollpicker import DateScrollPickerDialog, TimeScrollPickerDialog
-from pygui_simple.tkslideswitch import SlideSwitchCtrl
-from pygui_simple.tkwin import (
-    ButtonCtrl,
-    CanvasCtrl,
-    ComboboxCtrl,
-    DialogCtrl,
-    EntryCtrl,
-    FrameCtrl,
-    ImageBtttonCtrl,
-    ImagePanelCtrl,
-    LabelCtrl,
-    PicsListviewCtrl,
-    tkWin,
-)
-from pygui_simple.winbasic import Container, Dialog, Widget
 
 # from src.action_sys import ActTyp
 # from src.schedule import Schedule
@@ -49,6 +31,24 @@ from src.time_database_type import (
     str2reminder,
     time2str,
 )
+
+from pygui_simple.tkmatplot import LineData, MatPlotCtrl
+from pygui_simple.tkscrollpicker import DateScrollPickerDialog, TimeScrollPickerDialog
+from pygui_simple.tkslideswitch import SlideSwitchCtrl
+from pygui_simple.tkwin import (
+    ButtonCtrl,
+    CanvasCtrl,
+    ComboboxCtrl,
+    DialogCtrl,
+    EntryCtrl,
+    FrameCtrl,
+    ImageBtttonCtrl,
+    ImagePanelCtrl,
+    LabelCtrl,
+    PicsListviewCtrl,
+    tkWin,
+)
+from pygui_simple.winbasic import Container, Dialog, Widget
 
 
 class HourTuple(NamedTuple):
@@ -97,21 +97,27 @@ class RecordHourDlg(DialogCtrl):
         lbl_day = cast(LabelCtrl, self.get_control("lblSelDayRecordHour"))
         lbl_day.set_text(str(today))
 
-        # TODO: get now's nearby reminder
+        clock_time = None
         reminders = detail["reminders"]
-        reminder = next(iter(reminders.values()))
+        if reminders:
+            # TODO: get now's nearby reminder
+            reminder = next(iter(reminders.values()))
+            clock_time  = reminder['clk_time']
+            schedule_val = reminder["duration"]
+        else:
+            schedule_val = 15
+        if clock_time is None:
+            clock_time = datetime.datetime.now().time()
 
         lbl_strtime = cast(LabelCtrl, self.get_control("lblSelStrtRecordHour"))
-        clock_val = time2str(reminder['clk_time'])
+        clock_val = time2str(clock_time)
         if not clock_val:
             now = datetime.datetime.now()
             clock_val = f"{now.hour}:{now.minute:02d}"
         lbl_strtime.set_text(clock_val)
 
         lbl_lastime = cast(LabelCtrl, self.get_control("lblSelLastRecordHour"))
-        schedule = reminder["duration"]
-        schedule_val = f"{schedule}m"
-        lbl_lastime.set_text(schedule_val)
+        lbl_lastime.set_text(f"{schedule_val}m")
 
     def _select_day(self, **kwargs: object):
         """_summary_
@@ -127,7 +133,8 @@ class RecordHourDlg(DialogCtrl):
         """
         lbl_strtime = cast(LabelCtrl, self.get_control("lblSelStrtRecordHour"))
         x, y = cast(tuple[int, int], kwargs["mousepos"])
-        scrollpicker = TimeScrollPickerDialog((x, y+20), "选择时间", lbl_strtime.get_text())
+        scrollpicker = TimeScrollPickerDialog((x, y+20), title="选择时间",
+            initial=lbl_strtime.get_text(), stp=5)
         strt_time = scrollpicker.get_timestr()
         lbl_strtime = cast(LabelCtrl, self.get_control("lblSelStrtRecordHour"))
         lbl_strtime.set_text(strt_time)

@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
-import sys
 import os
-
-from pygui_simple.tkwin import tkWin
+import sys
 
 from src.hour_tab import HourTab
+
+from pygui_simple.tkwin import tkWin
 
 
 class TimeMasterApp:
@@ -56,6 +56,7 @@ def main():
     xml_file = os.path.join(proj_path, "resources", "time_master.xml")
     print(f"xml_file = {xml_file}")
     app = TimeMasterApp(proj_path, xml_file)
+    app.open()
     app.run()
     app.destroy()
 
