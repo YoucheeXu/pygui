@@ -1265,7 +1265,7 @@ class tkWin(WinBasic):
                 self.debug_print()
             # TODO
             case "Scrollbar":
-                ctrl = tk.Scrollbar(master.control)
+                ctrl = tk.Scrollbar(master)
                 ctrl.configure(**options)
             case "Listbox":
                 ctrl = ListboxCtrl(master, idctrl, **options)
