@@ -1,36 +1,29 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
 from __future__ import annotations
-# from _typeshed import SupportsWrite
-import sys
+
+import ctypes
 import os
 import platform
-import ctypes
-from functools import partial
-# from collections import OrderedDict
-from typing import Literal, Any, override, cast, TypeAlias
-from typing import Protocol, TypeVar, Generic
-# from typing import get_args, get_origin
-# from collections.abc import Callable
-
+import sys
 import tkinter as tk
 import tkinter.messagebox as tkMessageBox
-from tkinter import ttk
-from tkinter import scrolledtext
 import xml.etree.ElementTree as et
 from ast import literal_eval
+from functools import partial
+from idlelib.statusbar import MultiStatusBar
+from idlelib.tooltip import Hovertip
+from tkinter import scrolledtext, ttk
+from typing import Any, Literal, Protocol, TypeVar, cast, override
 
 from PIL import Image, ImageTk
 
-from idlelib.statusbar import MultiStatusBar
-from idlelib.tooltip import Hovertip
-
-from pygui_simple.winbasic import EventHanlder, Widget, Container, Dialog, WinBasic
+from pygui_simple.tkcalendar import CalendarCtrl
 from pygui_simple.tkcontrol import tkControl
 from pygui_simple.tkmatplot import MatPlotCtrl
-from pygui_simple.tkslideswitch import SlideSwitchCtrl
-from pygui_simple.tkcalendar import CalendarCtrl
 from pygui_simple.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl
+from pygui_simple.tkslideswitch import SlideSwitchCtrl
+from pygui_simple.winbasic import Container, Dialog, EventHanlder, Widget, WinBasic
 
 IS_WINDOWS = platform.system() == "Windows"
 
@@ -419,7 +412,7 @@ class ScrollableFrameCtrl(tkControl):
         self._on_configure_inner(None)
 
     def _bind_scroll_events(self, widget: tk.Widget):
-        """为单个控件绑定所有必要的滚动事件"""
+        """ 为单个控件绑定所有必要的滚动事件"""
         if self._os_type == "Linux":
             vevents = ["<Button-4>",            # 上滚
                 "<Button-5>"]                   # 下滚
@@ -438,16 +431,16 @@ class ScrollableFrameCtrl(tkControl):
             _ = widget.bind(event, self._on_hmousewheel)
 
     def update_layout(self) -> None:
-        """公共方法：更新布局和滚动区域"""
+        """ 公共方法：更新布局和滚动区域"""
         self._on_configure_inner(None)
 
     def _on_map_inner(self, event: tk.Event[tk.Frame]) -> None:
-        """当内部控件被映射时强制更新布局"""
+        """ 当内部控件被映射时强制更新布局"""
         self._outter_frame.update_idletasks()
         self._on_configure_inner(event)
 
     def _on_configure_inner(self, event: tk.Event[tk.Frame] | None):
-        """内容变化时更新滚动区域"""
+        """ 内容变化时更新滚动区域"""
 
         self._outter_frame.update_idletasks()
 
@@ -481,7 +474,7 @@ class ScrollableFrameCtrl(tkControl):
                 widget._scroll_events_bound = True  # 标记为已绑定
 
     def _on_configure_canvas(self, event: tk.Event[tk.Canvas]):
-        """画布大小变化时调整"""
+        """ 画布大小变化时调整"""
         if self._inner_frame.winfo_reqwidth() != self._canvas.winfo_width():
             # Update the inner frame's width to fill the canvas
             _ = self._canvas.itemconfigure(self._interior_id, width=self._canvas.winfo_width())
@@ -492,7 +485,7 @@ class ScrollableFrameCtrl(tkControl):
         self._update_after_id = self._outter_frame.after(30, self._on_configure_inner, None)
 
     def _on_vmousewheel(self, event: tk.Event[tk.Misc]):
-        """垂直滚动处理"""
+        """ 垂直滚动处理"""
         if not self._vscrollbar.winfo_viewable():
             return None
         # po("_on_vmousewheel")
@@ -509,7 +502,7 @@ class ScrollableFrameCtrl(tkControl):
         return "break"
 
     def _on_hmousewheel(self, event: tk.Event[tk.Misc]):
-        """水平滚动处理"""
+        """ 水平滚动处理"""
         if not self._hscrollbar.winfo_viewable():
             return None
         # po("_on_hmousewheel")
@@ -627,7 +620,7 @@ class ToolbarCtrl(tkControl):
         super().destroy()
 
 
-_FontDescription: TypeAlias = str | tuple[str, int] | tuple[str, int, str]
+_FontDescription = str | tuple[str, int] | tuple[str, int, str]
 
 class CanvasCtrl(tkControl):
     def __init__(self, parent: tk.Misc, idself: str, res_path: str = "", **options: Any):
@@ -658,7 +651,7 @@ class CanvasCtrl(tkControl):
         text: float | str = "",
         width: float | str = 0
     ) -> int:
-        """Typed wrapper for tk.Canvas.create_text with positional-only x/y and keyword-only remaining args.
+        """ Typed wrapper for tk.Canvas.create_text with positional-only x/y and keyword-only remaining args.
 
         Args:
             x: Horizontal coordinate for text anchor point, positional-only parameter.
@@ -713,11 +706,11 @@ class CanvasCtrl(tkControl):
         fill: str = "",
         outline: str = "",
         width: float | str = 1,
-        dash: str | int | list[int] | tuple[int, ...] = None,
+        dash: str | int | list[int] | tuple[int, ...] = 0,
         stipple: str = "",
         activefill: str = "",
         activeoutline: str = "",
-        activedash: str | int | list[int] | tuple[int, ...] = None,
+        activedash: str | int | list[int] | tuple[int, ...] = 0,
         disabledfill: str = "",
         disabledoutline: str = "",
         state: Literal['normal', 'hidden', 'disabled'] = "normal",
@@ -784,7 +777,7 @@ class CanvasCtrl(tkControl):
 
 
 T = TypeVar("T", bound=tk.Tk | tk.Toplevel)
-class tkWM(Generic[T], Widget):
+class tkWM[T](Widget):
     def __init__(self, wm: T):
         super().__init__()
         self._tkwm: T = wm
@@ -812,6 +805,11 @@ class DialogCtrl(Dialog):
         self._subctrlcfg_list: list[et.Element] = list(dlg_cfg)
         self._idctrl_list: list[str] = []
         self._extral_msg: dict[str, object] = {}
+
+        self._title: str
+        self._owner: Container | None
+        self._xx: int
+        self._yy: int
 
     # @property
     # def owner(self):
@@ -1026,25 +1024,24 @@ class tkWin(WinBasic):
         # self._mousex: int = 0
         # self._mousey: int = 0
 
+        self._title: str
+
         self.set_title(self._title)
         self.create_window()
 
     def _get_scale_factor(self):
-        """获取系统缩放比例（默认1.0）"""
-        try:
-            if sys.platform.startswith("win"):
-                # Windows：通过系统API获取缩放比例
-                user32 = ctypes.windll.user32
-                dpi = cast(float, user32.GetDpiForWindow(user32.GetForegroundWindow()))
-                return dpi / 96.0  # 96 DPI为默认缩放（100%）
-            elif sys.platform == "darwin":
-                # macOS：通过Tk内置方法获取
-                return cast(float, self._win.tk.call("tk", "scaling"))
-            else:
-                # Linux：假设使用1.0或通过xdpyinfo获取（简化处理）
-                return 1.0
-        except Exception:
-            return 1.0  # 异常时使用默认值
+        """ 获取系统缩放比例（默认1.0）"""
+        if sys.platform.startswith("win"):
+            # Windows：通过系统API获取缩放比例
+            user32 = ctypes.windll.user32
+            dpi = cast(float, user32.GetDpiForWindow(user32.GetForegroundWindow()))
+            return dpi / 96.0  # 96 DPI为默认缩放（100%）
+        elif sys.platform == "darwin":
+            # macOS：通过Tk内置方法获取
+            return cast(float, self._win.tk.call("tk", "scaling"))
+        else:
+            # Linux：假设使用1.0或通过xdpyinfo获取（简化处理）
+            return 1.0
 
     @property
     @override
@@ -1064,7 +1061,7 @@ class tkWin(WinBasic):
             print(*values, sep, end, file, flush)
 
     def _center_window(self, width: int, hight: int):
-        """设置窗口居中和宽高
+        """ 设置窗口居中和宽高
 
         Args:
             width (int): 窗口宽度
@@ -1134,7 +1131,7 @@ class tkWin(WinBasic):
         elif isinstance(parent, tkWM):
             # typ = get_args(get_origin(parent))
             # if typ == tuple[tk.Tk]:
-            master = parent.control
+            master = cast(tk.Tk | tk.Toplevel, parent.control)
         elif tag == "Menu":
             master = self._win
         else:
@@ -1144,7 +1141,6 @@ class tkWin(WinBasic):
         match tag:
             case "LabelFrame":
                 assert text is not None
-                # ctrl = ttk.LabelFrame(master, text=text, **options)
                 ctrl = LabelFrameCtrl(master, text, idctrl, **options)
                 self.debug_print()
             case "Frame" | "Tab":
@@ -1157,16 +1153,13 @@ class tkWin(WinBasic):
                 self.debug_print()
             case "Label":
                 assert text is not None
-                # clickable = cast(bool, attr_dict.get("clickable", False))
-                clickable = True if "clickable" in attr_dict else False
+                clickable = "clickable" in attr_dict
                 # po(f"create {idctrl}: {options}")
                 ctrl = LabelCtrl(master, owner, idctrl, text, clickable, **options)
             case "Button":
                 assert text is not None
                 ctrl = ButtonCtrl(master, owner, idctrl, text, **options)
-            # TODO
             case "Canvas":
-                # ctrl = tk.Canvas(master, **options)
                 ctrl = CanvasCtrl(master, idctrl, self._res_path, **options)
             case "Combobox":
                 ctrl = ComboboxCtrl(master, owner,
@@ -1221,8 +1214,7 @@ class tkWin(WinBasic):
                     vartext = attr_dict["var"]
                 else:
                     vartext = attr_dict["text"].replace(" ", "").replace(".", "_").replace("\n", "_")
-                # sel = cast(bool, literal_eval(attr_dict.get("select", "False")))
-                sel = True if "select" in attr_dict else False
+                sel = "select" in attr_dict
                 ctrl = CheckButtonCtrl(master, self, idctrl,
                     text=text, vartext=vartext, select=sel, **options)
             case "SlideSwitch":
@@ -1230,11 +1222,11 @@ class tkWin(WinBasic):
             case "Calendar":
                 ctrl = CalendarCtrl(master, owner, idctrl, **options)
             case "ScrollPicker":
-                typ = __builtins__.get(attr_dict["type"], int)
-                initial = attr_dict.get("initial", None)
+                typ = cast(int, __builtins__.get(attr_dict["type"], int))
+                initial = cast(int | None, attr_dict.get("initial", None))
                 bg = attr_dict.get("background", "white")
                 if 'value_list' in options:
-                    val_list = [typ(v) for v in options["value_list"]]
+                    val_list = cast(list[int], [typ(v) for v in options["value_list"]])
                 else:
                     start = int(options["start"])
                     end = int(options['end'])
@@ -1245,8 +1237,6 @@ class tkWin(WinBasic):
                 ctrl = TimeScrollPickerCtrl(master, owner, idctrl, **options)
             case "Statusbar":
                 ctrl = MultiStatusBar(master, **options)
-                # for subctrl_cfg in list(ctrl_cfg):
-                    # ctrl.set_label(**subctrl_cfg.attrib)
             # TODO
             case "ScrolledText":
                 ctrl = scrolledtext.ScrolledText(master, **options)
@@ -1332,12 +1322,12 @@ class tkWin(WinBasic):
         menubar = tk.Menu(self._win, **kwargs)
 
         # def get_cmd(cmd_name, msg, ext_msg=""):
-        def get_cmd(cmd_name: str, **kwargs):
+        def get_cmd(cmd_name: str, **kwargs: object):
             # return lambda: self.process_message(cmd_name, msg, ext_msg)
             return lambda: self.process_message(cmd_name, **kwargs)
 
         # def get_cmd_e(cmd_name, msg, ext_msg=""):
-        def get_cmd_e(cmd_name: str, **kwargs):
+        def get_cmd_e(cmd_name: str, **kwargs: object):
             # return lambda event: self.process_message(cmd_name, msg, ext_msg)
             return lambda event: self.process_message(cmd_name, **kwargs)
 
@@ -1404,21 +1394,21 @@ class tkWin(WinBasic):
                     # pv(shortcut)
                     # cmd = get_cmd_e(cmd_name, msg, ext_msg)
                     cmd = get_cmd_e(idmenu, **kwargs)
-                    self._win.bind_all(shortcut, cmd)
+                    _ = self._win.bind_all(shortcut, cmd)
 
             menubar.add_cascade(label=label, menu=menu, **options)
 
         return menubar
 
     def show_info(self, title: str = "", message: str = ""):
-        tkMessageBox.showinfo(title, message)
+        _ = tkMessageBox.showinfo(title, message)
 
     def show_warn(self, title: str = "", message: str = ""):
-        tkMessageBox.showwarning(title, message)
+        _ = tkMessageBox.showwarning(title, message)
 
     @override
     def show_err(self, title: str = "", message: str = ""):
-        tkMessageBox.showerror(title, message)
+        _ = tkMessageBox.showerror(title, message)
 
     def ask_yesno(self, title: str = "", message: str = ""):
         return tkMessageBox.askyesno(title, message)

@@ -1,10 +1,11 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
 import tkinter as tk
-from typing import Callable, cast, override
+from collections.abc import Callable
+from typing import cast
 
-from pygui_simple.winbasic import Container
 from pygui_simple.tkcontrol import tkControl
+from pygui_simple.winbasic import Container
 
 
 class SlideSwitchCtrl(tkControl):
@@ -244,7 +245,7 @@ class SlideSwitchCtrl(tkControl):
             # Redraw to reflect new position/state
             self._redraw_all()
 
-    def _on_release(self, event: tk.Event) -> None:
+    def _on_release(self, _: tk.Event) -> None:
         """Handle mouse release event on the switch.
 
         Determines the final state based on whether the interaction was a click
@@ -359,88 +360,3 @@ class SlideSwitchCtrl(tkControl):
         if self._callback:
             self._callback(state)
         _ = self._master.process_message(self._idself, event="Changed", val=state)
-
-
-if __name__ == "__main__":
-    class tkBasic(Container):
-        """Demonstration application for the SlideSwitch widget.
-
-        Creates a simple Tkinter window with the SlideSwitch widget,
-        status display, and test button to verify functionality.
-
-        """
-        def __init__(self, title: str, w: int, h: int):
-            super().__init__(title, w, h)
-            self._root: tk.Tk = tk.Tk()
-            self._root.title(title)
-            self._root.geometry(f"{w}x{h}")
-            _ = self._root.configure(bg="#F5F5F7")  # iOS system background color
-
-            # create ui
-
-            # Title label
-            title_label: tk.Label = tk.Label(
-                self._root,
-                text=title,
-                bg="#F5F5F7",
-                font=("SF Pro Text", 18, "bold")
-            )
-            title_label.pack(pady=30)
-
-            # Create SlideSwitch widget
-            self._switch: SlideSwitchCtrl = SlideSwitchCtrl(
-                self._root,
-                self,
-                "",
-                width=80,
-                height=40,
-                default_state=False,
-                slider_color="white",
-                slider_shadow="#CCCCCC",
-                callback=self.on_switch_change
-            )
-            self._switch.control.pack(pady=20)
-
-            # Status color block (visual state indicator)
-            self._status_block: tk.Label = tk.Label(
-                self._root,
-                text="",
-                bg="#E5E5E5",
-                width=10,
-                height=2,
-                bd=0,
-                relief="flat"
-            )
-            self._status_block.pack(pady=10)
-
-            # Status text label
-            self._status_label: tk.Label = tk.Label(
-                self._root,
-                text="Current State: ❌ Off",
-                bg="#F5F5F7",
-                font=("SF Pro Text", 14)
-            )
-            self._status_label.pack(pady=10)
-
-        def on_switch_change(self, state: bool) -> None:
-            """Callback function to update status display on state change.
-
-            Args:
-                state: New state of the switch (True = on, False = off)
-
-            Returns:
-                None
-            """
-            _ = self._status_label.config(text=f"Current State: {'✅ On' if state else '❌ Off'}")
-            _ = self._status_block.config(bg="#007AFF" if state else "#E5E5E5")
-
-        def go(self):
-            # Start main event loop
-            self._root.mainloop()
-
-        @override
-        def destroy(self, **kwargs: object):
-            super().destroy(**kwargs)
-
-    gui = tkBasic("iOS Style Toggle Switch", 400, 350)
-    gui.go()

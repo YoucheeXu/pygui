@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
-from typing import Any, override
 import tkinter as tk
+from typing import Any, override
 
 from pygui_simple.winbasic import Control
 

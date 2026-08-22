@@ -1,15 +1,16 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 from __future__ import annotations
+
 import calendar
 import datetime
-from typing import override, cast
 import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import ttk
+from typing import cast, override
 
-from pygui_simple.winbasic import Container
 from pygui_simple.tkcontrol import tkControl
+from pygui_simple.winbasic import Container
 
 
 class CalendarCtrl(tkControl):
@@ -112,7 +113,7 @@ class CalendarCtrl(tkControl):
             AttributeError: If attempting to write to read-only 'year'/'month' attributes
         """
         if item in ('year', 'month'):
-            raise AttributeError("attribute '%s' is not writeable" % item)
+            raise AttributeError(f"attribute {item} is not writeable")
         elif item == 'selectbackground':
             self._canvas['background'] = value
         elif item == 'selectforeground':
@@ -566,51 +567,3 @@ class CalendarDialog(Container):
         dialog closing behavior defined in _exit().
         """
         pass
-
-
-if __name__ == "__main__":
-    class CalendarCtrl_test():
-        def __init__(self):
-
-            self.root: tk.Tk = tk.Tk()
-
-            # 设置tk窗口在屏幕中心显示
-            sw = self.root.winfo_screenwidth()    # 得到屏幕宽度
-            sh = self.root.winfo_screenheight()    # 得到屏幕高度
-            ww = 200    # 设置窗口 宽度
-            wh = 60    # 设置窗口 高度
-
-            x = (sw - ww) / 2
-            y = (sh - wh) / 2
-            self.root.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
-
-            self.Frame_row1: tk.Frame = tk.Frame(self.root)
-            self.Frame_row1.pack()
-
-            self.var_test: tk.StringVar = tk.StringVar()
-            self.Entry_test: tk.Entry = tk.Entry(self.Frame_row1, width=10,
-                textvariable=self.var_test, font="宋体, 12",
-                                         justify='center', )
-            self.Entry_test.grid(row=0, column=0, padx=5, pady=5)
-
-            self.Button_test: tk.Button = tk.Button(self.Frame_row1, width=2,
-                text='*', font="宋体, 12",
-                justify='center',
-                command=lambda: self.get_date(self.Entry_test.winfo_rootx(),
-                                    self.Entry_test.winfo_rooty() + 20))
-            self.Button_test.grid(row=0, column=1, padx=5, pady=5)
-
-            self.root.mainloop()
-
-        def get_date(self, x: int, y: int):    # x, y位Entry的坐标位置
-            # 接收弹窗的数据
-            res = self.ask_date(x, y)
-            if res is None:
-                return
-            self.var_test.set(res)
-
-        def ask_date(self, x: int, y: int):
-            calendar = CalendarDialog((x, y))
-            return calendar.get_datestr()
-
-    app = CalendarCtrl_test()

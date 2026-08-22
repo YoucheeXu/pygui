@@ -1,18 +1,17 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
-from dataclasses import dataclass, field
 import tkinter as tk
-from typing import cast, Any
-from typing import TypeAlias
 from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Any, cast
 
+import matplotlib.pyplot as plt
 from matplotlib import backend_bases
+from matplotlib.axes._axes import Axes
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.container import Container
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
-from matplotlib.container import Container
-from matplotlib.axes._axes import Axes
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from numpy.typing import ArrayLike
 
 from pygui_simple.tkcontrol import tkControl
@@ -31,7 +30,7 @@ class LineData:
     visible: bool = True
     line: Line2D | Container | None = None
 
-Event_Callback: TypeAlias = Callable[[backend_bases.Event], object]
+Event_Callback = Callable[[backend_bases.Event], object]
 
 class MatPlotCtrl(tkControl):
     def __init__(
@@ -265,48 +264,3 @@ class Plot:
             if len(labels) >= 1:
                 _ = ax.legend(loc="upper right")
         plt.show()
-
-
-if __name__ == "__main__":
-
-    import numpy as np
-
-    # np.seterr(divide="ignore", invalid="ignore")
-
-    root = tk.Tk()
-    root.title("MatPlot Example")
-    # 调整窗口大小并居中
-    screen_width, screen_height = root.maxsize()    # 获取屏幕最大长宽
-    w, h = 480, 240
-    x = int((screen_width-w)/2)
-    y = int((screen_height-h)/2)
-    root.geometry(f'{w}x{h}+{x}+{y}')   # 设置窗口大小，调整位置
-    # root.resizable(width=False, height=False)   # False表示不可以缩放，True表示可以缩放
-
-    # plot_example = Plot("Mesh Grid")
-    mat_plot_example = MatPlotCtrl(root, "Mesh Grid")
-    mat_plot_example.pack(
-        side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(10, 10), pady=(10, 10)
-    )
-
-    menubar = tk.Menu(root)
-
-    file_menu = tk.Menu(menubar, tearoff=False)
-    file_menu.add_command(label="...")
-    file_menu.add_separator()
-    file_menu.add_command(label="Exit", command=root.destroy)
-    menubar.add_cascade(label="File", menu=file_menu)
-
-    _= root.config(menu=menubar)
-
-    x = np.array(
-        [[0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3], [0, 1, 2, 3]]
-    )
-    mat_plot_example.xdata = x
-    y = np.array([[0, 0, 0, 0], [1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]])
-    line_dict = {"label": "haha", "marker": ".", "markersize": 10, "linestyle": "-."}
-    linedata = LineData(y, line_dict)
-    idx = mat_plot_example.add_line(linedata)
-    mat_plot_example.draw()
-
-    root.mainloop()

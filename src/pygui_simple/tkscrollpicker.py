@@ -1,33 +1,30 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 from __future__ import annotations
-import datetime
+
 import calendar
+import datetime
 import tkinter as tk
+from collections.abc import Callable
 from tkinter import ttk
-from typing import override, cast
-from typing import TypeAlias, Callable, Any
-from typing import Generic, TypeVar
+from typing import Any, TypeVar, cast, override
 
-from pygui_simple.winbasic import Container
 from pygui_simple.tkcontrol import tkControl
-
+from pygui_simple.winbasic import Container
 
 T = TypeVar("T", bound=int | str)
 
-OnSelect: TypeAlias = Callable[[T], None]
-
-class ScrollPicker(tk.Frame, Generic[T]):
+class ScrollPicker[T](tk.Frame):
     def __init__(self, parent: tk.Tk | tk.Frame,
             val_list: list[T],
             initial: T | None = None,
-            on_select: OnSelect[T] | None = None,
+            on_select: Callable[[T], None] | None = None,
             **kwargs: Any) -> None:
         super().__init__(parent, **kwargs)
         self._parent: tk.Tk | tk.Frame = parent
 
         self._val_list: list[T] = val_list
-        self._on_select: OnSelect[T] | None = on_select
+        self._on_select: Callable[[T], None] | None = on_select
         if initial:
             self._selected_data: T = initial
             try:
@@ -177,7 +174,7 @@ class ScrollPicker(tk.Frame, Generic[T]):
         self._update_previews()
 
 
-class ScrollPickerCtrl(tkControl, Generic[T]):
+class ScrollPickerCtrl[T](tkControl):
     def __init__(self, parent: tk.Misc, owner: Container, idself: str,
             width: int, height: int,
             val_list: list[T],
@@ -397,7 +394,7 @@ class TimeScrollPickerCtrl(tkControl):
             hour_list = list(range(0, 24, stp_hour))
             self._selected_hour = (self._selected_hour // stp_hour) * stp_hour
         else:
-            hour_list = list(range(0, 24))
+            hour_list = list(range(24))
         print(f"hour_list :{hour_list}")
         self._hour_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
             hour_list, self._selected_hour,
@@ -409,7 +406,7 @@ class TimeScrollPickerCtrl(tkControl):
             minute_list = list(range(0, 60, stp_minute))
             self._selected_minute = (self._selected_minute // stp_minute) * stp_minute
         else:
-            minute_list = list(range(0, 60))
+            minute_list = list(range(60))
         print(f"minute_list :{minute_list}")
         self._minute_scrollpicker: ScrollPicker[int] = ScrollPicker(self._frame,
             minute_list, self._selected_minute,
@@ -580,80 +577,3 @@ class TimeScrollPickerDialog(Container):
     @override
     def destroy(self, **kwargs: object):
         pass
-
-
-if __name__ == "__main__":
-    class ScrollPickerCtrl_test():
-        def __init__(self):
-
-            self._root: tk.Tk = tk.Tk()
-
-            # 设置tk窗口在屏幕中心显示
-            sw = self._root.winfo_screenwidth()    # 得到屏幕宽度
-            sh = self._root.winfo_screenheight()    # 得到屏幕高度
-            ww = 300    # 设置窗口 宽度
-            wh = 120    # 设置窗口 高度
-
-            x = (sw - ww) / 2
-            y = (sh - wh) / 2
-            self._root.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
-
-            self._frame: tk.Frame = tk.Frame(self._root)
-            self._frame.pack()
-
-            self._label_date: tk.Label = tk.Label(self._frame, width=10,
-                text="选择日期", font="宋体, 12", justify='center')
-            self._label_date.grid(row=0, column=0, padx=5, pady=5)
-
-            self._var_date: tk.StringVar = tk.StringVar()
-            self._entry_date: tk.Entry = tk.Entry(self._frame, width=10,
-                textvariable=self._var_date, font="宋体, 12",
-                                         justify='center', )
-            self._entry_date.grid(row=0, column=1, padx=5, pady=5)
-
-            self._button_seldate: tk.Button = tk.Button(self._frame, width=2,
-                text='*', font="宋体, 12",
-                justify='center',
-                command=lambda: self.get_date(self._entry_date.winfo_rootx(),
-                                    self._entry_date.winfo_rooty() + 20))
-            self._button_seldate.grid(row=0, column=2, padx=5, pady=5)
-
-            self._label_time: tk.Label = tk.Label(self._frame, width=10,
-                text="选择时间", font="宋体, 12", justify='center')
-            self._label_time.grid(row=1, column=0, padx=5, pady=5)
-
-            self._var_time: tk.StringVar = tk.StringVar()
-            self._entry_time: tk.Entry = tk.Entry(self._frame, width=10,
-                textvariable=self._var_time, font="宋体, 12",
-                                         justify='center', )
-            self._entry_time.grid(row=1, column=1, padx=5, pady=5)
-
-            self._button_seltime: tk.Button = tk.Button(self._frame, width=2,
-                text='*', font="宋体, 12",
-                justify='center',
-                command=lambda: self.get_time(self._entry_time.winfo_rootx(),
-                                    self._entry_time.winfo_rooty() + 20))
-            self._button_seltime.grid(row=1, column=2, padx=5, pady=5)
-
-            self._root.mainloop()
-
-        def get_date(self, x: int, y: int):    # x, y位Entry的坐标位置
-            # 接收弹窗的数据
-            res = self.ask_date(x, y)
-            self._var_date.set(res)
-
-        def ask_date(self, x: int, y: int):
-            scrollpicker = DateScrollPickerDialog((x, y))
-            return scrollpicker.get_datestr()
-
-        def get_time(self, x: int, y: int):    # x, y位Entry的坐标位置
-            # 接收弹窗的数据
-            res = self.ask_time(x, y)
-            self._var_time.set(res)
-
-        def ask_time(self, x: int, y: int):
-            scrollpicker = TimeScrollPickerDialog((x, y), title="wahaha")
-            return scrollpicker.get_timestr()
-
-
-    app = ScrollPickerCtrl_test()
