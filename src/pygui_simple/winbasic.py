@@ -23,9 +23,10 @@ class EventsHanlder(Protocol):
 
 class Widget:
     def __init__(self, idself: str, ctrl_cfg: et.Element | None = None, parent: Widget | None = None,
-            owner: WinBasic | None = None):
+            owner: WinBasic | None = None, level: int = 0):
         self._idself: str = idself
         self._control: object = None
+        self._level: int = level
 
     @property
     def control(self):
@@ -62,8 +63,8 @@ class WidgetRegistry:
         return list(cls._widgets.keys())
 
 class Control(Widget, metaclass=abc.ABCMeta):
-    def __init__(self, title: str, idself: str):
-        super().__init__(idself)
+    def __init__(self, title: str, idself: str, level: int):
+        super().__init__(idself, level=level)
         self._title: str = title
         self._backed: bool = True
 
@@ -103,6 +104,10 @@ class Control(Widget, metaclass=abc.ABCMeta):
 
     def enable(self):
         self.disable(False)
+
+    @abc.abstractmethod
+    def assemble(self, attr_dict: dict[str, str], prefix: str = ""):
+        pass
 
     @abc.abstractmethod
     def destroy(self):
@@ -276,12 +281,8 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         if idctrl in self._idctrl_dict:
             raise KeyError(f"{idctrl} already exists")
 
-        if tag == "Menu":
-            ctrl  = self.create_menu(ctrl_cfg)
-            return idctrl, ctrl
-
         if widget_cls := WidgetRegistry.get(tag):
-            ctrl = widget_cls(idctrl, ctrl_cfg, parent, owner)
+            ctrl = widget_cls(idctrl, ctrl_cfg, parent, owner, level)
         else:
             raise KeyError(f"{tag}: unknown Control")
 
@@ -289,9 +290,8 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
 
         return idctrl, ctrl
 
-    @abc.abstractmethod
     def assemble_control(self, ctrl: Widget, attr_dict: dict[str, str], prefix: str = ""):
-        pass
+        cast(Control, ctrl).assemble(attr_dict, prefix)
 
     def create_controls(self, parent: Widget, ctrl_cfg: et.Element,
             level: int = 0, owner: WinBasic | None = None) -> OrderedDict[str, Widget]:
@@ -325,10 +325,6 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
     def get_control(self, idctrl: str):
         return self._idctrl_dict[idctrl]
 
-    @abc.abstractmethod
-    def create_menu(self, menucfg: et.Element) -> Widget:
-        pass
-
     def get_customctrlcfg(self, idctrl: str):
         return self._customctrlcfg_dict[idctrl]
 
@@ -353,12 +349,12 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
 
 class Window(WinBasic, metaclass=abc.ABCMeta):
 
-    @abc.abstractmethod
-    def create_window(self):
-        pass
-
     @property
     def win(self) -> object:
+        pass
+
+    @abc.abstractmethod
+    def create_window(self):
         pass
 
     @abc.abstractmethod
@@ -392,10 +388,6 @@ class Dialog(WinBasic, metaclass=abc.ABCMeta):
 
     def _beforego(self, **kwargs: object):
         _ = super().process_message("beforego", **kwargs)
-
-    @override
-    def create_menu(self, menucfg: et.Element) -> Widget:
-        return self._app.create_menu(menucfg)
 
     @override
     def assemble_control(self, ctrl: Widget, attr_dict: dict[str, str], prefix: str = ""):

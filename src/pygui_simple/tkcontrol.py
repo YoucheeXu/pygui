@@ -1,15 +1,16 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
 import tkinter as tk
+from ast import literal_eval
 from idlelib.tooltip import Hovertip
-from typing import Any, override
+from typing import Any, cast, override
 
-from pygui_simple.winbasic import Control
+from pygui_simple.winbasic import Control, Widget
 
 
 class tkControl(Control):
-    def __init__(self, parent: tk.Misc, title: str, idself: str, tkctrl: tk.Widget, tooltip: str = ""):
-        super().__init__(title, idself)
+    def __init__(self, parent: tk.Misc, title: str, idself: str, tkctrl: tk.Widget, level: int, tooltip: str = ""):
+        super().__init__(title, idself, level)
         self._parent: tk.Misc = parent
         self._tkctrl: tk.Widget = tkctrl
         self.control = tkctrl  # pyright: ignore[reportUnannotatedClassAttribute]
@@ -19,10 +20,6 @@ class tkControl(Control):
 
         if tooltip:
             _ = Hovertip(tkctrl, tooltip, hover_delay=500)
-
-    # @property
-    # def control(self):
-    #     return self._tkctrl
 
     @property
     def visible(self):
@@ -112,6 +109,30 @@ class tkControl(Control):
             case _:
                 raise ValueError(f"unkown layout: {self._assemble_type}")
         # self._hidden = is_hide
+
+    @override
+    def assemble(self, attr_dict: dict[str, str], prefix: str = ""):
+        widget = cast(tk.Widget, self.control)
+
+        if "layout" in attr_dict:
+            if attr_dict["layout"] == "pack":
+                widget.pack(**(literal_eval(attr_dict["pack"])))
+            elif attr_dict["layout"] == "grid":
+                widget.grid(**(literal_eval(attr_dict["grid"])))
+            elif attr_dict["layout"] == "place":
+                widget.place(**(literal_eval(attr_dict["place"])))
+            else:
+                # self.debug_print(f"{prefix}, unknown layout of {attr_dict['layout']}")
+                return
+        else:
+            # self._debug_print(f"{attr_dict['text']}: no assemble")
+            return
+
+        if "childOpt" in attr_dict:
+            for child in widget.winfo_children():
+                cast(tk.Widget, child).grid_configure(**(literal_eval(attr_dict["childOpt"])))
+
+        # self.debug_print(f"{prefix}, layout: {attr_dict['layout']}")
 
     @override
     def destroy(self):
