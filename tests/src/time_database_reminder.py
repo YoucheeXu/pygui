@@ -7,7 +7,7 @@ from typing import TypedDict, TypeGuard, cast
 from src.time_database_type import DayType, ReminderDataDict, TimeUnit
 
 # Type alias for reminder collection (business layer)
-ReminderCollection = type[dict[int, ReminderDataDict]]
+ReminderCollection = dict[int, ReminderDataDict]
 
 # -------------------------- JSON Layer TypedDicts --------------------------
 class ReminderJsonDict(TypedDict):
@@ -77,10 +77,7 @@ def _is_valid_reminder_data_dict(obj: object) -> TypeGuard[ReminderDataDict]:
         return False
 
     # Validate numeric field constraints
-    if obj["duration"] < 0 or obj["every"] < 0:
-        return False
-
-    return True
+    return not (obj["duration"] < 0 or obj["every"] < 0)
 
 def _is_valid_reminder_collection(obj: object) -> TypeGuard[ReminderCollection]:
     """Validate if an object is a valid ReminderCollection (dict[int, ReminderDataDict]).

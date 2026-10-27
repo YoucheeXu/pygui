@@ -127,7 +127,7 @@ class Todo(TypedDict):
 
 class RepeatCycleDlg(DialogCtrl):
     def __init__(self, app: WinBasic, dlg_cfg: et.Element):
-        super().__init__(app, dlg_cfg)
+        super().__init__("", dlg_cfg, app, app)
 
         # Weekday list
         self.weekdays: list[str] = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
@@ -190,7 +190,7 @@ class RepeatCycleDlg(DialogCtrl):
         """ Create multi-select weekday toggle card"""
         # weekday_card = ttk.Frame(parent.control, style="Card.TFrame", padding=(16, 12, 16, 12))
         # weekday_card.pack(fill=tk.X, padx=16, pady=8)
-        weekday_card = parent.control
+        weekday_card = cast(tk.Widget, parent.control)
         # _ = weekday_card.grid_columnconfigure(0, weight=1)
 
         for i, day in enumerate(self.weekdays):
@@ -231,7 +231,7 @@ class RepeatCycleDlg(DialogCtrl):
 
     def _create_date_selection_card(self, parent: FrameCtrl):
         """ Create multi-select date selection card with grid view"""
-        date_card = ttk.Frame(parent.control, style="Card.TFrame", padding=(16, 12, 16, 12))
+        date_card = ttk.Frame(cast(tk.Widget, parent.control), style="Card.TFrame", padding=(16, 12, 16, 12))
         date_card.pack(fill=tk.X, padx=16, pady=8)
         # date_card = parent.control
 
@@ -304,9 +304,9 @@ class RepeatCycleDlg(DialogCtrl):
 
     @override
     def _beforego(self, **kwargs: object):
-        spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryRepeatCycle"))
+        spr_ctrl = cast(ScrollPickerCtrl, self.get_control("sprEveryRepeatCycle"))
         spr_ctrl.hide()
-        spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqRepeatCycle"))
+        spr_ctrl = cast(ScrollPickerCtrl, self.get_control("sprFrqRepeatCycle"))
         spr_ctrl.hide()
 
         # Configure custom styles
@@ -345,7 +345,7 @@ class RepeatCycleDlg(DialogCtrl):
 
                         lbl_info.set_text(f"Every {val} {frq}")
                 case "lblSelFrqRepeatCycle":
-                    spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqRepeatCycle"))
+                    spr_ctrl = cast(ScrollPickerCtrl, self.get_control("sprFrqRepeatCycle"))
                     spr_ctrl.hide(spr_ctrl.visible)
                 case "sprFrqRepeatCycle":
                     val = cast(str, kwargs["val"])
@@ -402,7 +402,7 @@ class EditTodoDialog(DialogCtrl):
         """
         self._todo: Todo | None = None
         self._todo_old: Todo | None = None
-        super().__init__(app, dlg_cfg)
+        super().__init__("", dlg_cfg, app, app)
 
     @override
     def _beforego(self, **kwargs: object):
@@ -411,9 +411,9 @@ class EditTodoDialog(DialogCtrl):
 
         tododata = self._todo["data"]
         entry_name = cast(EntryCtrl, self._app.get_control("txtNameEditTodo"))
-        entry_name.set_val(tododata["name"])
+        entry_name.set_text(tododata["name"])
         entry_note = cast(EntryCtrl, self._app.get_control("txtNoteEditTodo"))
-        entry_note.set_val(tododata["note"])
+        entry_note.set_text(tododata["note"])
 
         if tododata["reminder_id"] > 0:
             reminder_info = tododata["reminder_infos"][self._todo["reminder_idx"]]
@@ -446,9 +446,9 @@ class EditTodoDialog(DialogCtrl):
 
         tododata = self._todo["data"]
         entry_name = cast(EntryCtrl, self._app.get_control("txtNameEditTodo"))
-        tododata["name"] = entry_name.get_val()
+        tododata["name"] = entry_name.get_text()
         entry_note = cast(EntryCtrl, self._app.get_control("txtNoteEditTodo"))
-        tododata["note"] = entry_note.get_val()
+        tododata["note"] = entry_note.get_text()
 
         # date: datetime.date | None = None
         # lbl_date = cast(LabelCtrl, self.get_control("lblSelDateEditTodo"))
@@ -876,8 +876,7 @@ class TodoItem:
                 return
 
             new_x: float = current_x + (step + 1) * step_x
-            if new_x > 0:
-                new_x = 0
+            new_x = min(new_x, 0)
 
             self._content_frame.place(x=new_x, y=0, width=400)
 
@@ -907,10 +906,10 @@ class TodoItem:
 
     def _switch_to_edit_mode(self) -> None:
         # Cancel other edits
-        if self._editing_todo_id and self._editing_todo_id != self._todo["iid"]:
+        if self._editing_todo_id and self._editing_todo_id != self._todo["tid"]:
             self.cancel_edit()
 
-        if self._editing_todo_id == self._todo["iid"]:
+        if self._editing_todo_id == self._todo["tid"]:
             return
 
         # Clear text container
@@ -929,7 +928,7 @@ class TodoItem:
             highlightthickness=1, highlightcolor=COLORS["accent"], width=new_width
         )
         self._edit_entry.pack(side="left", fill="x", expand=False, padx=5, pady=10)
-        self._edit_entry.insert(0, self._todo["name"])
+        self._edit_entry.insert(0, self._todo["data"]["name"])
         self._edit_entry.select_range(0, tk.END)
         self._edit_entry.focus_force()
         self._current_edit_entry = self._edit_entry
@@ -948,7 +947,7 @@ class TodoItem:
             new_text = "Unnamed todo"
 
         # Update data
-        self._todo["name"] = new_text
+        self._todo["data"]["name"] = new_text
         # self._app.save_todos()
 
         # Exit edit mode
@@ -1155,6 +1154,7 @@ class BaseTodoPage(Container, metaclass=abc.ABCMeta):
         self.content_frame.grid(row=2, column=0, sticky="nsew", padx=2, pady=2)
 
         self._name: str = name
+        self._alive: bool = False
 
         self._todos_data: TodosDict = {}
 
@@ -1298,7 +1298,8 @@ class TodayTodoPage(BaseTodoPage):
 
     def get_stats_text(self) -> str:
         total = len(self._todos_data)
-        completed = sum(1 for todo in self._todos_data if todo["status"] == StatusEnum.COMPLETED)
+        completed = sum(1 for todo in self._todos_data.values() if todo["status"] == StatusEnum.COMPLETED)
+
         return f"Completed {completed} / Total {total}"
 
     def setup_todo_list(self) -> None:

@@ -1,14 +1,15 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
 import tkinter as tk
+import xml.etree.ElementTree as et
 from collections.abc import Callable
-from typing import cast
+from typing import Any, cast
 
 from pygui_simple.tkcontrol import tkControl
-from pygui_simple.winbasic import Container
+from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
 
 
-class SlideSwitchCtrl(tkControl):
+class tkSlideSwitchCtrl(tkControl):
     """iOS-style toggle switch widget implemented with Tkinter Canvas.
 
     This widget replicates the behavior and appearance of the native iOS toggle switch,
@@ -24,7 +25,6 @@ class SlideSwitchCtrl(tkControl):
         - Callback function triggered on state change
 
     """
-
     def __init__(
         self,
         parent: tk.Misc,
@@ -360,3 +360,23 @@ class SlideSwitchCtrl(tkControl):
         if self._callback:
             self._callback(state)
         _ = self._master.process_message(self._idself, event="Changed", val=state)
+
+@WidgetRegistry.register("SlideSwitch")
+class SlideSwitchCtrl(tkSlideSwitchCtrl):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
+            owner: WinBasic):
+        attr_dict = ctrl_cfg.attrib
+        master = cast(tk.Misc, parent.control)
+        options: dict[str, Any] = {}
+        if "options" in attr_dict:
+            options = eval(attr_dict["options"])
+        # width = cast(int, options.get("width", 80))
+        # height = cast(int, options.get("height", 40))
+        # default_state = cast(bool, options.get("default_state", False))
+        # on_color = cast(str, options.get("on_color", "#007AFF"))
+        # off_color = cast(str, options.get("off_color", "#E5E5E5"))
+        # slider_color = cast(str, options.get("slider_color", "white"))
+        # slider_shadow = cast(str, options.get("slider_shadow", "#CCCCCC"))
+        # callback = None # callback: Callable[[bool], None] | None = None
+
+        super().__init__(master, owner, idself, **options)

@@ -6,14 +6,15 @@ import calendar
 import datetime
 import tkinter as tk
 import tkinter.font as tkFont
+import xml.etree.ElementTree as et
 from tkinter import ttk
-from typing import cast, override
+from typing import Any, cast, override
 
 from pygui_simple.tkcontrol import tkControl
-from pygui_simple.winbasic import Container
+from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
 
 
-class CalendarCtrl(tkControl):
+class tkCalendarCtrl(tkControl):
     """ A tkinter-based interactive calendar control for date selection.
 
     This widget implements a monthly calendar UI with date picking, month/year navigation,
@@ -419,10 +420,7 @@ class CalendarCtrl(tkControl):
         Returns:
             bool: True if input is valid, False otherwise
         """
-        if content.isdigit() or content == "":
-            return True
-        else:
-            return False
+        return (content.isdigit() or content == "")
 
     def cancel_select(self):
         """ Clear the current date selection and hide the highlight."""
@@ -463,8 +461,8 @@ class CalendarDialog(Container):
         frame = ttk.Frame(self._top)
 
         # Embed calendar control and set layout
-        self._calendar_ctrl: CalendarCtrl = CalendarCtrl(frame, self, "")
-        self._calendar_ctrl.control.pack(expand = 1, fill = 'both')
+        self._calendar_ctrl: tkCalendarCtrl = tkCalendarCtrl(frame, self, "")
+        cast(tk.Widget, self._calendar_ctrl.control).pack(expand = 1, fill = 'both')
 
         # Bottom action bar with confirm/cancel buttons
         bottom_frame = ttk.Frame(frame)
@@ -567,3 +565,16 @@ class CalendarDialog(Container):
         dialog closing behavior defined in _exit().
         """
         pass
+
+
+@WidgetRegistry.register("Calendar")
+class CalendarCtrl(tkCalendarCtrl):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
+            owner: WinBasic):
+        attr_dict = ctrl_cfg.attrib
+        master = cast(tk.Misc, parent.control)
+        options: dict[str, Any] = {}
+        if "options" in attr_dict:
+            options = eval(attr_dict["options"])
+
+        super().__init__(master, owner, idself, **options)

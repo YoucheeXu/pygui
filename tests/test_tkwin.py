@@ -9,17 +9,20 @@ from __future__ import annotations
 import os
 import sys
 import tkinter as tk
-from tkinter import scrolledtext
 from typing import cast, override
 
 from pygui_simple.tkcontrol import tkControl
 from pygui_simple.tkwin import (
     ButtonCtrl,
-    CheckButtonCtrl,
+    CheckbuttonCtrl,
     EntryCtrl,
+    FrameCtrl,
     LabelFrameCtrl,
     ListboxCtrl,
     ScrollableFrameCtrl,
+    ScrolledTextCtrl,
+    SpinboxCtrl,
+    StatusBarCtrl,
     tkWin,
 )
 from pygui_simple.winbasic import Container
@@ -40,9 +43,16 @@ class ExampleApp(Container):
         self._gui.filter_message(self._process_message)
         self._gui.set_title("Hello tkinter")
 
+        self._statusbar: StatusBarCtrl = cast(StatusBarCtrl, self._gui.get_control("Statusbar"))
+        self._statusbar.set_label("hello", "I'm a status bar")
+
+        mainframe: FrameCtrl = cast(FrameCtrl, self._gui.get_control("frnMain"))
+        _ = cast(tk.Frame, mainframe.control).grid_rowconfigure(1, weight=1)
+        # _ = cast(tk.Frame, mainframe.control).grid_columnconfigure(0, weight=1)
+
     def _create_label(self, parent: tkControl, lid: str, rowid: int, txt: str):
         lbl_xml = self._gui.create_xml("Label", {"text": txt, "id": lid})
-        _, lbl_ctrl = self._gui.create_control(parent, lbl_xml, 0, self)
+        _, lbl_ctrl = self._gui.create_control(parent, lbl_xml, 0, self._gui)
         self._gui.assemble_control(lbl_ctrl, {"layout":"grid",
             "grid":f"{{'row':{rowid},'column':0,'sticky':'w'}}"})
 
@@ -66,7 +76,7 @@ class ExampleApp(Container):
                 idx = cast(int, kwargs["val"])
                 monty2.configure(text=values[idx])
             case "varChkEna":
-                check_btn = cast(CheckButtonCtrl, self._gui.get_control("遵从内心"))
+                check_btn = cast(CheckbuttonCtrl, self._gui.get_control("遵从内心"))
                 if cast(int, kwargs["val"]) == 1:
                     check_btn.disable()
                 else:
@@ -82,18 +92,17 @@ class ExampleApp(Container):
                 btn = cast(ButtonCtrl, self._gui.get_control("点击之后_按钮失效"))
                 name = cast(EntryCtrl, self._gui.get_control("name"))
                 btn.configure(text='Hello\n ' + name.get_text())
-                # self.disable_control(btn)
                 btn.disable()
             case "blankSpin":
-                spin = cast(tk.Spinbox, self._gui.get_control("blankSpin"))
+                spin = cast(SpinboxCtrl, self._gui.get_control("blankSpin"))
                 value = spin.get()
-                scr = cast(scrolledtext.ScrolledText, self._gui.get_control("scrolledtext"))
-                scr.insert(tk.INSERT, value + '\n')
+                scr = cast(ScrolledTextCtrl, self._gui.get_control("scrolledtext"))
+                scr.insert("insert", value + '\n')
             case "bookSpin":
-                spin = cast(tk.Spinbox, self._gui.get_control("bookSpin"))
+                spin = cast(SpinboxCtrl, self._gui.get_control("bookSpin"))
                 value = spin.get()
-                scr = cast(scrolledtext.ScrolledText, self._gui.get_control("scrolledtext"))
-                scr.insert(tk.INSERT, value + '\n')
+                scr = cast(ScrolledTextCtrl, self._gui.get_control("scrolledtext"))
+                scr.insert("insert", value + '\n')
             case "btnHaa":
                 ctrl = cast(ListboxCtrl, self._gui.get_control("lstHaa"))
                 self._i += 1
@@ -141,7 +150,6 @@ class ExampleApp(Container):
             case "About":
                 pass
             case _:
-                # print(f"unkonwn message: {idmsg}")
                 return super().process_message(idmsg, **kwargs)
         return True
 
@@ -154,12 +162,13 @@ class ExampleApp(Container):
 
 
 def test_gui():
-
-    filepath = os.path.dirname(os.path.abspath(__file__))
-    if getattr(sys, "frozen", False):
-        filepath = os.path.dirname(os.path.abspath(sys.executable))
-    winsample_xml = os.path.join(filepath, "resources", "windowSample.xml")
-    eapp = ExampleApp(filepath, winsample_xml)
+    if getattr(sys, 'frozen', False):
+        file_path = os.path.dirname(os.path.abspath(sys.executable))
+    else:
+        file_path = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(file_path, "public")
+    winsample_xml = os.path.join(file_path, "resources", "windowSample.xml")
+    eapp = ExampleApp(file_path, winsample_xml)
     eapp.go()
 
 if __name__ == "__main__":

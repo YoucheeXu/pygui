@@ -4,13 +4,9 @@ from __future__ import annotations
 
 import abc
 import xml.etree.ElementTree as et
-
-# from typing import TypeAlias
-# from collections.abc import Callable, Mapping
 from collections import OrderedDict
-from typing import Literal, Protocol, cast, override
+from typing import Literal, Protocol, TypeVar, cast, override
 
-# from src.pygui_simple.logit import pv, pe, po
 
 # EventHanlder: TypeAlias = Callable[[tuple[Any, ...], dict[str, Any]], Any]
 # EventHanlder: TypeAlias = Callable[[dict[str, Any]], Any]
@@ -26,19 +22,49 @@ class EventsHanlder(Protocol):
 
 
 class Widget:
+    def __init__(self, idself: str, ctrl_cfg: et.Element | None = None, parent: Widget | None = None,
+            owner: WinBasic | None = None):
+        self._idself: str = idself
+        self._control: object = None
+
+    @property
+    def control(self):
+        return self._control
+
+    @control.setter
+    def control(self, ctrl: object):
+        self._control = ctrl
+
+W = TypeVar("W", bound=Widget)
+
+class WidgetRegistry:
+    _widgets: dict[str, type[Widget]] = {}
+
     def __init__(self):
         pass
 
-    # @abc.abstractmethod
-    # def process_message(self, idmsg: str, **kwargs: object) -> object:
-        # pass
+    @classmethod
+    def register(cls, tag: str):
+        """装饰器用法：@WidgetRegistry.register('MyTag')"""
+        def deco(widget_cls: type[W]):
+            cls._widgets[tag] = widget_cls
+            return widget_cls
+        return deco
 
+    @classmethod
+    def get(cls, tag: str):
+        if tag not in cls._widgets:
+            return None
+        return cls._widgets[tag]
+
+    @classmethod
+    def known_tags(cls):
+        return list(cls._widgets.keys())
 
 class Control(Widget, metaclass=abc.ABCMeta):
     def __init__(self, title: str, idself: str):
-        super().__init__()
+        super().__init__(idself)
         self._title: str = title
-        self._idself: str = idself
         self._backed: bool = True
 
     @property
@@ -85,7 +111,7 @@ class Control(Widget, metaclass=abc.ABCMeta):
 
 class Container(Widget, metaclass=abc.ABCMeta):
     def __init__(self, owner: Container | None = None):
-        super().__init__()
+        super().__init__("")
         self._eventhandler_dict: dict[str, list[EventHanlder]] = {}
         self._msgs_hanlders: list[tuple[int, list[str], EventsHanlder]] = []
         self._owner: Container | None = owner
@@ -99,7 +125,7 @@ class Container(Widget, metaclass=abc.ABCMeta):
         return self._owner
 
     @owner.setter
-    def owner(self, val: "Container"):
+    def owner(self, val: Container):
         self._owner = val  
 
     def back(self, bset: bool = True):
@@ -175,25 +201,33 @@ class Container(Widget, metaclass=abc.ABCMeta):
     def destroy(self, **kwargs: object):
         pass
 
+_T_contra = TypeVar("_T_contra", contravariant=True)
+class SupportsWrite(Protocol[_T_contra]):
+    def write(self, s: _T_contra, /) -> object: ...
 
 class WinBasic(Container, metaclass=abc.ABCMeta):
-    def __init__(self, xmlfile: str):
-        element_tree = et.parse(xmlfile)
-        self._wincfg: et.Element[str] = element_tree.getroot()
-        win_attr = self._wincfg.attrib
-        if "Width" in win_attr:
-            w, h = int(win_attr["Width"]), int(win_attr["Height"])
-        else:
-            w, h = 0, 0
+    def __init__(self, app_path: str = "", xmlfile: str = ""):
+        title = ""
+        w, h = 0, 0
+        if xmlfile:
+            element_tree = et.parse(xmlfile)
+            self._wincfg: et.Element[str] = element_tree.getroot()
+            win_attr = self._wincfg.attrib
+            title = win_attr["Title"]
+            if "Width" in win_attr:
+                w, h = int(win_attr["Width"]), int(win_attr["Height"])
         super().__init__()
 
-        self._customctrl_dict: dict[str, et.Element] = {}
+        self._app_path: str = app_path
+        self._is_debug: bool = False
+
+        self._customctrlcfg_dict: dict[str, et.Element] = {}
 
         self._xx: int = 0
         self._yy: int = 0
         self._ww: int = w
         self._hh: int = h
-        self._title: str = win_attr["Title"]
+        self._title: str = title
 
     @property
     def title(self):
@@ -204,20 +238,16 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         self._title = val
 
     @property
+    def path(self):
+        return self._app_path
+
+    @property
     def pos(self):
         return self._xx, self._yy
 
     @property
     def size(self):
         return self._ww, self._hh
-
-    @abc.abstractmethod
-    def create_window(self):
-        pass
-
-    @property
-    def win(self) -> object:
-        pass
 
     def create_xml(self, tag: str, attr_dict: dict[str, str], root: et.Element | None = None) -> et.Element:
         if root is not None:
@@ -227,23 +257,50 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         item_xml.attrib = attr_dict.copy()
         return item_xml
 
-    @abc.abstractmethod
     def create_control(self, parent: Widget, ctrl_cfg: et.Element,
-            level: int = 0, owner: Container | None = None) -> tuple[str, Widget]:
-        pass
+            level: int = 0, owner: WinBasic | None = None) -> tuple[str, Widget]:
+        if owner is None:
+            owner = self
+        tag = ctrl_cfg.tag
+        attr_dict = ctrl_cfg.attrib
+        text: str | None = attr_dict.get("text")
+        idctrl: str = ""
+        if "id" in attr_dict:
+            idctrl = attr_dict["id"]
+        elif text is not None:
+            idctrl = text.replace(" ", "").replace(".", "_").replace("\n", "_")
+        else:
+            raise RuntimeError("No id")
+        self.debug_print(f"{'  '*level}{tag}, id: {idctrl}, text: {text}", end="")
+
+        if idctrl in self._idctrl_dict:
+            raise KeyError(f"{idctrl} already exists")
+
+        if tag == "Menu":
+            ctrl  = self.create_menu(ctrl_cfg)
+            return idctrl, ctrl
+
+        if widget_cls := WidgetRegistry.get(tag):
+            ctrl = widget_cls(idctrl, ctrl_cfg, parent, owner)
+        else:
+            raise KeyError(f"{tag}: unknown Control")
+
+        self._idctrl_dict[idctrl] = ctrl
+
+        return idctrl, ctrl
 
     @abc.abstractmethod
     def assemble_control(self, ctrl: Widget, attr_dict: dict[str, str], prefix: str = ""):
         pass
 
     def create_controls(self, parent: Widget, ctrl_cfg: et.Element,
-            level: int = 0, owner: Container | None = None) -> OrderedDict[str, Widget]:
+            level: int = 0, owner: WinBasic | None = None) -> OrderedDict[str, Widget]:
         idctrl_dict: OrderedDict[str, Widget] = OrderedDict()
         tag = ctrl_cfg.tag
         if tag == "CustomDialog":
             attr_dict = ctrl_cfg.attrib
             idctrl = attr_dict["id"]
-            self._customctrl_dict[idctrl] = ctrl_cfg
+            self._customctrlcfg_dict[idctrl] = ctrl_cfg
             return idctrl_dict
         idctrl, ctrl = self.create_control(parent, ctrl_cfg, level, owner)
         idctrl_dict[idctrl] = ctrl
@@ -258,33 +315,22 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         return idctrl_dict
 
     def delete_control(self, idctrl: str):
-        # if idctrl in self._idctrl_dict:
         ctrl = cast(Control, self._idctrl_dict[idctrl])
         try:
             ctrl.destroy()
         except AttributeError:
-            # po(f"Warnning: {idctrl} doesn't have destroy")
             print(f"WinBasic warnning: {idctrl} doesn't have destroy")            
-        del self._idctrl_dict[idctrl]
+        # del self._idctrl_dict[idctrl]
 
     def get_control(self, idctrl: str):
         return self._idctrl_dict[idctrl]
 
+    @abc.abstractmethod
+    def create_menu(self, menucfg: et.Element) -> Widget:
+        pass
+
     def get_customctrlcfg(self, idctrl: str):
-        return self._customctrl_dict[idctrl]
-
-    # def register_customctrl(self, idctrl: str, ctrl: Widget):
-        # if idctrl in self._idctrl_dict:
-            # raise KeyError(f"duplicate key: {idctrl} in idctrl dict")
-        # self._idctrl_dict[idctrl] = ctrl
-
-    @abc.abstractmethod
-    def show_err(self, title: str = "", message: str = ""):
-        pass
-
-    @abc.abstractmethod
-    def go(self):
-        pass
+        return self._customctrlcfg_dict[idctrl]
 
     @override
     def destroy(self, **kwargs: object):
@@ -297,8 +343,34 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
 
         super().destroy(**kwargs)
 
+    def debug_print(self, *values: object,
+        sep: str | None = " ",
+        end: str | None = "\n",
+        file: SupportsWrite[str] | None = None,
+        flush: Literal[False] = False):
+        if self._is_debug:
+            print(*values, sep, end, file, flush)
 
-class Dialog(Container, metaclass=abc.ABCMeta):
+class Window(WinBasic, metaclass=abc.ABCMeta):
+
+    @abc.abstractmethod
+    def create_window(self):
+        pass
+
+    @property
+    def win(self) -> object:
+        pass
+
+    @abc.abstractmethod
+    def show_err(self, title: str = "", message: str = ""):
+        pass
+
+    @abc.abstractmethod
+    def go(self):
+        pass
+
+
+class Dialog(WinBasic, metaclass=abc.ABCMeta):
     def __init__(self, title: str, width: int, height: int, app: WinBasic):
         super().__init__()
         self._app: WinBasic = app
@@ -310,20 +382,9 @@ class Dialog(Container, metaclass=abc.ABCMeta):
         self._title: str = title
 
     @property
-    def title(self):
-        return self._title
-
-    @title.setter
-    def title(self, val: str):
-        self._title = val
-
-    @property
-    def pos(self):
-        return self._xx, self._yy
-
-    @property
-    def size(self):
-        return self._ww, self._hh
+    @override
+    def path(self):
+        return self._app.path
 
     @property
     def backed(self):
@@ -332,30 +393,13 @@ class Dialog(Container, metaclass=abc.ABCMeta):
     def _beforego(self, **kwargs: object):
         _ = super().process_message("beforego", **kwargs)
 
-    def create_xml(self, tag: str, attr_dict: dict[str, str], root: et.Element | None = None) -> et.Element:
-        return self._app.create_xml(tag, attr_dict, root)
+    @override
+    def create_menu(self, menucfg: et.Element) -> Widget:
+        return self._app.create_menu(menucfg)
 
-    def create_controls(self, parent: Widget, ctrl_cfg: et.Element,
-            level: int = 0) -> OrderedDict[str, Widget]:
-        subidctrl_dict = self._app.create_controls(parent,ctrl_cfg, level, self)
-        self._idctrl_dict.update(subidctrl_dict)
-        return subidctrl_dict
-
-    def create_control(self, parent: Widget, ctrl_cfg: et.Element,
-            level: int = 0) -> tuple[str, Widget]:
-        id_ctrl, ctrl = self._app.create_control(parent, ctrl_cfg, level, self)
-        self._idctrl_dict[id_ctrl] = ctrl
-        return id_ctrl, ctrl
-
+    @override
     def assemble_control(self, ctrl: Widget, attr_dict: dict[str, str], prefix: str = ""):
         return self._app.assemble_control(ctrl, attr_dict, prefix)
-
-    def get_control(self, idctrl: str) -> object:
-        return self._app.get_control(idctrl)
-
-    def delete_control(self, idctrl: str):
-        self._app.delete_control(idctrl)
-        del self._idctrl_dict[idctrl]
 
     def _confirm(self, **kwargs: object) -> tuple[bool, str]:
         return cast(tuple[bool, str], super().process_message("confirm", **kwargs))
@@ -373,7 +417,5 @@ class Dialog(Container, metaclass=abc.ABCMeta):
             case "cancel":
                 return self._cancel(**kwargs)
             case _:
-                # if self._owner is not None:
-                #     return self._owner.process_message(idmsg, **kwargs)
                 return super().process_message(idmsg, **kwargs)
         return True

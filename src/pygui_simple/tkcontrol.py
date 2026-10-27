@@ -1,23 +1,28 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
 import tkinter as tk
+from idlelib.tooltip import Hovertip
 from typing import Any, override
 
 from pygui_simple.winbasic import Control
 
 
 class tkControl(Control):
-    def __init__(self, parent: tk.Misc, title: str, idself: str, tkctrl: tk.Widget):
+    def __init__(self, parent: tk.Misc, title: str, idself: str, tkctrl: tk.Widget, tooltip: str = ""):
         super().__init__(title, idself)
         self._parent: tk.Misc = parent
         self._tkctrl: tk.Widget = tkctrl
+        self.control = tkctrl  # pyright: ignore[reportUnannotatedClassAttribute]
         self._assemble_type: str = ""
         self._layout_info: tk._PackInfo | tk._PlaceInfo | None = None
         # self._hidden: bool = True
 
-    @property
-    def control(self):
-        return self._tkctrl
+        if tooltip:
+            _ = Hovertip(tkctrl, tooltip, hover_delay=500)
+
+    # @property
+    # def control(self):
+    #     return self._tkctrl
 
     @property
     def visible(self):
@@ -89,8 +94,8 @@ class tkControl(Control):
                         # print(f"{self._idself}.hide.pack: {e}")
                         pass
                 else:
-                    # if self._hidden:
                     assert self._layout_info is not None
+                    # assert  isinstance(self._layout_info, tk._PackInfo)
                     self._tkctrl.pack(**self._layout_info)
             case "place":
                 if is_hide:
@@ -102,6 +107,7 @@ class tkControl(Control):
                         pass
                 else:
                     assert self._layout_info is not None
+                    # assert isinstance(self._layout_info, tk._PlaceInfo)
                     self._tkctrl.place(**self._layout_info)
             case _:
                 raise ValueError(f"unkown layout: {self._assemble_type}")

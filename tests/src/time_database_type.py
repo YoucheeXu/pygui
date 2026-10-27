@@ -28,7 +28,8 @@ class DayType(IntEnum):
 DAYTYPE_NAMES = {dt.name for dt in DayType}
 
 T = TypeVar('T', bound=IntEnum)
-def str_to_intenum(enum_cls: type[T], name_str: str) -> T:
+# def str_to_intenum(enum_cls: type[T], name_str: str) -> T:
+def str_to_intenum[T: IntEnum](enum_cls: type[T], name_str: str) -> T:
     """
     Convert an exact-matching string to the corresponding IntEnum instance (name-based).
     Returns None if the string is not a valid IntEnum name (avoids KeyError).

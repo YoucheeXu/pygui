@@ -1,6 +1,8 @@
 # !/usr/bin/python3
 # -*- coding: UTF-8 -*-
 import tkinter as tk
+import xml.etree.ElementTree as et
+from ast import literal_eval
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, cast
@@ -15,6 +17,7 @@ from matplotlib.lines import Line2D
 from numpy.typing import ArrayLike
 
 from pygui_simple.tkcontrol import tkControl
+from pygui_simple.winbasic import Widget, WidgetRegistry, WinBasic
 
 font = {'family' : 'SimHei',
         'weight' : 'bold',
@@ -32,7 +35,7 @@ class LineData:
 
 Event_Callback = Callable[[backend_bases.Event], object]
 
-class MatPlotCtrl(tkControl):
+class tkMatPlotCtrl(tkControl):
     def __init__(
         self,
         parent: tk.Misc,
@@ -264,3 +267,23 @@ class Plot:
             if len(labels) >= 1:
                 _ = ax.legend(loc="upper right")
         plt.show()
+
+@WidgetRegistry.register("MatPlot")
+class MatPlotCtrl(tkMatPlotCtrl):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
+            owner: WinBasic):
+        attr_dict = ctrl_cfg.attrib
+        master = cast(tk.Misc, parent.control)
+        # options: dict[str, Any] = {}
+        # if "options" in attr_dict:
+        #     options = eval(attr_dict["options"])
+        text: str | None = attr_dict.get("text")
+        assert text is not None
+
+        if "size" in attr_dict:
+            size = cast(tuple[float, float], literal_eval(attr_dict["size"]))
+        else:
+            size = (640, 480)
+
+        super().__init__(master, idself, text, attr_dict["xLabel"],
+                attr_dict["yLabel"], size)

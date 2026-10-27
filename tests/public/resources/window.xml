@@ -1,0 +1,15 @@
+<Window Title="Image View and Annotate" Width="800" Height="600">
+	<Toolbar text="toolbar" layout="grid" grid="{'row':0, 'sticky':'ew'}">
+		<ImageButton id="btnOpnImg" tooltip="Open Image" image="resources\icons8-add-file-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
+		<ImageButton id="btnRnmImg" tooltip="Rename Image" image="resources\icons8-rename-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
+		<ImageButton id="btnNxtImg" tooltip="Next Image" image="resources\icons8-next-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
+		<ImageButton id="btnPrvImg" tooltip="Previous Image" image="resources\icons8-previous-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
+		<ImageButton id="btnRotClkwis" tooltip="Rotate Clockwise" image="resources\icons8-rotate-right-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
+		<ImageButton id="btnRotAticlkwis" tooltip="Rotate Anticlockwise" image="resources\icons8-rotate-left-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
+		<ImageButton id="btnDelImg" tooltip="Delete Image" image="resources\icons8-delete-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
+		<ImageButton id="btnRefresh" tooltip="Refresh" image="resources\icons8-refresh-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
+		<ImageButton id="Exit" tooltip="Exit Application" image="resources\icons8-close-window-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
+	</Toolbar>
+	<ImagePanel id="pnlImage" layout="grid" grid="{'row':1, 'sticky':'ewsn'}" options="{'bg':'white'}"/>
+	<StatusBar text="Statusbar" layout="grid" grid="{'row':2, 'sticky':'ew'}"/>
+</Window>
