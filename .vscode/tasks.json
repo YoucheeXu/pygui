@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run test_time_master.py (uv)",
+            "type": "shell",
+            "command": "uv run python test_time_master.py",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}/tests/"
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run test_tkwin.py (uv)",
+            "type": "shell",
+            "command": "uv run python test_tkwin.py",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}/tests/"
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        }
+    ]
+}
