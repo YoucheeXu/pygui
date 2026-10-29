@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import abc
+import os
 import xml.etree.ElementTree as et
 from collections import OrderedDict
 from typing import Literal, Protocol, TypeVar, cast, override
@@ -327,6 +328,14 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
 
     def get_control(self, idctrl: str):
         return self._idctrl_dict[idctrl]
+
+    def read_customctrlcfg(self, cfg: str):
+        cfgfile = os.path.join(self._app_path, cfg)
+        element_tree = et.parse(cfgfile)
+        ctrl_cfg: et.Element[str] = element_tree.getroot()
+        ctrl_attr = ctrl_cfg.attrib
+        idctrl = ctrl_attr["id"]
+        self._customctrlcfg_dict[idctrl] = ctrl_cfg
 
     def get_customctrlcfg(self, idctrl: str):
         return self._customctrlcfg_dict[idctrl]

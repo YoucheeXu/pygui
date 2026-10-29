@@ -1267,6 +1267,11 @@ class HourTab(Container):
         self._selschedule_dlg.register_eventhandler("beforego", self._selscheduledlg_beforego)
         self._selschedule_dlg.register_eventhandler("cancel", self._selscheduledlg_cancel)
 
+        self._gui.read_customctrlcfg("resources\\RecordHourDlg.xml")
+        self._gui.read_customctrlcfg("resources\\HourDetailDlg.xml")
+        self._gui.read_customctrlcfg("resources\\EditHourDlg.xml")
+        self._gui.read_customctrlcfg("resources\\EditTodoDlg.xml")
+
         self._schedulestr: str = ""
         self._old_schedulestr: str = ""
 

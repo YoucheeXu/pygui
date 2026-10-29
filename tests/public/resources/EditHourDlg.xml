@@ -1,0 +1,27 @@
+<CustomDialog id="dlgEditHour" text="编辑项目" Width="400" Height="600">
+	<Frame id="frmItemEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,1)'}">
+		<ImagePanel id="imgNameEditHour" image="resources/gift.png" options="{'width':20, 'height': 20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+		<Entry id="txtItemEditHour" text="你想要投入时间的事情" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1, 'sticky':'ewns'}"/>
+	</Frame>
+	<Frame id="frmFatherEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+		<ImagePanel id="imgFatherEditHour" image="resources/calendar.png" options="{'width':20, 'height': 20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+		<Label id="lblFatherEditHour" text="所属项目" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+		<Label id="lblSelFatherEditHour" text="选择所属项目" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+	</Frame>
+	<Frame id="frmClockEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+		<ImagePanel id="imgClockEditHour" image="resources/VaadinAlarm.png" options="{'width':20, 'height': 20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w','padx':0}"/>
+		<Label id="lblClockEditHour" text="定时提醒" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w','padx':0}"/>
+		<Label id="lblAddClockEditHour" text="点击添加" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+		<SlideSwitch id="slsClockEditHour" text="" options="{'width':40,'height':20}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+	</Frame>
+	<Frame id="frmScheduleEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'bg':'white','columnconfigure':'(0,0,1)'}">
+		<ImagePanel id="imgScheduleEditHour" image="resources/calendar_green.png" options="{'width':20,'height':20,'bg':'white'}" layout="grid" grid="{'row':0,'column':0,'sticky':'w'}"/>
+		<Label id="lblScheduleEditHour" text="时间投入计划" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':1,'sticky':'w'}"/>
+		<Label id="lblSelScheduleEditHour" text="选择时间投入计划" clickable="true" options="{'style':'BW.TLabel'}" layout="grid" grid="{'row':0,'column':2,'sticky':'e'}"/>
+	</Frame>
+	<Frame id="frmEditHour" layout="pack" pack="{'padx':12,'pady':4,'fill':'x','expand':1,'anchor':'w'}" options="{'background':'white'}">
+		<Label id="lblSelImgEditHour" text="选择图标" options="{'style':'BW.TLabel'}" layout="pack" pack="{'pady':4,'anchor':'w'}"/>
+		<PicsListview id="lstImageEditHour" num_column="6" pic_size="40" layout="pack" pack="{'pady':4}"/>
+	</Frame>
+	<Button id="btnDelItemEditHour" text="删除项目" options="{'width':40}" layout="pack" pack="{'padx':12,'pady':4}"/>
+</CustomDialog>
