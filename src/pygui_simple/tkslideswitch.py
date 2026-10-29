@@ -59,7 +59,8 @@ class tkSlideSwitchCtrl(tkControl):
             None
         """
         ctrl = tk.Canvas(parent, width=width, height=height, highlightthickness=0)
-        super().__init__(parent, "", idself, ctrl)
+        # TOOD: Actual level
+        super().__init__(parent, "", idself, ctrl, 1)
         self._master: Container = owner
 
         self._width: int = width
@@ -364,7 +365,7 @@ class tkSlideSwitchCtrl(tkControl):
 @WidgetRegistry.register("SlideSwitch")
 class SlideSwitchCtrl(tkSlideSwitchCtrl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic):
+            owner: WinBasic, level: int):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}

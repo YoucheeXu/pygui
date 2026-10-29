@@ -47,7 +47,8 @@ class tkCalendarCtrl(tkControl):
                 fwday: First day of the week (0 = Monday, default: 0)
         """
         ctrl = ttk.Frame(parent)
-        super().__init__(parent, "", idself, ctrl)
+        # TOOD: Actual level
+        super().__init__(parent, "", idself, ctrl, 1)
 
         self._master: tk.Misc = parent
         self._owner: Container = owner
@@ -570,7 +571,7 @@ class CalendarDialog(Container):
 @WidgetRegistry.register("Calendar")
 class CalendarCtrl(tkCalendarCtrl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic):
+            owner: WinBasic, level: int):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}

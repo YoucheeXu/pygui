@@ -187,7 +187,8 @@ class tkScrollPickerCtrl[T](tkControl):
         self._frame: tk.Frame = tk.Frame(self._master,
             background=background,
             width=width, height=height)
-        super().__init__(parent, "", idself, self._frame)
+        # TOOD: Actual level
+        super().__init__(parent, "", idself, self._frame, 1)
 
         self._scrollpicker: ScrollPicker[T] = ScrollPicker[T](self._frame, val_list,
             initial, self._on_val_change,
@@ -375,7 +376,8 @@ class tkTimeScrollPickerCtrl(tkControl):
         self._frame: tk.Frame = tk.Frame(self._master,
             background=background,
             width=width, height=height)
-        super().__init__(parent, "", idself, self._frame)
+        # TOOD: Actual level
+        super().__init__(parent, "", idself, self._frame, 1)
 
         # self.set_initial(initial)
         if not initial:
@@ -582,7 +584,7 @@ class TimeScrollPickerDialog(Container):
 @WidgetRegistry.register("ScrollPicker")
 class ScrollPickerCtrl(tkControl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic):
+            owner: WinBasic, level: int):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
@@ -601,12 +603,12 @@ class ScrollPickerCtrl(tkControl):
         ctrl = tkScrollPickerCtrl[typ](master, owner, idself,
             int(attr_dict["width"]), int(attr_dict["height"]), val_list, initial, bg)
 
-        super().__init__(master, "", idself, cast(tk.Widget, ctrl.control))
+        super().__init__(master, "", idself, cast(tk.Widget, ctrl.control), level)
 
 @WidgetRegistry.register("TimeScrollPicker")
 class TimeScrollPickerCtrl(tkTimeScrollPickerCtrl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic):
+            owner: WinBasic, level: int):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}

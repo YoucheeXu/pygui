@@ -1138,7 +1138,7 @@ class tkWM[T](Widget):
 @WidgetRegistry.register("Dialog")
 class DialogCtrl(Dialog):
     def __init__(self, idself: str, dlg_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+            owner: WinBasic, level: int = 1):
         app = owner
 
         attr_dict = dlg_cfg.attrib
