@@ -7,6 +7,8 @@ import xml.etree.ElementTree as et
 from collections import OrderedDict
 from typing import Literal, Protocol, TypeVar, cast, override
 
+from pyutilities_simple.logit import pv
+
 
 # EventHanlder: TypeAlias = Callable[[tuple[Any, ...], dict[str, Any]], Any]
 # EventHanlder: TypeAlias = Callable[[dict[str, Any]], Any]
@@ -291,7 +293,8 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         return idctrl, ctrl
 
     def assemble_control(self, ctrl: Widget, attr_dict: dict[str, str], prefix: str = ""):
-        cast(Control, ctrl).assemble(attr_dict, prefix)
+        if isinstance(ctrl, Control):
+            ctrl.assemble(attr_dict, prefix)
 
     def create_controls(self, parent: Widget, ctrl_cfg: et.Element,
             level: int = 0, owner: WinBasic | None = None) -> OrderedDict[str, Widget]:
