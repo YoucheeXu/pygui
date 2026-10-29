@@ -15,7 +15,7 @@ from matplotlib import backend_bases
 from matplotlib.colors import to_hex
 from matplotlib.container import BarContainer
 from matplotlib.patches import Rectangle
-from pyutilities_simple.logit import pe, po, pv
+from pyutilities_simple.logit import po, pv
 from src.action_sys import ActTyp
 from src.schedule import Schedule
 from src.time_database import TimeDatabase
@@ -907,7 +907,7 @@ class HourDetailDlg(DialogCtrl):
         # TODO: children?
         firstday = datetime.datetime.fromisoformat("2025-01-01T16:34:00")
         end_date = firstday.date()
-        today = datetime.datetime.today().date()
+        today = datetime.datetime.now().date()
         total_days = 0
         strt_date = today
         records = self._db.get_records(firstday, self._hid, today)

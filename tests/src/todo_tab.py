@@ -13,7 +13,7 @@ from functools import partial
 from tkinter import messagebox, ttk
 from typing import Literal, TypedDict, cast, override
 
-from pyutilities_simple.logit import pe, po, pv
+from pyutilities_simple.logit import po, pv
 from src.action_sys import ActTyp
 from src.schedule import Schedule
 from src.time_database import TimeDatabase
@@ -330,7 +330,7 @@ class RepeatCycleDlg(DialogCtrl):
         if self.alive:
             match idmsg:
                 case "lblSelEveryRepeatCycle":
-                    spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryRepeatCycle"))
+                    spr_ctrl = cast(ScrollPickerCtrl, self.get_control("sprEveryRepeatCycle"))
                     spr_ctrl.hide(spr_ctrl.visible)
                 case "sprEveryRepeatCycle":
                     val = cast(int, kwargs["val"])
@@ -567,10 +567,6 @@ class EditTodoDialog(DialogCtrl):
             return True
         return super().process_message(idmsg, **kwargs)
 
-
-# --------------------------
-# Custom Round Checkbutton
-# --------------------------
 class RoundCheckbutton:
     def __init__(self, parent: tk.Frame, callback: Callable[[], None] | None = None, is_checked: bool = False) -> None:
         self._parent: tk.Frame = parent
@@ -594,7 +590,7 @@ class RoundCheckbutton:
         else:
             _ = self._canvas.create_oval(2, 2, 18, 18, fill="", outline=COLORS["secondary_text"], width=1)
 
-    def on_click(self, event: tk.Event) -> str:
+    def on_click(self, _: tk.Event) -> str:
         self.checked = not self.checked
         self.draw_checkbox()
         if self._callback:
@@ -798,7 +794,7 @@ class TodoItem:
             # self._owner._handle_drag_sort(dy)
             pass
 
-    def _on_release(self, event: tk.Event) -> None:
+    def _on_release(self, _: tk.Event) -> None:
         if not self._dragging or self._current_dragged_item != self._wrapper:
             self._reset_drag_state()
             return
@@ -827,7 +823,7 @@ class TodoItem:
             if self._drag_type == "delete" and self._current_offset_x > SWIPE_CONFIG["delete_threshold"]:
                 self._animate_swipe_back()
 
-    def _on_text_click(self, event: tk.Event) -> str:
+    def _on_text_click(self, _: tk.Event) -> str:
         if self._edit_mode or self._editing_todo_id:
             return "break"
 
@@ -1226,7 +1222,8 @@ class TodayTodoPage(BaseTodoPage):
         # _ = self._gui.win.bind("<Configure>", self.on_window_resize)
         # _ = self._gui.win.bind("<Button-1>", self.on_global_click)
 
-    def on_window_resize(self, event: tk.Event) -> None:
+
+    def on_window_resize(self, _: tk.Event) -> None:
         # if event.widget == self._parent:
         # if event.widget == self._gui.win:
             # self.render_todo_list()
@@ -1583,7 +1580,7 @@ class TodayTodoPage(BaseTodoPage):
 
         if nearest_index != -1 and nearest_index != self._last_nearest_index:
             self._move_drag_placeholder(nearest_index)
-            self._last_nearest_index = nearest_index
+            self._last_nearest_index: int = nearest_index
 
     def _finalize_drag_sort(self) -> None:
         """ Complete drag sorting and update todo order"""
@@ -1667,8 +1664,7 @@ class TodayTodoPage(BaseTodoPage):
     def destroy(self, **kwargs: object):
         """ _summary_
         """
-        pass
-
+        print("destory")
 
 class TodoTab(Container):
     """_summary_
@@ -1897,4 +1893,4 @@ class TodoTab(Container):
     def destroy(self, **kwargs: object):
         """ _summary_
         """
-        pass
+        po("todo tab destory")

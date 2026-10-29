@@ -267,8 +267,8 @@ class TimeDatabase:
         for pid, name, note, tags, iid, fid, reminders, action, status, \
             location, sums in cast(Generator[PlanSqlTuple],
                 self._database.each("SELECT * FROM PLANS")):
-            fid = fid
-            pid = pid
+            # fid = fid
+            # pid = pid
             geo = GeoSqlTuple(*literal_eval(location))
             locate_at = self._geo2loc(geo.latitude, geo.longitude)
             plandata: PlanDataDict = {

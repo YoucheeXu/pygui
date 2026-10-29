@@ -147,11 +147,11 @@ def parse_iso_datetime(datetime_str: str | None) -> datetime.datetime | None:
 
     except ValueError as e:
         # Include the original error reason in the re-thrown message
-        raise ValueError((
-            f"Invalid ISO 8601 datetime format: '{datetime_str}'. "
-            f"Expected format like 'YYYY-MM-DDTHH:MM:SS' (valid date/time only). "
-            f"Error: {str(e)}"
-        )) from e
+        raise ValueError(
+            f"Invalid ISO 8601 datetime format: '{datetime_str}'. " +
+            "Expected format like 'YYYY-MM-DDTHH:MM:SS' (valid date/time only). " +
+            f"Error: {e!s}"
+        ) from e
 
 def _serialize_single_reminder(reminder: ReminderDataDict) -> ReminderJsonDict:
     """Serialize a single ReminderDataDict to ReminderJsonDict.
@@ -327,10 +327,10 @@ def deserialize_reminder_collection(json_str: str) -> ReminderCollection:
         try:
             reminder_json = ReminderJsonDict(**reminder_json_raw)
         except TypeError as e:
-            raise TypeError((
-                f"Reminder {eid} has invalid JSON structure: {str(e)}. "
+            raise TypeError(
+                f"Reminder {eid} has invalid JSON structure: {e!s}. " +
                 "Missing or extra fields in ReminderJsonDict."
-            )) from e
+            ) from e
 
         # Deserialize single reminder and add to collection
         reminder_collection[eid] = _deserialize_single_reminder(reminder_json)

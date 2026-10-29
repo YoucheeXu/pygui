@@ -7,7 +7,6 @@ from dataclasses import dataclass, field
 from enum import IntEnum, auto
 from typing import NamedTuple, TypedDict, TypeVar
 
-from pyutilities_simple.logit import pe, po, pv
 from src.action_sys import ActTyp
 
 
