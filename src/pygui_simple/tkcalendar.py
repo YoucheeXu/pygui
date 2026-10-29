@@ -8,7 +8,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 import xml.etree.ElementTree as et
 from tkinter import ttk
-from typing import Any, cast, override
+from typing import cast, override
 
 from pygui_simple.tkcontrol import tkControl
 from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
@@ -134,20 +134,20 @@ class tkCalendarCtrl(tkControl):
             Value of the requested attribute
         """
         if item in ('year', 'month'):
-            return getattr(self._date, item)
+            return cast(object, getattr(self._date, item))
         elif item == 'selectbackground':
-            return self._canvas['background']
+            return cast(object, self._canvas['background'])
         elif item == 'selectforeground':
-            return self._canvas.itemcget(self._canvas_text, 'fill')
+            return cast(object, self._canvas.itemcget(self._canvas_text, 'fill'))
         else:
-            r = ttk.tclobjs_to_py({item: ttk.Frame.__getitem__(self, item)})
-            return r[item]
+            r = ttk.tclobjs_to_py({item: ttk.Frame.__getitem__(cast(ttk.Frame, self.control), item)})
+            return cast(object, r[item])
 
     def __setup_styles(self):
         """ Define custom ttk styles for calendar navigation arrow buttons."""
         style = ttk.Style(self._master)
         arrow_layout = lambda dir: (
-            [('Button.focus', {'children': [('Button.%sarrow' % dir, None)]})]
+            [('Button.focus', {'children': [(f'Button.{dir}arrow', None)]})]
         )
         style.layout('L.TButton', arrow_layout('left'))
         style.layout('R.TButton', arrow_layout('right'))
@@ -182,7 +182,7 @@ class tkCalendarCtrl(tkControl):
 
         # Month combobox (1-12)
         self._cmb_month: ttk.Combobox = ttk.Combobox(title_frame, width=3,
-            values=['%02d' % month for month in range(1,13)], state='readonly')
+            values=[f'{month:02d}' for month in range(1,13)], state='readonly')
         _ = self._cmb_month.current(datetime.datetime.now().month - 1)
         self._cmb_month.grid(in_=title_frame, column=3, row=0)
         _ = self._cmb_month.bind("<<ComboboxSelected>>", self._update)
@@ -262,7 +262,7 @@ class tkCalendarCtrl(tkControl):
         # Fill each week row with day numbers (empty string for days outside the month)
         for indx, item in enumerate(self._items):
             week = cal[indx] if indx < len(cal) else []
-            fmt_week = [('%02d' % day) if day else '' for day in week]
+            fmt_week = [(f'{day:02d}') if day else '' for day in week]
             self._calendar.item(item, values=fmt_week)
 
     def _show_select(self, text: str, bbox: tuple[int, int, int, int]):
@@ -320,7 +320,7 @@ class tkCalendarCtrl(tkControl):
             return
 
         # Update selection and trigger event
-        text = '%02d' % text
+        text = f'{text:02d}'
         self._selection = (text, item, column)
         self._show_select(text, bbox)
 
@@ -512,7 +512,7 @@ class CalendarDialog(Container):
         self._top.protocol("WM_DELETE_WINDOW", self.destroy)
 
         # Configure modal behavior: topmost, grab focus, block input
-        self._top.attributes('-topmost', True)
+        _ = self._top.attributes('-topmost', True)
         self._top.grab_set()        # ensure all input goes to our window
         # Show window and wait for user interaction
         self._top.deiconify()
@@ -531,7 +531,7 @@ class CalendarDialog(Container):
                 self._exit()
             else:
                 _ = self._top.after(10, self._main_judge)
-        except:
+        except tk.TclError:
             _ = self._top.after(10, self._main_judge)
 
     def get_datestr(self):
@@ -565,7 +565,7 @@ class CalendarDialog(Container):
         Prevents default destruction logic from interfering with custom
         dialog closing behavior defined in _exit().
         """
-        pass
+        print("CalendarDialog Destory")
 
 
 @WidgetRegistry.register("Calendar")
@@ -574,8 +574,8 @@ class CalendarCtrl(tkCalendarCtrl):
             owner: WinBasic, level: int):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
-        options: dict[str, Any] = {}
+        options: dict[str, object] = {}
         if "options" in attr_dict:
-            options = eval(attr_dict["options"])
+            options = cast(dict[str, object], eval(attr_dict["options"]))
 
         super().__init__(master, owner, idself, **options)

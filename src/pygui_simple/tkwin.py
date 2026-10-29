@@ -942,7 +942,7 @@ class CanvasCtrl(tkControl):
             target_w: int,
             target_h: int,
             anchor: Literal['nw', 'n', 'ne', 'w', 'center', 'e', 'sw', 's', 'se'] = "center",
-            fallback_fill: str = "#cccccc",
+            _: str = "#cccccc",	# fallback_fill
             tags: str | list[str] | tuple[str, ...] | None = None
         ) -> int:
             """Load local image file, auto resize then draw on canvas; auto fallback to colored rectangle on load failure.
@@ -998,9 +998,9 @@ class ScrolledTextCtrl(tkControl):
             owner: WinBasic, level: int):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
-        options: dict[str, Any] = {}
+        options: dict[str, object] = {}
         if "options" in attr_dict:
-            options = eval(attr_dict["options"])
+            options = cast(dict[str, object], eval(attr_dict["options"]))
 
         ctrl = scrolledtext.ScrolledText(master, **options)
         tooltip = attr_dict.get("tooltip", "")
@@ -1286,22 +1286,20 @@ class DialogCtrl(Dialog):
                     return
             else:
                 _ = self.process_message("cancel", **kwargs)
-            try:
-                before_close = cast(EventHanlder, getattr(
+
+            if before_close := cast(EventHanlder | None, getattr(
                         self, "_before_close"
-                    ))  # get before_close from child
-                ret, msg = cast(tuple[bool, str],before_close(**kwargs))
+                    , None)):  # get before_close from child
+                ret, msg = cast(tuple[bool, str], before_close(**kwargs))
                 if not ret:
                     # self._app.show_err(self._title, msg)
                     print(f"{self._title}: {msg}")
                     return
-            except AttributeError as r:
-                # po(f"Warnning: {self._title} to exit, because {r}")
-                print(f"Warnning: {self._title} to exit, because {r}")
+            else:
+                print(f"Warnning: {self._title} has no before_close")
 
             topctrl.grab_release()
             super().back()
-            # for idctrl in self._idctrl_list:
             for idctrl in list(self._idctrl_dict.keys()):
                 self.delete_control(idctrl)
             # po("subctrl have been deleted!")
@@ -1443,7 +1441,7 @@ class tkWin(Window):
 
         self._win.mainloop()
 
-    def _on_winresize(self, event: tk.Event[tk.Misc]):
+    def _on_winresize(self, event: tk.Event[tk.Misc] | None):
         """ listen events of window resizing.
         """
         if event is not None:

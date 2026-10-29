@@ -8,8 +8,6 @@ import xml.etree.ElementTree as et
 from collections import OrderedDict
 from typing import Literal, Protocol, TypeVar, cast, override
 
-from pyutilities_simple.logit import pv
-
 
 # EventHanlder: TypeAlias = Callable[[tuple[Any, ...], dict[str, Any]], Any]
 # EventHanlder: TypeAlias = Callable[[dict[str, Any]], Any]
@@ -87,7 +85,7 @@ class Control(Widget, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def __getitem__(self, item: str):
+    def __getitem__(self, item: str) -> object:
         pass
 
     @abc.abstractmethod
@@ -301,13 +299,14 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
             level: int = 0, owner: WinBasic | None = None) -> OrderedDict[str, Widget]:
         idctrl_dict: OrderedDict[str, Widget] = OrderedDict()
         tag = ctrl_cfg.tag
-        if tag == "CustomDialog":
+        if tag == "CustomDialog":   # TODO
             attr_dict = ctrl_cfg.attrib
             idctrl = attr_dict["id"]
             self._customctrlcfg_dict[idctrl] = ctrl_cfg
             return idctrl_dict
         idctrl, ctrl = self.create_control(parent, ctrl_cfg, level, owner)
         idctrl_dict[idctrl] = ctrl
+        # TODO
         if tag in ["Menu", "Notebook", "RadiobuttonGroup",
             "Statusbar", "Toolbar", "Dialog"]:
             pass

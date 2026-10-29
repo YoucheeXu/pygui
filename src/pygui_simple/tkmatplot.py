@@ -179,7 +179,7 @@ class tkMatPlotCtrl(tkControl):
                 self._ymin = min(self._ymin, ymin)
                 self._ymax = max(self._ymax, ymax)
 
-        self._ymin = 0 if self._ymin >= 0 else self._ymin
+        self._ymin = min(0, self._ymin)
         _ = self._ax.set_ylim(self._ymin * 1.05, self._ymax * 1.1)
 
         self._xmin = float("inf")
@@ -243,13 +243,13 @@ class Plot:
 
         return ax
 
-    def set_axes(self, plot_num: int = 0, **axes_dict):
+    def set_axes(self, plot_num: int = 0, **axes_dict: object):
         ax = self._axes[plot_num]
         _ = ax.set(**axes_dict)
         return ax
 
     def add_line(self, ax: Axes, xdata: ArrayLike, ydata: ArrayLike, typ: str = "line",
-            **style_dict):
+            **style_dict: Any):
         match typ:
             case "line":
                 _, = ax.plot(xdata, ydata, **style_dict)

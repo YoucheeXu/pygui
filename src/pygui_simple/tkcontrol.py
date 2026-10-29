@@ -3,9 +3,9 @@
 import tkinter as tk
 from ast import literal_eval
 from idlelib.tooltip import Hovertip
-from typing import Any, cast, override
+from typing import cast, override
 
-from pygui_simple.winbasic import Control, Widget
+from pygui_simple.winbasic import Control
 
 
 class tkControl(Control):
@@ -26,16 +26,16 @@ class tkControl(Control):
         return self._tkctrl.winfo_viewable()
 
     @override
-    def configure(self, **kwargs: Any):
+    def configure(self, **kwargs: object):
         self._tkctrl.configure(**kwargs)
 
     @override
     def __getitem__(self, item: str):
         # return getattr(self._tkctrl, item)
-        return self._tkctrl[item]
+        return cast(object, self._tkctrl[item])
 
     @override
-    def __setitem__(self, item: str, value):
+    def __setitem__(self, item: str, value: object):
         self._tkctrl.__setitem__(item, value)
 
     @override
@@ -87,21 +87,19 @@ class tkControl(Control):
                     try:
                         self._layout_info = self._tkctrl.pack_info()
                         self._tkctrl.pack_forget()
-                    except Exception as _:
-                        # print(f"{self._idself}.hide.pack: {e}")
-                        pass
+                    except tk.TclError as e:
+                        print(f"{self._idself}.hide.pack: {e}")
                 else:
                     assert self._layout_info is not None
-                    # assert  isinstance(self._layout_info, tk._PackInfo)
+                    # assert isinstance(self._layout_info, tk._PackInfo)
                     self._tkctrl.pack(**self._layout_info)
             case "place":
                 if is_hide:
                     try:
                         self._layout_info = self._tkctrl.place_info()
                         self._tkctrl.place_forget()
-                    except Exception as _:
-                        # print(f"{self._idself}.hide.place: {e}")
-                        pass
+                    except tk.TclError as e:
+                        print(f"{self._idself}.hide.place: {e}")
                 else:
                     assert self._layout_info is not None
                     # assert isinstance(self._layout_info, tk._PlaceInfo)

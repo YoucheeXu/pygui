@@ -356,7 +356,7 @@ class DateScrollPickerDialog:
                 self._exit()
             else:
                 _ = self._master.after(10, self._main_judge)
-        except:
+        except tk.TclError:
             _ = self._master.after(10, self._main_judge)
 
 
@@ -534,13 +534,13 @@ class TimeScrollPickerDialog(Container):
                 (self._master.winfo_screenheight() - height)/2
         self._master.geometry(f"{width}x{height}+{x}+{y}") # 窗口位置居中
         _ = self._master.after(300, self._main_judge)
-        self._master.attributes('-topmost', True)
+        _ = self._master.attributes('-topmost', True)
         self._master.grab_set()        # ensure all input goes to our window
         self._master.deiconify()
         self._master.focus_set()
         self._master.wait_window()
 
-    def _confirm(self, **kwargs: object):
+    def _confirm(self, **_: object):
         self._exit()
         return True, ""
 
@@ -564,7 +564,7 @@ class TimeScrollPickerDialog(Container):
                 self._exit()
             else:
                 _ = self._master.after(10, self._main_judge)
-        except:
+        except tk.TclError:
             _ = self._master.after(10, self._main_judge)
 
     @override
