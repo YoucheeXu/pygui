@@ -942,7 +942,7 @@ class CanvasCtrl(tkControl):
             target_w: int,
             target_h: int,
             anchor: Literal['nw', 'n', 'ne', 'w', 'center', 'e', 'sw', 's', 'se'] = "center",
-            _: str = "#cccccc",	# fallback_fill
+            fallback_fill: str = "#cccccc",
             tags: str | list[str] | tuple[str, ...] | None = None
         ) -> int:
             """Load local image file, auto resize then draw on canvas; auto fallback to colored rectangle on load failure.
