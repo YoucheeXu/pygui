@@ -6,20 +6,10 @@ import abc
 import os
 import xml.etree.ElementTree as et
 from collections import OrderedDict
-from typing import Literal, Protocol, TypeVar, cast, override
+from collections.abc import Callable, ItemsView
+from typing import ClassVar, Literal, Protocol, TypeVar, cast, override
 
-
-# EventHanlder: TypeAlias = Callable[[tuple[Any, ...], dict[str, Any]], Any]
-# EventHanlder: TypeAlias = Callable[[dict[str, Any]], Any]
-# EventHanlder: TypeAlias = Callable[[Mapping[str, Any]], Any]
-class EventHanlder(Protocol):
-    def __call__(self, **kwargs: object) -> object: ...
-
-
-# EventsHanlder: TypeAlias = Callable[[str, dict[str, Any]], Any]
-# EventsHanlder: TypeAlias = Callable[[str, Mapping[str, Any]], Any]
-class EventsHanlder(Protocol):
-    def __call__(self, idmsg: str, **kwargs: object) -> object: ...
+from pyutilities_simple.logit import po
 
 
 class Widget:
@@ -114,8 +104,47 @@ class Control(Widget, metaclass=abc.ABCMeta):
     def destroy(self):
         pass
 
+# EventHanlder: TypeAlias = Callable[[tuple[Any, ...], dict[str, Any]], Any]
+# EventHanlder: TypeAlias = Callable[[dict[str, Any]], Any]
+# EventHanlder: TypeAlias = Callable[[Mapping[str, Any]], Any]
+class EventHanlder(Protocol):
+    def __call__(self, **kwargs: object) -> object: ...
+
+# EventsHanlder: TypeAlias = Callable[[str, dict[str, Any]], Any]
+# EventsHanlder: TypeAlias = Callable[[str, Mapping[str, Any]], Any]
+class EventsHanlder(Protocol):
+    def __call__(self, idmsg: str, **kwargs: object) -> object: ...
+
+F = TypeVar("F", bound=Callable[..., object])
+
+def on_message(*msg_ids: str) -> Callable[[F], F]:
+    """ Decorator factory: accept one or multiple message id strings, return a decorator.
+    The returned decorator attaches the message id tuple as an attribute to the target function.
+
+    Args:
+        msg_ids: Variable-length positional arguments of string message identifiers.
+    Returns:
+        A decorator that takes a function and returns the same function with extra metadata.
+    """
+    def decorator(func: F) -> F:
+        """ Attach the tuple of message ids to the function object as attribute _message_ids.
+
+        Args:
+            func (F): _description_
+
+        Returns:
+            F: _description_
+        """
+        func._message_ids = tuple(msg_ids)  # pyright: ignore[reportFunctionMemberAccess]
+        # setattr(func, "_message_ids", tuple(msg_ids))
+        return func
+    return decorator
 
 class Container(Widget, metaclass=abc.ABCMeta):
+    # Class-level registry: maps message-id string -> list of handler method names
+    # ClassVar: this attribute lives on the class, not on instances
+    # We initialize with an empty dict as a placeholder; __init_subclass__ will replace it for each subclass
+    _handlers: ClassVar[dict[str, list[str]]] = {}
     def __init__(self, owner: Container | None = None):
         super().__init__("")
         self._eventhandler_dict: dict[str, list[EventHanlder]] = {}
@@ -142,6 +171,50 @@ class Container(Widget, metaclass=abc.ABCMeta):
                 # po(f"{idctrl} doesn't support back")
                 print(f"{idctrl} doesn't support back")
         self._backed = bset
+
+    def __init_subclass__(cls, **kwargs: object):
+        """ Special class method: automatically invoked once when a subclass of Container is defined.
+        This builds and merges the message handler registry for the new subclass.
+
+        Args:
+            **kwargs: Extra keyword arguments passed down from subclass definition.
+        """
+        super().__init_subclass__(**kwargs)
+        # Local temporary registry being built for this subclass
+        handlers: dict[str, list[str]] = {}
+        # default: str | None = None
+
+        # Step 1: Inherit handlers from all parent classes.
+        # reversed(cls.__mro__[1:]): traverse MRO (method resolution order), skip cls itself.
+        # Reversed order ensures closer parent classes override / append after distant ancestors.
+        for base in reversed(cls.__mro__[1:]):
+            # Read parent's _handlers dict; fall back to empty dict if attribute does not exist
+            for mid, names in cast(dict[str, list[str]], getattr(base, "_handlers", {}).items()):
+                # Get or create the handler list bucket for this message-id (mid)
+                bucket = handlers.setdefault(mid, [])
+                for n in names:
+                    if n not in bucket:
+                        bucket.append(n)
+            # base_default = getattr(base, "_default_handler", None)
+            # if base_default:
+            #     default = base_default
+
+        # Step 2: Scan methods defined directly on this subclass,
+        # collect methods marked by the @on_message decorator (which adds _message_ids).
+        for name, attr in cast(ItemsView[str, object], vars(cls).items()):
+            ids: tuple[str, ...] | None = getattr(attr, "_message_ids", None)
+            if ids:
+                # dict.fromkeys removes duplicate message ids declared on the same method
+                for mid in dict.fromkeys(ids):
+                    bucket = handlers.setdefault(mid, [])
+                    if name not in bucket:
+                        bucket.append(name)
+            # if getattr(attr, "_is_default", False):
+            #     default = name
+
+        # Assign the merged registry to the subclass's _handlers
+        cls._handlers = handlers
+        # cls._default_handler = default
 
     def register_eventhandler(self, idmsg: str, handler: EventHanlder):
         """_summary_
@@ -198,9 +271,22 @@ class Container(Widget, metaclass=abc.ABCMeta):
                 ret = func(**kwargs)
             return ret
 
+        names = self._handlers.get(idmsg)
+        if names:
+            result: object = None
+            for name in names:
+                handler = cast(EventHanlder, getattr(self, name))
+                # result = handler(idmsg, **kwargs)
+                result = handler(**kwargs)
+            return result  # 多播时返回最后一个处理函数的结果
+
+        # if self._default_handler is not None:
+        #     handler = getattr(self, self._default_handler)
+        #     return handler(idmsg, **kwargs)
+
         if self._owner is not None:
             return self._owner.process_message(idmsg, **kwargs)
-        print(f"Container: undeal msg of {idmsg} with {kwargs}")
+        po(f"Container: undeal msg of {idmsg} with {kwargs}")
         return None
 
     @abc.abstractmethod
