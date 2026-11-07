@@ -34,8 +34,7 @@ IS_WINDOWS = platform.system() == "Windows" # sys.platform.startswith("win")
 
 @WidgetRegistry.register("Label")
 class LabelCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         clickable = "clickable" in attr_dict
         master = cast(tk.Misc, parent.control)
@@ -47,7 +46,7 @@ class LabelCtrl(tkControl):
 
         ctrl = ttk.Label(master, text=text, **options)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, text, idself, ctrl, level, tooltip)
+        super().__init__(master, text, idself, ctrl, tooltip)
         if clickable:
             _= ctrl.bind("<Button-1>",
                 lambda e: owner.process_message(idself,
@@ -63,8 +62,7 @@ class LabelCtrl(tkControl):
 
 @WidgetRegistry.register("Entry")
 class EntryCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
 
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
@@ -73,7 +71,7 @@ class EntryCtrl(tkControl):
         master = cast(tk.Misc, parent.control)
         ctrl = ttk.Entry(master)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, "", idself, ctrl, level, tooltip)
+        super().__init__(master, "", idself, ctrl, tooltip)
         self._var: tk.StringVar = tk.StringVar()
         _= ctrl.configure(textvariable=self._var, **options)
         text = attr_dict.get("text")
@@ -88,8 +86,7 @@ class EntryCtrl(tkControl):
 
 @WidgetRegistry.register("ImagePanel")
 class ImagePanelCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -98,7 +95,7 @@ class ImagePanelCtrl(tkControl):
 
         ctrl = tk.Label(master)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, "", idself, ctrl, level, tooltip)
+        super().__init__(master, "", idself, ctrl, tooltip)
         self._image: ImageTk.PhotoImage | None = None
         if image := attr_dict.get("image", ""):
             width = cast(int, options.get("width", 0))
@@ -125,9 +122,7 @@ class ImagePanelCtrl(tkControl):
 
 @WidgetRegistry.register("Button")
 class ButtonCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
-
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -135,9 +130,10 @@ class ButtonCtrl(tkControl):
         master = cast(tk.Misc, parent.control)
         text = attr_dict.get("text")
         assert text is not None
+
         ctrl = ttk.Button(master, text=text, **options)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, text, idself, ctrl, level, tooltip)
+        super().__init__(master, text, idself, ctrl, tooltip)
         self._owner: WinBasic = owner
         _ = ctrl.configure(command=self._btn_clicked, **options)
 
@@ -148,9 +144,7 @@ class ButtonCtrl(tkControl):
 
 @WidgetRegistry.register("ImageButton")
 class ImageButtonCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
-
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -210,9 +204,7 @@ class ImageButtonCtrl(tkControl):
 
 @WidgetRegistry.register("Checkbutton")
 class CheckbuttonCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
-
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -228,7 +220,7 @@ class CheckbuttonCtrl(tkControl):
 
         ctrl = tk.Checkbutton(master)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, "", idself, ctrl, level, tooltip)
+        super().__init__(master, "", idself, ctrl, tooltip)
         self._vartext: str = "_" + vartext
         self.__dict__[self._vartext] = tk.IntVar()
         variable = cast(tk.IntVar, self.__dict__[self._vartext])
@@ -246,8 +238,7 @@ class CheckbuttonCtrl(tkControl):
 
 @WidgetRegistry.register("Combobox")
 class ComboboxCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -257,7 +248,7 @@ class ComboboxCtrl(tkControl):
 
         ctrl = ttk.Combobox(master)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, "", idself, ctrl, level, tooltip)
+        super().__init__(master, "", idself, ctrl, tooltip)
         self._var: tk.StringVar = tk.StringVar()
         _ = ctrl.configure(textvariable=self._var, **options)
         _ = ctrl.current(default)
@@ -280,8 +271,7 @@ class ComboboxCtrl(tkControl):
 
 @WidgetRegistry.register("Listbox")
 class ListboxCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -290,7 +280,7 @@ class ListboxCtrl(tkControl):
 
         ctrl = tk.Listbox(master, **options)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, "", idself, ctrl, level, tooltip)
+        super().__init__(master, "", idself, ctrl, tooltip)
 
     def insert(self, index: str | int, *elements: str | float):
         ctrl = cast(tk.Listbox, self._tkctrl)
@@ -308,8 +298,7 @@ class ListboxCtrl(tkControl):
 
 @WidgetRegistry.register("Radiobutton")
 class RadiobuttonCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -326,7 +315,7 @@ class RadiobuttonCtrl(tkControl):
 
         ctrl = ttk.Radiobutton(master)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, "", idself, ctrl, level, tooltip)
+        super().__init__(master, "", idself, ctrl, tooltip)
         # self._app: GuiBasic = app
         self._master: WinBasic = owner
         self._vartext: str = vartext
@@ -344,8 +333,7 @@ class RadiobuttonCtrl(tkControl):
 
 @WidgetRegistry.register("RadioButtonGroup")
 class RadioButtonGroupCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -353,10 +341,9 @@ class RadioButtonGroupCtrl(tkControl):
         master = cast(tk.Misc, parent.control)
         text = attr_dict.get("text")
         assert text is not None
-        level = 2
 
         ctrl = ttk.LabelFrame(master)
-        super().__init__(master, text, idself, ctrl, level)
+        super().__init__(master, text, idself, ctrl)
         # self._idself: str = idself
         # self._var_val: tk.IntVar = tk.IntVar()
         self._vartext: str = "_var" + text.replace(" ", "_")
@@ -366,7 +353,7 @@ class RadioButtonGroupCtrl(tkControl):
         _ = self.configure(text=text, **options)
         # self._radbutton_lst: list[ttk.Radiobutton] = []
         self._radbutton_lst: list[RadiobuttonCtrl] = []
-        _ = self._create_subctrls(ctrl_cfg, level)
+        _ = self._create_subctrls(ctrl_cfg)
 
     def get_val(self) -> int:
         # return self._var_val.get()
@@ -376,20 +363,21 @@ class RadioButtonGroupCtrl(tkControl):
         # self._var_val.set(val)
         cast(tk.IntVar, self._app.__dict__[self._vartext]).set(val)
 
-    def _create_subctrls(self, subctrls: et.Element, level: int):
+    def _create_subctrls(self, subctrls: et.Element):
         for subctrl_cfg in subctrls:
             radbtn_attr_dict = subctrl_cfg.attrib
             value = int(radbtn_attr_dict["value"])
             text: str = radbtn_attr_dict["text"]
-            sub_ctrl = self._add_radiobutton(value, text, level)
+            sub_ctrl = self._add_radiobutton(value, text)
             # self._app.debug_print(f"{'  '*(level + 1)}Control: Radiobutton, text: {text}", end="")
             self._app.assemble_control(sub_ctrl, radbtn_attr_dict)
 
-    def _add_radiobutton(self, val: int, txt: str, level: int, **opt_dict: object):
+    def _add_radiobutton(self, val: int, txt: str, **opt_dict: object):
         ctrl_cfg = self._app.create_xml("Radiobutton", {"text": f"{txt}",
             "vartext": self._vartext,
             "value": f"{val}"})
-        radbutton = RadiobuttonCtrl("", ctrl_cfg, self, self._owner, level)
+        radbutton = RadiobuttonCtrl("", ctrl_cfg, self, self._owner)
+        radbutton.level = self.level+1
         radbutton.configure(**opt_dict)
         self._radbutton_lst.append(radbutton)
         return radbutton
@@ -405,8 +393,7 @@ class RadioButtonGroupCtrl(tkControl):
 
 @WidgetRegistry.register("Notebook")
 class NotebookCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         subctrlcfg_list=list(ctrl_cfg)
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
@@ -415,21 +402,21 @@ class NotebookCtrl(tkControl):
         master = cast(tk.Misc, parent.control)
 
         ctrl = ttk.Notebook(master, **options)
-        tkControl.__init__(self, master, "", idself, ctrl, level)
+        tkControl.__init__(self, master, "", idself, ctrl)
         # app.debug_print()
         self._app: WinBasic = owner
         self._idself: str = idself
         self._idctrl_list: list[str] = []
         for subctrl_cfg in list(subctrlcfg_list):
             id_, sub_ctrl = self._app.create_control(self,
-                subctrl_cfg, level + 1)
+                subctrl_cfg, self.level + 1)
             self._idctrl_list.append(id_)
             # app.debug_print(f"tabCtrl: {subctrl_cfg.tag}")
             subctrl = cast(tk.Widget, sub_ctrl.control)
             ctrl.add(subctrl, text=subctrl_cfg.attrib["text"])
             for item in list(subctrl_cfg):
                 idctrl_list = self._app.create_controls(sub_ctrl, item,
-                    level + 2, owner)
+                    self.level + 2, owner)
                 self._idctrl_list.extend(idctrl_list)
 
     @override
@@ -444,8 +431,7 @@ class NotebookCtrl(tkControl):
 @WidgetRegistry.register("Frame")
 @WidgetRegistry.register("Tab")
 class FrameCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -455,7 +441,7 @@ class FrameCtrl(tkControl):
             del options["columnconfigure"]
 
         ctrl = tk.Frame(master, **options)
-        tkControl.__init__(self, master, "", idself, ctrl, level)
+        tkControl.__init__(self, master, "", idself, ctrl)
 
         if columnconfigure:
             lst = cast(str, columnconfigure).strip('()').split(',')
@@ -472,8 +458,7 @@ class FrameCtrl(tkControl):
 # TODO: not finished
 @WidgetRegistry.register("LabelFrame")
 class LabelFrameCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -483,7 +468,7 @@ class LabelFrameCtrl(tkControl):
         assert text is not None
 
         ctrl = ttk.LabelFrame(master, text=text, **options)
-        tkControl.__init__(self, master, text, idself, ctrl, level)
+        tkControl.__init__(self, master, text, idself, ctrl)
 
     @override
     def destroy(self):
@@ -494,8 +479,7 @@ class LabelFrameCtrl(tkControl):
 class ScrollableFrameCtrl(tkControl):
     """ 智能滚动容器
     """
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -534,7 +518,7 @@ class ScrollableFrameCtrl(tkControl):
 
         # Create a frame inside the canvas which will be scrolled with it
         self._inner_frame: tk.Frame = tk.Frame(self._canvas)
-        super().__init__(master, "", idself, self._inner_frame, level)
+        super().__init__(master, "", idself, self._inner_frame)
 
         # self._outter_frame.bindtags((self._outter_frame, self._canvas, "Frame", "all"))
         # 调整bindtags，确保事件先传给自身，再传给画布
@@ -688,8 +672,7 @@ class ScrollableFrameCtrl(tkControl):
 # TODO: Tip
 @WidgetRegistry.register("PicsListview")
 class PicsListviewCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
@@ -697,7 +680,7 @@ class PicsListviewCtrl(tkControl):
             options = eval(attr_dict["options"])
 
         ctrl = ttk.Frame(master, **options)
-        tkControl.__init__(self, master, "", idself, ctrl, level)
+        tkControl.__init__(self, master, "", idself, ctrl)
         # self._image_group: list[ttk.LabelFrame] = []
         self._image_group: list[LabelFrameCtrl] = []
         self._imagepanel_llist: list[list[ImagePanelCtrl]] = []
@@ -715,14 +698,16 @@ class PicsListviewCtrl(tkControl):
     def add_imagegroup(self, title: str, imagefile_list: list[str]):
         # frame = ttk.LabelFrame(self._tkctrl, text=title)
         frame_cfg = self._owner.create_xml("LabelFrame", {"text": f"btnItem{title}"})
-        frame = LabelFrameCtrl("", frame_cfg, self, self._owner, self._level+1)
+        frame = LabelFrameCtrl("", frame_cfg, self, self._owner)
+        frame.level = self.level+1
         imagepanel_list: list[ImagePanelCtrl] = []
         for i, imagefile in enumerate(imagefile_list):
             imagefile = os.path.join(self._app_path, imagefile)
             ctrl_cfg = self._owner.create_xml("ImagePanel", 
                 {"image": imagefile, 
                 "options": f"{{'height': {self._pic_size}, 'width': {self._pic_size}}}"})
-            image_panel = ImagePanelCtrl("", ctrl_cfg, frame, self._owner, self._level+2)
+            image_panel = ImagePanelCtrl("", ctrl_cfg, frame, self._owner)
+            image_panel.level = self.level+2
             image_panel_ctrl = cast(tk.Widget, image_panel.control)
             image_panel_ctrl.grid(row=i // self._num_column, column=i % self._num_column,
                 padx=self._spacing, pady=self._spacing)
@@ -766,8 +751,7 @@ class PicsListviewCtrl(tkControl):
 
 @WidgetRegistry.register("Toolbar")
 class ToolbarCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
@@ -776,7 +760,7 @@ class ToolbarCtrl(tkControl):
         subctrls = list(ctrl_cfg)
 
         ctrl = ttk.Frame(master, **options)
-        super().__init__(master, "", "", ctrl, level)
+        super().__init__(master, "", "", ctrl)
         self._app_path: str = owner.path
         self._app: WinBasic = owner
         self._idctrl_list: list[str] = []
@@ -794,9 +778,7 @@ class ToolbarCtrl(tkControl):
 
 @WidgetRegistry.register("Style")
 class StyleCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
-
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, object] = {}
         if "options" in attr_dict:
@@ -807,14 +789,13 @@ class StyleCtrl(tkControl):
         assert text is not None
         ctrl = ttk.Style()
         _ = ctrl.configure(text, **options)
-        super().__init__(master, text, idself, ctrl, level)
+        super().__init__(master, text, idself, ctrl)
 
 _FontDescription = str | tuple[str, int] | tuple[str, int, str]
 
 @WidgetRegistry.register("Canvas")
 class CanvasCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
@@ -825,7 +806,7 @@ class CanvasCtrl(tkControl):
         self._img_cache: list[ImageTk.PhotoImage | None] = []
 
         ctrl = tk.Canvas(master, **options)
-        tkControl.__init__(self, master, "", idself, ctrl, level)
+        tkControl.__init__(self, master, "", idself, ctrl)
 
     def create_text(
         self,
@@ -975,8 +956,7 @@ class CanvasCtrl(tkControl):
 
 @WidgetRegistry.register("Spinbox")
 class SpinboxCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
@@ -987,15 +967,14 @@ class SpinboxCtrl(tkControl):
             command=lambda: owner.process_message(idself, event="Changed"),
             **options)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, "", idself, ctrl, level, tooltip)
+        super().__init__(master, "", idself, ctrl, tooltip)
 
     def get(self):
         return cast(tk.Spinbox, self._control).get()
 
 @WidgetRegistry.register("ScrolledText")
 class ScrolledTextCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, object] = {}
@@ -1004,15 +983,14 @@ class ScrolledTextCtrl(tkControl):
 
         ctrl = scrolledtext.ScrolledText(master, **options)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(master, "", idself, ctrl, level, tooltip)
+        super().__init__(master, "", idself, ctrl, tooltip)
 
     def insert(self, index: str| float | Tcl_Obj | tk.Widget, chars: str, *args: str | list[str] | tuple[str,...]):
         cast(scrolledtext.ScrolledText, self._control).insert(index, chars, *args)
 
 @WidgetRegistry.register("StatusBar")
 class StatusBarCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
@@ -1020,15 +998,14 @@ class StatusBarCtrl(tkControl):
             options = eval(attr_dict["options"])
 
         ctrl = MultiStatusBar(master, **options)
-        super().__init__(master, "", idself, ctrl, level)
+        super().__init__(master, "", idself, ctrl)
 
     def set_label(self, name: str, text: str = '', side: str = 'left', width: int = 0):
         cast(MultiStatusBar, self.control).set_label(name, text, side, width)
 
 @WidgetRegistry.register("Scrollbar")
 class ScrollbarCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
@@ -1037,12 +1014,11 @@ class ScrollbarCtrl(tkControl):
 
         ctrl = tk.Scrollbar(master)
         ctrl.configure(**options)
-        super().__init__(master, "", idself, ctrl, level)
+        super().__init__(master, "", idself, ctrl)
 
 @WidgetRegistry.register("Menu")
 class MenuCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         kwargs: dict[str, Any] = {}
@@ -1050,7 +1026,7 @@ class MenuCtrl(tkControl):
             kwargs = eval(attr_dict["options"])
 
         menubar = tk.Menu(master, **kwargs)
-        super().__init__(master, "", idself, menubar, level)
+        super().__init__(master, "", idself, menubar)
 
         def get_cmd(cmd_name: str, **kwargs: object):
             return lambda: owner.process_message(cmd_name, **kwargs)
@@ -1137,8 +1113,7 @@ class tkWM[T](Widget):
 # TODO: auto scrollable or not
 @WidgetRegistry.register("Dialog")
 class DialogCtrl(Dialog):
-    def __init__(self, idself: str, dlg_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int = 1):
+    def __init__(self, idself: str, dlg_cfg: et.Element, parent: Widget, owner: WinBasic):
         app = owner
 
         attr_dict = dlg_cfg.attrib

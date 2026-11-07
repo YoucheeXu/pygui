@@ -14,10 +14,10 @@ from pyutilities_simple.logit import po
 
 class Widget:
     def __init__(self, idself: str, ctrl_cfg: et.Element | None = None, parent: Widget | None = None,
-            owner: WinBasic | None = None, level: int = 0):
+            owner: WinBasic | None = None):
         self._idself: str = idself
         self._control: object = None
-        self._level: int = level
+        self._level: int = -1
 
     @property
     def control(self):
@@ -26,6 +26,14 @@ class Widget:
     @control.setter
     def control(self, ctrl: object):
         self._control = ctrl
+
+    @property
+    def level(self):
+        return self._level
+
+    @level.setter
+    def level(self, val: int):
+        self._level = val
 
 W = TypeVar("W", bound=Widget)
 
@@ -82,8 +90,8 @@ class WidgetRegistry:
         return list(cls._widgets.keys())
 
 class Control(Widget, metaclass=abc.ABCMeta):
-    def __init__(self, title: str, idself: str, level: int):
-        super().__init__(idself, level=level)
+    def __init__(self, title: str, idself: str):
+        super().__init__(idself)
         self._title: str = title
         self._backed: bool = True
 
@@ -397,7 +405,8 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
             raise KeyError(f"{idctrl} already exists")
 
         if widget_cls := WidgetRegistry.get(tag):
-            ctrl = widget_cls(idctrl, ctrl_cfg, parent, owner, level)
+            ctrl = widget_cls(idctrl, ctrl_cfg, parent, owner)
+            ctrl.level = level
         else:
             raise KeyError(f"{tag}: unknown Control")
 

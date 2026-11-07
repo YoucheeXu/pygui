@@ -63,8 +63,7 @@ class tkMatPlotCtrl(tkControl):
 
         self._fig: Figure = Figure(figsize=self._size, dpi=self._dpi)
         self._canvas: FigureCanvasTkAgg = FigureCanvasTkAgg(self._fig, parent)
-        # TOOD: Actual level
-        super().__init__(parent, title, idself, self._canvas.get_tk_widget(), 1)
+        super().__init__(parent, title, idself, self._canvas.get_tk_widget())
         self._ax: Axes = self._fig.add_subplot()
         self._fig.subplots_adjust(bottom=0.25)
         self._create()
@@ -271,8 +270,7 @@ class Plot:
 
 @WidgetRegistry.register("MatPlot")
 class MatPlotCtrl(tkMatPlotCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         # options: dict[str, Any] = {}
