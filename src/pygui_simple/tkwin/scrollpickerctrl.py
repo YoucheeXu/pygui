@@ -16,13 +16,13 @@ from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
 T = TypeVar("T", bound=int | str)
 
 class ScrollPicker[T](tk.Frame):
-    def __init__(self, parent: tk.Tk | tk.Frame,
+    def __init__(self, master: tk.Tk | tk.Frame,
             val_list: list[T],
             initial: T | None = None,
             on_select: Callable[[T], None] | None = None,
             **kwargs: Any) -> None:
-        super().__init__(parent, **kwargs)
-        self._parent: tk.Tk | tk.Frame = parent
+        super().__init__(master, **kwargs)
+        self._master: tk.Tk | tk.Frame = master
 
         self._val_list: list[T] = val_list
         self._on_select: Callable[[T], None] | None = on_select
@@ -360,12 +360,12 @@ class DateScrollPickerDialog:
 
 
 class TimeScrollPickerCtrl(tkControl):
-    def __init__(self, idself: str, parent: tk.Misc, owner: Container,
+    def __init__(self, idself: str, master: tk.Misc, owner: Container,
             width: int, height: int, *,
             stp: int = 0,
             background: str = "white",
             title: str = "", initial: str = ""):
-        self._master: tk.Misc = parent
+        self._master: tk.Misc = master
         self._owner: Container = owner
         self._stp: int = stp
 
@@ -375,7 +375,7 @@ class TimeScrollPickerCtrl(tkControl):
         self._frame: tk.Frame = tk.Frame(self._master,
             background=background,
             width=width, height=height)
-        super().__init__(idself, parent, "", self._frame)
+        super().__init__(idself, master, "", self._frame)
 
         # self.set_initial(initial)
         if not initial:

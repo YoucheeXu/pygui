@@ -28,6 +28,20 @@
                 "isDefault": false
             },
             "problemMatcher": []
+        },
+        {
+            "label": "Run test_win.py (uv)",
+            "type": "shell",
+            "command": "uv run python test_win.py",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}/tests/"
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "problemMatcher": []
         }
     ]
 }

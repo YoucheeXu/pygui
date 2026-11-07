@@ -253,7 +253,7 @@ class Container(Widget, metaclass=abc.ABCMeta):
         # cls._default_handler = default
 
     def register_eventhandler(self, idmsg: str, handler: EventHanlder):
-        """_summary_
+        """ _summary_
 
         Args:
             idmsg (str): _description_
@@ -267,7 +267,7 @@ class Container(Widget, metaclass=abc.ABCMeta):
 
     def filter_message(self, hanlder: EventsHanlder,
             typ: Literal[-1, 0, 1] = 0, msglst: list[str] | None = None):
-        """filter message to deal with
+        """ filter message to deal with
 
         Args:
             hanlder (): hanlder to deal message
@@ -294,11 +294,10 @@ class Container(Widget, metaclass=abc.ABCMeta):
                     ret = hander(idmsg, **kwargs)
                     if ret is not None:
                         return ret
-            elif typ == -1:
-                if idmsg not in msglst:
-                    ret = hander(idmsg, **kwargs)
-                    if ret is not None:
-                        return ret
+            elif typ == -1 and idmsg not in msglst:
+                ret = hander(idmsg, **kwargs)
+                if ret is not None:
+                    return ret
 
         funcs = self._eventhandler_dict.get(idmsg, None)
         if funcs is not None:
@@ -357,11 +356,6 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         self._hh: int = h
         self._title: str = title
 
-    @property
-    def title(self):
-        return self._title
-
-    @title.setter
     def title(self, val: str):
         self._title = val
 
@@ -384,6 +378,12 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
             item_xml = et.Element(tag)
         item_xml.attrib = attr_dict.copy()
         return item_xml
+
+    def movie_window(self, x: int, y: int, w: int, h: int):
+        self._xx = x
+        self._yy = y
+        self._ww = w
+        self._hh = h
 
     def create_control(self, parent: Widget, ctrl_cfg: et.Element,
             level: int = 0, owner: WinBasic | None = None) -> tuple[str, Widget]:
@@ -489,6 +489,10 @@ class Window(WinBasic, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def create_window(self):
+        pass
+
+    @abc.abstractmethod
+    def center_window(self, width: int, height: int):
         pass
 
     @abc.abstractmethod

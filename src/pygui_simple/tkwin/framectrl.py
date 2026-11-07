@@ -10,27 +10,36 @@ from pygui_simple.winbasic import (
 )
 
 
+class FrameCtrl(tkControl):
+    def __init__(self, idself: str, parent: Widget, **kwargs: Any):
+        master = cast(tk.Misc, parent.control)
+        columnconfigure = cast(str, kwargs.pop("columnconfigure", ""))
+
+        ctrl = tk.Frame(master, **kwargs)
+        tkControl.__init__(self, "", master, idself, ctrl)
+
+        if columnconfigure:
+            lst = columnconfigure.strip('()').split(',')
+            colcfgs = tuple(int(x) for x in lst)
+            for i, wgh in enumerate(colcfgs):
+                _ = ctrl.columnconfigure(i, weight=wgh)
+
+    @override
+    def destroy(self):
+        # po(f"FrameCtrl {self._idself} destroy")
+        super().destroy()
+
 # TODO: not finished
 @WidgetRegistry.register("Frame")
 @WidgetRegistry.register("Tab")
-class FrameCtrl(tkControl):
+class tkFrameCtrl(FrameCtrl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
-        master = cast(tk.Misc, parent.control)
-        if columnconfigure := options.get("columnconfigure"):
-            del options["columnconfigure"]
 
-        ctrl = tk.Frame(master, **options)
-        tkControl.__init__(self, "", master, idself, ctrl)
-
-        if columnconfigure:
-            lst = cast(str, columnconfigure).strip('()').split(',')
-            colcfgs = tuple(int(x) for x in lst)
-            for i, wgh in enumerate(colcfgs):
-                _ = ctrl.columnconfigure(i, weight=wgh)
+        super().__init__(idself, parent, **options)
 
     @override
     def destroy(self):

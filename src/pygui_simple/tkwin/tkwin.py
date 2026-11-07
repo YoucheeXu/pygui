@@ -45,15 +45,12 @@ class DialogCtrl(Dialog):
         self._alive: bool = False
         self._idself: str = attr_dict["id"]
         self._subctrlcfg_list: list[et.Element] = list(dlg_cfg)
-        self._idctrl_list: list[str] = []
+        # self._idctrl_list: list[str] = []
         self._extral_msg: dict[str, object] = {}
 
-        self._title: str
-        self._xx: int
-        self._yy: int
-
-    def set_title(self, val: str):
-        self._title = val
+    @override
+    def title(self, val: str):
+        super().title(val)
         if self._top is not None:
             topctrl = cast(tk.Toplevel, self._top.control)
             topctrl.title(self._title)
@@ -61,6 +58,13 @@ class DialogCtrl(Dialog):
     @property
     def alive(self):
         return self._alive
+
+    @override
+    def movie_window(self, x: int, y: int, w: int, h: int):
+        super().movie_window(x, y, w, h)
+        assert self._top is not None
+        topctrl = cast(tk.Toplevel, self._top.control)
+        topctrl.geometry(f'{self._ww}x{self._hh}+{self._xx}+{self._yy}')
 
     def do_show(self, owner: Container | None = None, x: int = 0, y: int = 0, **kwargs: object):
         # po(f"show Dialog {self._idself}: {kwargs}")
@@ -73,15 +77,18 @@ class DialogCtrl(Dialog):
         topctrl = cast(tk.Toplevel, self._top.control)
 
         # x, y, _, _ = self._app.get_winsize()
-        if owner is not None:
-            self._xx = x
-            self._yy = y
-        else:
-            self._xx = self._parent.winfo_rootx() + x
-            self._yy = self._parent.winfo_rooty() + y
-        # pv(self.pos)
+        # if owner is not None:
+            # self._xx = x
+            # self._yy = y
+        # else:
+            # self._xx = self._parent.winfo_rootx() + x
+            # self._yy = self._parent.winfo_rooty() + y
 
-        topctrl.geometry(f'{self._ww}x{self._hh}+{self._xx}+{self._yy}')
+        if owner is None:
+            x += self._parent.winfo_rootx()
+            y += self._parent.winfo_rooty()            
+
+        self.movie_window(x, y, self._ww, self._hh)
 
         # self.withdraw()
         iddlg = self._idself
@@ -162,8 +169,10 @@ class DialogCtrl(Dialog):
 
     @override
     def process_message(self, idmsg: str, **kwargs: object):
-        kwargs.update(self._extral_msg)
-        return super().process_message(idmsg, **kwargs)
+        if self._alive:
+            kwargs.update(self._extral_msg)
+            return super().process_message(idmsg, **kwargs)
+        return None
 
     @override
     def destroy(self, **kwargs: object):
@@ -247,10 +256,9 @@ class tkWin(Window):
         # self._mousex: int = 0
         # self._mousey: int = 0
 
-        self._title: str
-
-        self.set_title(self._title)
-        self.create_window()
+        if xmlfile:
+            self.title(self._title)
+            self.create_window()
 
     def _get_scale_factor(self):
         """ 获取系统缩放比例(默认1.0)"""
@@ -271,7 +279,27 @@ class tkWin(Window):
     def win(self):
         return self._win
 
-    def _center_window(self, width: int, hight: int):
+    @override
+    def title(self, val: str):
+        super().title(val)
+        self._win.title(self._title)
+
+    @override
+    def create_window(self):
+        if self._ww and self._hh:
+            self.center_window(self._ww, self._hh)
+
+        for frm in list(self._wincfg):
+            # _ = self.create_controls(self._win, frm)
+            _ = self.create_controls(self._root, frm)
+
+    @override
+    def movie_window(self, x: int, y: int, w: int, h: int):
+        _ = self._win.geometry(f"{w}x{h}+{x}+{y}")
+        return super().movie_window(x, y, w, h)
+
+    @override
+    def center_window(self, width: int, height: int):
         """ 设置窗口居中和宽高
 
         Args:
@@ -287,26 +315,10 @@ class tkWin(Window):
 
         # 计算中心坐标
         cen_x = int((sw - width) / 2)
-        cen_y = int((sh - hight) / 2)
-
-        self._xx: int = cen_x
-        self._yy: int = cen_y
+        cen_y = int((sh - height) / 2)
 
         # 设置窗口大小并居中
-        self._win.geometry(f"{width}x{hight}+{cen_x}+{cen_y}")
-
-    def set_title(self, val: str):
-        self._title = val
-        self._win.title(self._title)
-
-    @override
-    def create_window(self):
-        if self._ww and self._hh:
-            self._center_window(self._ww, self._hh)
-
-        for frm in list(self._wincfg):
-            # _ = self.create_controls(self._win, frm)
-            _ = self.create_controls(self._root, frm)
+        self.movie_window(cen_x, cen_y, width, height)
 
     def show_info(self, title: str = "", message: str = ""):
         _ = tkMessageBox.showinfo(title, message)

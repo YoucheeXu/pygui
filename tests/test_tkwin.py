@@ -51,7 +51,7 @@ class ExampleApp(Container):
 
         self._gui: tkWin = tkWin(self._app_path, xmlfile)
         self._gui.filter_message(self._process_message)
-        self._gui.set_title("Hello tkinter")
+        self._gui.title("Hello tkinter")
 
         self._statusbar: StatusBarCtrl = cast(StatusBarCtrl, self._gui.get_control("Statusbar"))
         self._statusbar.set_label("hello", "I'm a status bar")

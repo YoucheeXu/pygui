@@ -3,10 +3,10 @@
 import tkinter as tk
 import xml.etree.ElementTree as et
 from collections.abc import Callable
-from typing import Any, cast
+from typing import Any, cast, override
 
 from pygui_simple.tkwin.tkcontrol import tkControl
-from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
+from pygui_simple.winbasic import Widget, WidgetRegistry, WinBasic
 
 
 class SlideSwitchCtrl(tkControl):
@@ -28,8 +28,7 @@ class SlideSwitchCtrl(tkControl):
     def __init__(
         self,
         idself: str,
-        master: tk.Misc,
-        owner: Container,
+        parent: Widget,
         width: int = 80,
         height: int = 40,
         default_state: bool = False,
@@ -58,9 +57,9 @@ class SlideSwitchCtrl(tkControl):
         Returns:
             None
         """
+        master = cast(tk.Misc, parent.control)
         ctrl = tk.Canvas(master, width=width, height=height, highlightthickness=0)
         super().__init__(idself, master, "", ctrl)
-        self._owner: Container = owner
 
         self._width: int = width
         self._height: int = height
@@ -266,9 +265,11 @@ class SlideSwitchCtrl(tkControl):
         else:
             # For click interactions: toggle state directly
             new_state = not self._state
+            self._state = new_state
 
         # Animate to final state and trigger callback if needed
         self._animate_to_state(new_state)
+        self.on_state_changed(new_state)
 
     def _animate_to_state(self, target_state: bool) -> None:
         """Animate the slider to the target state position.
@@ -352,20 +353,19 @@ class SlideSwitchCtrl(tkControl):
             self._current_slider_x = float(self.__slider_on_x) if state else float(self.__slider_off_x)
             self._redraw_all()
 
-        self._on_state_changed(state)
+        self.on_state_changed(state)
 
-    def _on_state_changed(self, state: bool):
+    def on_state_changed(self, state: bool):
         # self._state = state
         # Trigger callback if state changed
         if self._callback:
             self._callback(state)
-        _ = self._owner.process_message(self._idself, event="Changed", val=state)
 
 @WidgetRegistry.register("SlideSwitch")
 class tkSlideSwitchCtrl(SlideSwitchCtrl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+        self._owner: WinBasic = owner
         attr_dict = ctrl_cfg.attrib
-        master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
@@ -378,4 +378,9 @@ class tkSlideSwitchCtrl(SlideSwitchCtrl):
         # slider_shadow = cast(str, options.get("slider_shadow", "#CCCCCC"))
         # callback = None # callback: Callable[[bool], None] | None = None
 
-        super().__init__(idself, master, owner, **options)
+        super().__init__(idself, parent, **options)
+
+    @override
+    def on_state_changed(self, state: bool):
+        _ = self._owner.process_message(self._idself, event="Changed", val=state)
+        return super().on_state_changed(state)

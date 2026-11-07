@@ -11,22 +11,28 @@ from pygui_simple.winbasic import (
 )
 
 
-@WidgetRegistry.register("Button")
 class ButtonCtrl(tkControl):
+    def __init__(self, idself: str, text: str, parent: Widget, **kwargs: Any):
+        master = cast(tk.Misc, parent.control)
+        tooltip = cast(str, kwargs.pop("tooltip", ""))
+
+        ctrl = ttk.Button(master, text=text, **kwargs)
+        super().__init__(idself, master, text, ctrl, tooltip)
+
+@WidgetRegistry.register("Button")
+class tkButtonCtrl(ButtonCtrl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
-        master = cast(tk.Misc, parent.control)
         text = attr_dict.get("text")
         assert text is not None
 
-        ctrl = ttk.Button(master, text=text, **options)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(idself, master, text, ctrl, tooltip)
+        super().__init__(idself, text, parent, tooltip=tooltip)
         self._owner: WinBasic = owner
-        _ = ctrl.configure(command=self._btn_clicked, **options)
+        _ = super().configure(command=self._btn_clicked, **options)
 
     def _btn_clicked(self):
         btn = cast(ttk.Button, self._tkctrl)
