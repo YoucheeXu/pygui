@@ -9,9 +9,9 @@ from pygui_simple.winbasic import Control
 
 
 class tkControl(Control):
-    def __init__(self, parent: tk.Misc, title: str, idself: str, tkctrl: tk.Widget, tooltip: str = ""):
-        super().__init__(title, idself)
-        self._parent: tk.Misc = parent
+    def __init__(self, idself: str, master: tk.Misc, title: str, tkctrl: tk.Widget, tooltip: str = ""):
+        super().__init__(idself, title)
+        self._master: tk.Misc = master
         self._tkctrl: tk.Widget = tkctrl
         self.control = tkctrl  # pyright: ignore[reportUnannotatedClassAttribute]
         self._assemble_type: str = ""

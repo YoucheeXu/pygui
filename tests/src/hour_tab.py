@@ -33,25 +33,25 @@ from src.time_database_type import (
     time2str,
 )
 
-from pygui_simple.tkmatplot import LineData, MatPlotCtrl
-
-# from pygui.tkcalendar import CalendarCtrl
-from pygui_simple.tkscrollpicker import DateScrollPickerDialog, TimeScrollPickerDialog
-from pygui_simple.tkslideswitch import SlideSwitchCtrl
-from pygui_simple.tkwin import (
+from pygui_simple.tkwin.matplotctrl import LineData, MatPlotCtrl
+from pygui_simple.tkwin.scrollpickerctrl import (
+    DateScrollPickerDialog,
+    TimeScrollPickerDialog,
+)
+from pygui_simple.tkwin.slideswitchctrl import SlideSwitchCtrl
+from pygui_simple.tkwin.tkcontrols import (
     ButtonCtrl,
     CanvasCtrl,
     ComboboxCtrl,
-    DialogCtrl,
     EntryCtrl,
     FrameCtrl,
     ImageButtonCtrl,
     ImagePanelCtrl,
     LabelCtrl,
     PicsListviewCtrl,
-    tkWin,
 )
-from pygui_simple.winbasic import Container, Dialog, Widget, WinBasic, on_message
+from pygui_simple.tkwin.tkwin import DialogCtrl, tkWin
+from pygui_simple.winbasic import Container, Widget, on_message
 
 
 class HourTuple(NamedTuple):

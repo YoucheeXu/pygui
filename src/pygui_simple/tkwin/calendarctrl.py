@@ -10,11 +10,11 @@ import xml.etree.ElementTree as et
 from tkinter import ttk
 from typing import cast, override
 
-from pygui_simple.tkcontrol import tkControl
+from pygui_simple.tkwin.tkcontrol import tkControl
 from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
 
 
-class tkCalendarCtrl(tkControl):
+class CalendarCtrl(tkControl):
     """ A tkinter-based interactive calendar control for date selection.
 
     This widget implements a monthly calendar UI with date picking, month/year navigation,
@@ -36,7 +36,7 @@ class tkCalendarCtrl(tkControl):
         _cmb_month: ttk Combobox for month selection
         _items: List of Treeview item IDs for calendar week rows
     """
-    def __init__(self, parent: tk.Misc, owner: Container, idself: str, **kwargs: object):
+    def __init__(self, idself: str, master: tk.Misc, owner: Container, **kwargs: object):
         """ Initialize the calendar control widget.
 
         Args:
@@ -46,10 +46,10 @@ class tkCalendarCtrl(tkControl):
             **kwargs: Optional configuration parameters
                 fwday: First day of the week (0 = Monday, default: 0)
         """
-        ctrl = ttk.Frame(parent)
-        super().__init__(parent, "", idself, ctrl)
+        ctrl = ttk.Frame(master)
+        super().__init__(idself, master, "", ctrl)
 
-        self._master: tk.Misc = parent
+        self._master: tk.Misc = master
         self._owner: Container = owner
 
         # first day of week, default to Monday)
@@ -461,7 +461,7 @@ class CalendarDialog(Container):
         frame = ttk.Frame(self._top)
 
         # Embed calendar control and set layout
-        self._calendar_ctrl: tkCalendarCtrl = tkCalendarCtrl(frame, self, "")
+        self._calendar_ctrl: CalendarCtrl = CalendarCtrl("", frame, self)
         cast(tk.Widget, self._calendar_ctrl.control).pack(expand = 1, fill = 'both')
 
         # Bottom action bar with confirm/cancel buttons
@@ -568,7 +568,7 @@ class CalendarDialog(Container):
 
 
 @WidgetRegistry.register("Calendar")
-class CalendarCtrl(tkCalendarCtrl):
+class tkCalendarCtrl(CalendarCtrl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
@@ -576,4 +576,4 @@ class CalendarCtrl(tkCalendarCtrl):
         if "options" in attr_dict:
             options = cast(dict[str, object], eval(attr_dict["options"]))
 
-        super().__init__(master, owner, idself, **options)
+        super().__init__(idself, master, owner, **options)

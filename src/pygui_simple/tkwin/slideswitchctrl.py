@@ -5,11 +5,11 @@ import xml.etree.ElementTree as et
 from collections.abc import Callable
 from typing import Any, cast
 
-from pygui_simple.tkcontrol import tkControl
+from pygui_simple.tkwin.tkcontrol import tkControl
 from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
 
 
-class tkSlideSwitchCtrl(tkControl):
+class SlideSwitchCtrl(tkControl):
     """iOS-style toggle switch widget implemented with Tkinter Canvas.
 
     This widget replicates the behavior and appearance of the native iOS toggle switch,
@@ -27,9 +27,9 @@ class tkSlideSwitchCtrl(tkControl):
     """
     def __init__(
         self,
-        parent: tk.Misc,
-        owner: Container,
         idself: str,
+        master: tk.Misc,
+        owner: Container,
         width: int = 80,
         height: int = 40,
         default_state: bool = False,
@@ -58,9 +58,9 @@ class tkSlideSwitchCtrl(tkControl):
         Returns:
             None
         """
-        ctrl = tk.Canvas(parent, width=width, height=height, highlightthickness=0)
-        super().__init__(parent, "", idself, ctrl)
-        self._master: Container = owner
+        ctrl = tk.Canvas(master, width=width, height=height, highlightthickness=0)
+        super().__init__(idself, master, "", ctrl)
+        self._owner: Container = owner
 
         self._width: int = width
         self._height: int = height
@@ -359,10 +359,10 @@ class tkSlideSwitchCtrl(tkControl):
         # Trigger callback if state changed
         if self._callback:
             self._callback(state)
-        _ = self._master.process_message(self._idself, event="Changed", val=state)
+        _ = self._owner.process_message(self._idself, event="Changed", val=state)
 
 @WidgetRegistry.register("SlideSwitch")
-class SlideSwitchCtrl(tkSlideSwitchCtrl):
+class tkSlideSwitchCtrl(SlideSwitchCtrl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
@@ -378,4 +378,4 @@ class SlideSwitchCtrl(tkSlideSwitchCtrl):
         # slider_shadow = cast(str, options.get("slider_shadow", "#CCCCCC"))
         # callback = None # callback: Callable[[bool], None] | None = None
 
-        super().__init__(master, owner, idself, **options)
+        super().__init__(idself, master, owner, **options)

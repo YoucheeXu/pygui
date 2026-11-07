@@ -16,7 +16,7 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from numpy.typing import ArrayLike
 
-from pygui_simple.tkcontrol import tkControl
+from pygui_simple.tkwin.tkcontrol import tkControl
 from pygui_simple.winbasic import Widget, WidgetRegistry, WinBasic
 
 font = {'family' : 'SimHei',
@@ -35,11 +35,11 @@ class LineData:
 
 Event_Callback = Callable[[backend_bases.Event], object]
 
-class tkMatPlotCtrl(tkControl):
+class MatPlotCtrl(tkControl):
     def __init__(
         self,
-        parent: tk.Misc,
         idself: str,
+        parent: tk.Misc,
         title: str = "",
         xlabel: str = "",
         ylabel: str = "",
@@ -63,7 +63,7 @@ class tkMatPlotCtrl(tkControl):
 
         self._fig: Figure = Figure(figsize=self._size, dpi=self._dpi)
         self._canvas: FigureCanvasTkAgg = FigureCanvasTkAgg(self._fig, parent)
-        super().__init__(parent, title, idself, self._canvas.get_tk_widget())
+        super().__init__(idself, parent, title, self._canvas.get_tk_widget())
         self._ax: Axes = self._fig.add_subplot()
         self._fig.subplots_adjust(bottom=0.25)
         self._create()
@@ -269,7 +269,7 @@ class Plot:
         plt.show()
 
 @WidgetRegistry.register("MatPlot")
-class MatPlotCtrl(tkMatPlotCtrl):
+class tkMatPlotCtrl(MatPlotCtrl):
     def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
@@ -284,5 +284,5 @@ class MatPlotCtrl(tkMatPlotCtrl):
         else:
             size = (640, 480)
 
-        super().__init__(master, idself, text, attr_dict["xLabel"],
+        super().__init__(idself, master, text, attr_dict["xLabel"],
                 attr_dict["yLabel"], size)

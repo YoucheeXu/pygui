@@ -10,7 +10,13 @@ from src.hour_tab import HourTab
 from src.schedule import Schedule
 from src.todo_tab import TodoTab
 
-from pygui_simple.tkwin import tkWin
+from pygui_simple.tkwin.tkcontrols import (
+    MenuCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+    NotebookCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+    ScrollableFrameCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+    StyleCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+)
+from pygui_simple.tkwin.tkwin import tkWin
 
 
 class TimeMasterApp:

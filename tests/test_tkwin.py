@@ -11,18 +11,28 @@ import sys
 import tkinter as tk
 from typing import cast, override
 
-from pygui_simple.tkcontrol import tkControl
-from pygui_simple.tkwin import (
+from pygui_simple.tkwin.tkcontrols import (
     ButtonCtrl,
+    CanvasCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
     CheckbuttonCtrl,
+    ComboboxCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
     EntryCtrl,
     FrameCtrl,
+    ImageButtonCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+    LabelCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
     LabelFrameCtrl,
     ListboxCtrl,
+    MenuCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+    NotebookCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+    RadiobuttonCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
     ScrollableFrameCtrl,
     ScrolledTextCtrl,
     SpinboxCtrl,
     StatusBarCtrl,
+    StyleCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+    ToolbarCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401
+)
+from pygui_simple.tkwin.tkwin import (
     tkWin,
 )
 from pygui_simple.winbasic import Container, Widget, on_message

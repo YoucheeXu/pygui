@@ -30,15 +30,18 @@ from src.time_database_type import (
     time2str,
 )
 
-from pygui_simple.tkcalendar import CalendarCtrl
-from pygui_simple.tkcontrol import tkControl
-from pygui_simple.tkscrollpicker import ScrollPickerCtrl, TimeScrollPickerCtrl
-from pygui_simple.tkslideswitch import SlideSwitchCtrl
-from pygui_simple.tkwin import (
-    DialogCtrl,
+from pygui_simple.tkwin.tkcontrol import tkControl
+from pygui_simple.tkwin.tkcontrols import (
+    CalendarCtrl,
     EntryCtrl,
     FrameCtrl,
     LabelCtrl,
+    ScrollPickerCtrl,
+    SlideSwitchCtrl,
+    TimeScrollPickerCtrl,
+)
+from pygui_simple.tkwin.tkwin import (
+    DialogCtrl,
     tkWin,
 )
 from pygui_simple.winbasic import Container, WinBasic

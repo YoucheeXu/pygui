@@ -90,7 +90,7 @@ class WidgetRegistry:
         return list(cls._widgets.keys())
 
 class Control(Widget, metaclass=abc.ABCMeta):
-    def __init__(self, title: str, idself: str):
+    def __init__(self, idself: str, title: str):
         super().__init__(idself)
         self._title: str = title
         self._backed: bool = True

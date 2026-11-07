@@ -10,7 +10,7 @@ from collections.abc import Callable
 from tkinter import ttk
 from typing import Any, TypeVar, cast, override
 
-from pygui_simple.tkcontrol import tkControl
+from pygui_simple.tkwin.tkcontrol import tkControl
 from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
 
 T = TypeVar("T", bound=int | str)
@@ -175,19 +175,19 @@ class ScrollPicker[T](tk.Frame):
         self._update_previews()
 
 
-class tkScrollPickerCtrl[T](tkControl):
-    def __init__(self, parent: tk.Misc, owner: Container, idself: str,
+class ScrollPickerCtrl[T](tkControl):
+    def __init__(self, master: tk.Misc, owner: Container, idself: str,
             width: int, height: int,
             val_list: list[T],
             initial: T | None = None,
             background: str = "white"):
-        self._master: tk.Misc = parent
+        self._master: tk.Misc = master
         self._owner: Container = owner
 
         self._frame: tk.Frame = tk.Frame(self._master,
             background=background,
             width=width, height=height)
-        super().__init__(parent, "", idself, self._frame)
+        super().__init__(idself, master, "", self._frame)
 
         self._scrollpicker: ScrollPicker[T] = ScrollPicker[T](self._frame, val_list,
             initial, self._on_val_change,
@@ -226,7 +226,7 @@ class DateScrollPickerDialog:
 
         # 初始日期设置
         if not initial:
-            today: datetime.datetime = datetime.datetime.today()
+            today = datetime.datetime.now().date()
             self._selected_year: int = today.year
             self._selected_month: int = today.month
             self._selected_day: int = today.day
@@ -359,8 +359,8 @@ class DateScrollPickerDialog:
             _ = self._master.after(10, self._main_judge)
 
 
-class tkTimeScrollPickerCtrl(tkControl):
-    def __init__(self, parent: tk.Misc, owner: Container, idself: str,
+class TimeScrollPickerCtrl(tkControl):
+    def __init__(self, idself: str, parent: tk.Misc, owner: Container,
             width: int, height: int, *,
             stp: int = 0,
             background: str = "white",
@@ -375,7 +375,7 @@ class tkTimeScrollPickerCtrl(tkControl):
         self._frame: tk.Frame = tk.Frame(self._master,
             background=background,
             width=width, height=height)
-        super().__init__(parent, "", idself, self._frame)
+        super().__init__(idself, parent, "", self._frame)
 
         # self.set_initial(initial)
         if not initial:
@@ -503,8 +503,8 @@ class TimeScrollPickerDialog(Container):
 
         ttk.Label(self._frame, text=self._title, font=("SimHei", 12)).pack()
 
-        self._time_scrollpicker_ctrl: tkTimeScrollPickerCtrl = tkTimeScrollPickerCtrl(self._frame, self,
-            "tspSelectTime",
+        self._time_scrollpicker_ctrl: TimeScrollPickerCtrl = TimeScrollPickerCtrl("tspSelectTime",
+            self._frame, self,
             100, 50,
             stp=stp,
             initial=f"{selected_hour}:{selected_minute}"
@@ -580,8 +580,8 @@ class TimeScrollPickerDialog(Container):
         pass
 
 @WidgetRegistry.register("ScrollPicker")
-class ScrollPickerCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,  owner: WinBasic):
+class tkScrollPickerCtrl(tkControl):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
@@ -597,19 +597,18 @@ class ScrollPickerCtrl(tkControl):
             start = cast(int, options["start"])
             end = cast(int, options['end'])
             val_list = list(range(start, end+1))
-        ctrl = tkScrollPickerCtrl[typ](master, owner, idself,
+        ctrl = ScrollPickerCtrl[typ](master, owner, idself,
             int(attr_dict["width"]), int(attr_dict["height"]), val_list, initial, bg)
 
-        super().__init__(master, "", idself, cast(tk.Widget, ctrl.control))
+        super().__init__(idself, master, "", cast(tk.Widget, ctrl.control))
 
 @WidgetRegistry.register("TimeScrollPicker")
-class TimeScrollPickerCtrl(tkTimeScrollPickerCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget,
-            owner: WinBasic, level: int):
+class tkTimeScrollPickerCtrl(TimeScrollPickerCtrl):
+    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         master = cast(tk.Misc, parent.control)
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
 
-        super().__init__(master, owner, idself, **options)
+        super().__init__(idself, master, owner, **options)
