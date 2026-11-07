@@ -30,27 +30,55 @@ class Widget:
 W = TypeVar("W", bound=Widget)
 
 class WidgetRegistry:
-    _widgets: dict[str, type[Widget]] = {}
+    """ A global static registry for Widget subclasses.
+    Provides decorator API to register widget classes by string tag,
+    and lookup API to retrieve widget classes by tag at runtime.
+    """
+
+    # Class-level storage: tag string -> Widget subclass type
+    # ClassVar means this dict belongs to the WidgetRegistry class, not instances.
+    _widgets: ClassVar[dict[str, type[Widget]]] = {}
 
     def __init__(self):
+        # Instance creation is allowed, but we do not store state on instances.
+        # All data lives on the class itself via classmethods.
         pass
 
     @classmethod
     def register(cls, tag: str):
-        """装饰器用法：@WidgetRegistry.register('MyTag')"""
+        """ Decorator factory. Accept a tag name and return a decorator.
+        Usage: @WidgetRegistry.register("my_widget_tag")
+
+        Args:
+            tag: Unique string identifier for this widget type.
+        Returns:
+            A decorator that accepts a Widget subclass and registers it.
+        """
         def deco(widget_cls: type[W]):
+            # Bind the widget class to the given tag in the registry dict
             cls._widgets[tag] = widget_cls
+            # Return the original widget class unchanged (decorator identity wrap)
             return widget_cls
         return deco
 
     @classmethod
     def get(cls, tag: str):
+        """ Look up a widget class by tag.
+
+        Args:
+            tag: The tag string used during registration.
+        Returns:
+            Widget subclass if found; None if the tag does not exist.
+        """
         if tag not in cls._widgets:
             return None
         return cls._widgets[tag]
 
     @classmethod
     def known_tags(cls):
+        """ Return a list of all registered widget tag names.
+        Useful for inspection, debug UI, or enumeration.
+        """
         return list(cls._widgets.keys())
 
 class Control(Widget, metaclass=abc.ABCMeta):
