@@ -19,6 +19,7 @@ class NotebookCtrl(tkControl):
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
+        self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
         master = cast(tk.Misc, parent.control)
 
         ctrl = ttk.Notebook(master, **options)

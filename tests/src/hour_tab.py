@@ -310,14 +310,14 @@ class EditHourDlg(DialogCtrl):
         sls_clock = cast(SlideSwitchCtrl, self.get_control("slsClockEditHour"))
 
         if hid == 0:
-            self.set_title("New Item")
+            self.title("New Item")
             btn_delhour = cast(ButtonCtrl, self.get_control("btnDelItemEditHour"))
             btn_delhour.hide()
             lbl_addclock.show()
             sls_clock.hide()
             grp, idx = 0, 0
         else:
-            self.set_title("Edit Item")
+            self.title("Edit Item")
             detail = self._get_hourdetail(db, hid)
             pv(detail)
 

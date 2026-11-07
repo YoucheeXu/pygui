@@ -13,6 +13,10 @@ from pyutilities_simple.logit import po
 
 
 class Widget:
+    #: If True, this control creates its own child controls.
+    #: The parent window / container skips automatic child creation during setup.
+    _handles_child_creation: bool = False
+
     def __init__(self, idself: str, ctrl_cfg: et.Element | None = None, parent: Widget | None = None,
             owner: WinBasic | None = None):
         self._idself: str = idself
@@ -26,6 +30,14 @@ class Widget:
     @control.setter
     def control(self, ctrl: object):
         self._control = ctrl
+
+    @property
+    def handles_child_creation(self):
+        return self._handles_child_creation
+
+    @handles_child_creation.setter
+    def handles_child_creation(self, val: bool):
+        self._handles_child_creation = val
 
     @property
     def level(self):
@@ -429,9 +441,8 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
             return idctrl_dict
         idctrl, ctrl = self.create_control(parent, ctrl_cfg, level, owner)
         idctrl_dict[idctrl] = ctrl
-        # TODO
-        if tag in ["Menu", "Notebook", "RadiobuttonGroup",
-            "Statusbar", "Toolbar", "Dialog"]:
+
+        if ctrl.handles_child_creation:
             pass
         else:
             for subctrl_cfg in list(ctrl_cfg):
@@ -508,6 +519,7 @@ class Dialog(WinBasic, metaclass=abc.ABCMeta):
     def __init__(self, title: str, width: int, height: int, app: WinBasic):
         super().__init__()
         self._app: WinBasic = app
+        self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
 
         self._xx: int = 0
         self._yy: int = 0

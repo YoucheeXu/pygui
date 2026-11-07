@@ -20,6 +20,7 @@ class ToolbarCtrl(tkControl):
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
         subctrls = list(ctrl_cfg)
+        self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
 
         ctrl = ttk.Frame(master, **options)
         super().__init__(idself, master, "", ctrl)

@@ -22,6 +22,7 @@ class RadioButtonGroupCtrl(tkControl):
         master = cast(tk.Misc, parent.control)
         text = attr_dict.get("text")
         assert text is not None
+        self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
 
         ctrl = ttk.LabelFrame(master)
         super().__init__(idself, master, text, ctrl)

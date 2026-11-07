@@ -19,6 +19,7 @@ class MenuCtrl(tkControl):
         kwargs: dict[str, Any] = {}
         if "kwargs" in attr_dict:
             kwargs = eval(attr_dict["options"])
+        self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
 
         menubar = tk.Menu(master, **kwargs)
         super().__init__("", master, idself, menubar)
