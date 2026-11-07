@@ -25,7 +25,7 @@ from pygui_simple.tkwin import (
     StatusBarCtrl,
     tkWin,
 )
-from pygui_simple.winbasic import Container, on_message
+from pygui_simple.winbasic import Container, Widget, on_message
 
 
 class ExampleApp(Container):
@@ -46,11 +46,11 @@ class ExampleApp(Container):
         self._statusbar: StatusBarCtrl = cast(StatusBarCtrl, self._gui.get_control("Statusbar"))
         self._statusbar.set_label("hello", "I'm a status bar")
 
-        mainframe: FrameCtrl = cast(FrameCtrl, self._gui.get_control("frnMain"))
+        mainframe: FrameCtrl = cast(FrameCtrl, self._gui.get_control("frmMain"))
         _ = cast(tk.Frame, mainframe.control).grid_rowconfigure(1, weight=1)
         # _ = cast(tk.Frame, mainframe.control).grid_columnconfigure(0, weight=1)
 
-    def _create_label(self, parent: tkControl, lid: str, rowid: int, txt: str):
+    def _create_label(self, parent: Widget, lid: str, rowid: int, txt: str):
         lbl_xml = self._gui.create_xml("Label", {"text": txt, "id": lid})
         _, lbl_ctrl = self._gui.create_control(parent, lbl_xml, 0, self._gui)
         self._gui.assemble_control(lbl_ctrl, {"layout":"grid",
@@ -63,6 +63,7 @@ class ExampleApp(Container):
         num_row = self._idx_left_vertical
         id_lbl = f"lblLeftV{num_row}"
         self._create_label(ctrl, id_lbl, num_row, f"垂直内容{num_row}")
+        return True
 
     def _process_message(self, idmsg: str, **kwargs: object):
         match idmsg:
@@ -115,12 +116,6 @@ class ExampleApp(Container):
                 ctrl = cast(ListboxCtrl, self._gui.get_control("lstHaa"))
                 self._i += 1
                 ctrl.insert("end", f"第{self._i:02}项")
-            # case "btnLeftVAdd":
-            #     ctrl = cast(ScrollableFrameCtrl, self._gui.get_control("frmLeftContentArea"))
-            #     self._idx_left_vertical += 1
-            #     num_row = self._idx_left_vertical
-            #     id_lbl = f"lblLeftV{num_row}"
-            #     self._create_label(ctrl, id_lbl, num_row, f"垂直内容{num_row}")
             case "btnLeftVSub":
                 id_lbl = f"lblLeftV{self._idx_left_vertical}"
                 self._gui.delete_control(id_lbl)

@@ -76,7 +76,7 @@ class TimeMasterApp:
                     self.open_user(user_path)
                     break
 
-    def process_message(self, idmsg: str, **kwargs: object):
+    def process_message(self, idmsg: str, **_: object):
         match idmsg:
             case "NewUser":
                 usrpath = tkFileDialog.askdirectory(

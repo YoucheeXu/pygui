@@ -15,7 +15,7 @@
 			<MenuItem Command="About"/>
 		</MenuItem>
 	</Menu>
-	<Frame id="frnMain" options="{'columnconfigure':'(1)'}" layout="pack" pack="{'fill':'both','expand':1}">
+	<Frame id="frmMain" options="{'columnconfigure':'(1)'}" layout="pack" pack="{'fill':'both','expand':1}">
 		<Toolbar text="toolbar" layout="grid" grid="{'row':0, 'sticky':'ew'}">
 			<ImageButton id="btnOpnImg" tooltip="Open Image" image="resources/icons8-add-file-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
 			<ImageButton id="btnRnmImg" tooltip="Rename Image" image="resources/icons8-rename-16.png" layout="pack" pack="{'side':'left','padx':2,'pady':2}"/>
