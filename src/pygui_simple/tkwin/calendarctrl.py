@@ -145,11 +145,16 @@ class CalendarCtrl(tkControl):
     def __setup_styles(self):
         """ Define custom ttk styles for calendar navigation arrow buttons."""
         style = ttk.Style(self._master)
-        arrow_layout = lambda dir: (
-            [('Button.focus', {'children': [(f'Button.{dir}arrow', None)]})]
-        )
-        style.layout('L.TButton', arrow_layout('left'))
-        style.layout('R.TButton', arrow_layout('right'))
+        def arrow_layout(dir: str) -> ttk._LayoutSpec:  # pyright: ignore[reportPrivateUsage]
+            return [
+                ('Button.focus', {
+                    'children': [
+                        (f'Button.{dir}arrow', None)
+                    ]
+                })
+            ]
+        _ = style.layout('L.TButton', arrow_layout('left'))
+        _ = style.layout('R.TButton', arrow_layout('right'))
 
     def __place_widgets(self):
         """ Layout and position all UI widgets in the control frame."""
@@ -384,14 +389,17 @@ class CalendarCtrl(tkControl):
         self._build_calendar()
 
         # Auto-select today's date if viewing current month
-        if year == datetime.datetime.now().year and month == datetime.datetime.now().month:
-            day = datetime.datetime.now().day
+        today = datetime.datetime.now().date()
+        if year == today.year and month == today.month:
+            day = today.day
             for _item, day_list in enumerate(self._cal.monthdayscalendar(year, month)):
                 if day in day_list:
                     item = 'I00' + str(_item + 2)
                     column = '#' + str(day_list.index(day)+1)
-                    _ = self._master.after(100, lambda :self._clicked(item=item, column=column,
+                    _ = self._master.after(100,
+                        lambda item=item, column=column: self._clicked(item=item, column=column,
                         widget=self._calendar))
+                    break
 
     def get_date(self):
         """ Get the currently selected date as a datetime object.
