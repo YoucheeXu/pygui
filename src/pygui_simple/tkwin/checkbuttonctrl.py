@@ -19,15 +19,16 @@ class CheckbuttonCtrl(tkControl):
             vartext = text.replace(" ", "").replace(".", "_").replace("\n", "_")
         select = cast(bool, kwargs.pop("select", False))
         self._vartext: str = "_" + vartext
-        self.__dict__[self._vartext] = tk.IntVar()
-        self._variable: tk.IntVar = cast(tk.IntVar, self.__dict__[self._vartext])
+        var = tk.IntVar(value=0)
+        setattr(self, self._vartext, var)
+        self._variable: tk.IntVar = var
 
-        ctrl = tk.Checkbutton(master, text=text,
+        self._ctrl: tk.Checkbutton = tk.Checkbutton(master, text=text,
             variable=self._variable, **kwargs)
-        super().__init__(idself, master, text, ctrl, tooltip)
+        super().__init__(self._ctrl, tooltip)
 
         if select:
-            ctrl.select()
+            self._ctrl.select()
 
     @property
     def vartext(self):
