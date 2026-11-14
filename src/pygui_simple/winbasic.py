@@ -428,7 +428,7 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
             level: int = 0, owner: WinBasic | None = None) -> OrderedDict[str, Widget]:
         idctrl_dict: OrderedDict[str, Widget] = OrderedDict()
         tag = ctrl_cfg.tag
-        if tag == "CustomDialog":   # TODO
+        if tag == "CustomDialog":   # TODO: wait to delete
             attr_dict = ctrl_cfg.attrib
             idctrl = attr_dict["id"]
             self._customctrlcfg_dict[idctrl] = ctrl_cfg
@@ -449,6 +449,7 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         ctrl = cast(Control, self._idctrl_dict[idctrl])
         try:
             ctrl.destroy()
+            del self._idctrl_dict[idctrl]
         except AttributeError:
             print(f"WinBasic warnning: {idctrl} doesn't have destroy")            
         # del self._idctrl_dict[idctrl]
@@ -456,8 +457,8 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
     def get_control(self, idctrl: str):
         return self._idctrl_dict[idctrl]
 
-    def read_customctrlcfg(self, cfg: str):
-        cfgfile = os.path.join(self._app_path, cfg)
+    def read_customctrlcfg(self, cfgpath: str):
+        cfgfile = os.path.join(self._app_path, cfgpath)
         element_tree = et.parse(cfgfile)
         ctrl_cfg: et.Element[str] = element_tree.getroot()
         ctrl_attr = ctrl_cfg.attrib
