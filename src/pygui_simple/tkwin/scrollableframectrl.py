@@ -14,20 +14,15 @@ from pygui_simple.winbasic import (
 )
 
 
-@WidgetRegistry.register("ScrollableFrame")
 class ScrollableFrameCtrl(tkControl):
     """ 智能滚动容器
     """
-    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
-        attr_dict = ctrl_cfg.attrib
-        options: dict[str, Any] = {}
-        if "options" in attr_dict:
-            options = eval(attr_dict["options"])
+    def __init__(self, parent: Widget, **kwargs: Any):
         master = cast(tk.Misc, parent.control)
-        width = int(attr_dict["Width"])
-        height = int(attr_dict["Height"])
+        width = cast(int, kwargs.get("width", 0))
+        height = cast(int, kwargs.get("height", 0))
 
-        self._outter_frame: tk.Frame = tk.Frame(master, **options)
+        self._outter_frame: tk.Frame = tk.Frame(master, **kwargs)
 
         # 配置网格布局权重，确保框架能扩展
         _ = self._outter_frame.grid_rowconfigure(0, weight=1)
@@ -207,3 +202,14 @@ class ScrollableFrameCtrl(tkControl):
         self._hscrollbar.destroy()
         self._canvas.destroy()
         super().destroy()
+
+
+@WidgetRegistry.register("ScrollableFrame")
+class tkScrollableFrameCtrl(ScrollableFrameCtrl):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
+        attr_dict = ctrl_cfg.attrib
+        options: dict[str, Any] = {}
+        if "options" in attr_dict:
+            options = eval(attr_dict["options"])
+
+        super().__init__(parent, **options)
