@@ -8,13 +8,14 @@ from dataclasses import dataclass, field
 from typing import Any, cast
 
 import matplotlib.pyplot as plt
+import numpy as np
+import numpy.typing as npt
 from matplotlib import backend_bases
 from matplotlib.axes._axes import Axes
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.container import Container
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
-from numpy.typing import ArrayLike
 
 from pygui_simple.tkwin.tkcontrol import tkControl
 from pygui_simple.winbasic import Widget, WidgetRegistry, WinBasic
@@ -27,26 +28,48 @@ plt.rc('axes', unicode_minus=False)  # 步骤二（解决坐标轴负数的负�
 
 @dataclass
 class LineData:
-    ydata: ArrayLike                                # np.ndarray / list
     style_dict: dict[str, object] = field(default_factory=dict)
     typ: str = "line"
     visible: bool = True
     line: Line2D | Container | None = None
+    _ydata: npt.NDArray[np.float64] = field(init=False, repr=False)
+
+    def __init__(
+        self,
+        ydata: npt.ArrayLike,                             # 外部传 ArrayLike
+        style_dict: dict[str, object] | None = None,
+        typ: str = "line",
+        visible: bool = True,
+        line: Line2D | Container | None = None,
+    ) -> None:
+        self._ydata = np.asarray(ydata, dtype=np.float64)   # 内部归一化
+        self.style_dict = {} if style_dict is None else style_dict
+        self.typ = typ
+        self.visible = visible
+        self.line = line
+
+    @property
+    def ydata(self) -> npt.NDArray[np.float64]:
+        return self._ydata
+
+    @ydata.setter
+    def ydata(self, value: npt.ArrayLike) -> None:  # pyright: ignore[reportPropertyTypeMismatch]
+        self._ydata = np.asarray(value, dtype=np.float64)   # 任何赋值都归一化
 
 Event_Callback = Callable[[backend_bases.Event], object]
 
 class MatPlotCtrl(tkControl):
     def __init__(
         self,
-        idself: str,
-        parent: tk.Misc,
+        parent: Widget,
         title: str = "",
         xlabel: str = "",
         ylabel: str = "",
         size: tuple[float, float] = (640, 480),
     ):
+        master = cast(tk.Misc, parent.control)
         self._dpi: float = 80
-        self._xdata: ArrayLike = []
+        self._xdata: npt.NDArray[np.float64] = np.array([], dtype=float)
         self._linedata_list: list[LineData] = []
 
         self._xmin: float = float("inf")
@@ -62,8 +85,8 @@ class MatPlotCtrl(tkControl):
         self._ylabel: str = ylabel
 
         self._fig: Figure = Figure(figsize=self._size, dpi=self._dpi)
-        self._canvas: FigureCanvasTkAgg = FigureCanvasTkAgg(self._fig, parent)
-        super().__init__(idself, parent, title, self._canvas.get_tk_widget())
+        self._canvas: FigureCanvasTkAgg = FigureCanvasTkAgg(self._fig, master)
+        super().__init__(self._canvas.get_tk_widget())
         self._ax: Axes = self._fig.add_subplot()
         self._fig.subplots_adjust(bottom=0.25)
         self._create()
@@ -81,8 +104,8 @@ class MatPlotCtrl(tkControl):
         return self._xdata
 
     @xdata.setter
-    def xdata(self, xdata: ArrayLike):
-        self._xdata = xdata
+    def xdata(self, xdata: npt.ArrayLike):  # pyright: ignore[reportPropertyTypeMismatch]
+        self._xdata = np.asarray(xdata, dtype=np.float64)
 
     @property
     def ax(self):
@@ -102,7 +125,7 @@ class MatPlotCtrl(tkControl):
     def event_callback(self, s: str, func: Event_Callback):
         _ = self._fig.canvas.mpl_connect(s, func)
 
-    def _bar(self, xdata: ArrayLike, ydata: ArrayLike, **style_dict: Any):
+    def _bar(self, xdata: npt.ArrayLike, ydata: npt.ArrayLike, **style_dict: Any):
         bar = self._ax.bar(xdata, ydata, **style_dict)
         # if isinstance(bar, list):
         #     return bar[0]
@@ -111,14 +134,14 @@ class MatPlotCtrl(tkControl):
 
         return bar
 
-    def _plot(self, xdata: ArrayLike, ydata: ArrayLike, **style_dict: Any):
+    def _plot(self, xdata: npt.ArrayLike, ydata: npt.ArrayLike, **style_dict: Any):
         line = self._ax.plot(xdata, ydata, **style_dict)
         if isinstance(line, list):
             return line[0]
         else:
             return line
 
-    def _draw(self, xdata: ArrayLike, ydata: ArrayLike, typ: str, **style_dict: Any):
+    def _draw(self, xdata: npt.ArrayLike, ydata: npt.ArrayLike, typ: str, **style_dict: Any):
         match typ:
             case "line":
                 line = self._plot(self._xdata, ydata, **style_dict)
@@ -138,7 +161,7 @@ class MatPlotCtrl(tkControl):
 
         return len(self._linedata_list) - 1
 
-    def update_ydata(self, idx: int, ydata: ArrayLike):
+    def update_ydata(self, idx: int, ydata: npt.ArrayLike):
         self._linedata_list[idx].ydata = ydata
         if self._linedata_list[idx].visible:
             cast(Line2D, self._linedata_list[idx].line).set_ydata(ydata)
@@ -167,13 +190,8 @@ class MatPlotCtrl(tkControl):
         for line in self._linedata_list:
             if line.visible:
                 ydata = line.ydata
-                # pv(type(ydata))
-                try:
-                    ymin = min(ydata)
-                    ymax = max(ydata)
-                except ValueError:
-                    ymin = ydata.min()
-                    ymax = ydata.max()
+                ymin = float(np.min(ydata))
+                ymax = float(np.max(ydata))
 
                 self._ymin = min(self._ymin, ymin)
                 self._ymax = max(self._ymax, ymax)
@@ -184,14 +202,8 @@ class MatPlotCtrl(tkControl):
         self._xmin = float("inf")
         self._xmax = float("-inf")
 
-        try:
-            xmin = min(self._xdata)
-            xmax = max(self._xdata)
-        except ValueError:
-            xmin = self._xdata.min()
-            xmax = self._xdata.max()
-        # finally:
-            # pass
+        xmin = float(np.min(self._xdata))
+        xmax = float(np.max(self._xdata))
 
         self._xmin = min(self._xmin, xmin)
         self._xmax = max(self._xmax, xmax)
@@ -222,9 +234,10 @@ class Plot:
         fig, axs = plt.subplots(num_row, num_col, **plot_dict)
         self._fig: Figure = fig
         self._axes: list[Axes] = []
-        try:
-            self._axes = axs.flat
-        except:
+
+        if isinstance(axs, np.ndarray):
+            self._axes: list[Axes] = list(axs.flat)
+        else:
             self._axes = [axs]
         self._i: int = -1
 
@@ -247,7 +260,7 @@ class Plot:
         _ = ax.set(**axes_dict)
         return ax
 
-    def add_line(self, ax: Axes, xdata: ArrayLike, ydata: ArrayLike, typ: str = "line",
+    def add_line(self, ax: Axes, xdata: npt.ArrayLike, ydata: npt.ArrayLike, typ: str = "line",
             **style_dict: Any):
         match typ:
             case "line":
@@ -270,9 +283,8 @@ class Plot:
 
 @WidgetRegistry.register("MatPlot")
 class tkMatPlotCtrl(MatPlotCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
-        master = cast(tk.Misc, parent.control)
         # options: dict[str, Any] = {}
         # if "options" in attr_dict:
         #     options = eval(attr_dict["options"])
@@ -284,5 +296,5 @@ class tkMatPlotCtrl(MatPlotCtrl):
         else:
             size = (640, 480)
 
-        super().__init__(idself, master, text, attr_dict["xLabel"],
+        super().__init__(parent, text, attr_dict["xLabel"],
                 attr_dict["yLabel"], size)
