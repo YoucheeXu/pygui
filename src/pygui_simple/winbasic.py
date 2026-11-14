@@ -510,9 +510,8 @@ class Window(WinBasic, metaclass=abc.ABCMeta):
 
 
 class Dialog(WinBasic, metaclass=abc.ABCMeta):
-    def __init__(self, title: str, width: int, height: int, app: WinBasic):
+    def __init__(self, title: str, width: int, height: int):
         super().__init__()
-        self._app: WinBasic = app
         self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
 
         self._xx: int = 0
@@ -522,36 +521,16 @@ class Dialog(WinBasic, metaclass=abc.ABCMeta):
         self._title: str = title
 
     @property
-    @override
-    def path(self):
-        return self._app.path
-
-    @property
     def backed(self):
         return self._backed
 
     def _beforego(self, **kwargs: object):
-        _ = super().process_message("beforego", **kwargs)
+        _ = self.process_message("beforego", **kwargs)
 
-    @override
-    def assemble_control(self, ctrl: Widget, attr_dict: dict[str, str], prefix: str = ""):
-        return self._app.assemble_control(ctrl, attr_dict, prefix)
+    def _confirm(self, **kwargs: object):
+        _ = self.process_message("confirm", **kwargs)
+        return self.destroy(confirm=True, **kwargs)
 
-    def _confirm(self, **kwargs: object) -> tuple[bool, str]:
-        return cast(tuple[bool, str], super().process_message("confirm", **kwargs))
-
-    def _cancel(self, **kwargs: object) -> tuple[bool, str]:
-        return cast(tuple[bool, str], super().process_message("cancel", **kwargs))
-
-    @override
-    def process_message(self, idmsg: str, **kwargs: object):
-        match idmsg:
-            case "beforego":
-                self._beforego(**kwargs)
-            case "confirm":
-                return self._confirm(**kwargs)
-            case "cancel":
-                return self._cancel(**kwargs)
-            case _:
-                return super().process_message(idmsg, **kwargs)
-        return True
+    def _cancel(self, **kwargs: object):
+        _ = self.process_message("cancel", **kwargs)
+        return self.destroy(confirm=False, **kwargs)
