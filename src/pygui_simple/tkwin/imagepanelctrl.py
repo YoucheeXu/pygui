@@ -15,16 +15,16 @@ from pygui_simple.winbasic import (
 
 @WidgetRegistry.register("ImagePanel")
 class ImagePanelCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
+        master = cast(tk.Misc, parent.control)
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
-        master = cast(tk.Misc, parent.control)
 
         ctrl = tk.Label(master)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__("", master, idself, ctrl, tooltip)
+        super().__init__(ctrl, tooltip)
         self._image: ImageTk.PhotoImage | None = None
         if image := attr_dict.get("image", ""):
             width = cast(int, options.get("width", 0))

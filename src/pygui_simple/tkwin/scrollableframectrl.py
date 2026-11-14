@@ -18,7 +18,7 @@ from pygui_simple.winbasic import (
 class ScrollableFrameCtrl(tkControl):
     """ 智能滚动容器
     """
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -57,7 +57,7 @@ class ScrollableFrameCtrl(tkControl):
 
         # Create a frame inside the canvas which will be scrolled with it
         self._inner_frame: tk.Frame = tk.Frame(self._canvas)
-        super().__init__(idself, master, "", self._inner_frame)
+        super().__init__(self._inner_frame)
 
         # self._outter_frame.bindtags((self._outter_frame, self._canvas, "Frame", "all"))
         # 调整bindtags，确保事件先传给自身，再传给画布

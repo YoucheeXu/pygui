@@ -11,12 +11,12 @@ from pygui_simple.winbasic import (
 
 
 class FrameCtrl(tkControl):
-    def __init__(self, idself: str, parent: Widget, **kwargs: Any):
+    def __init__(self, parent: Widget, **kwargs: Any):
         master = cast(tk.Misc, parent.control)
         columnconfigure = cast(str, kwargs.pop("columnconfigure", ""))
 
         ctrl = tk.Frame(master, **kwargs)
-        tkControl.__init__(self, "", master, idself, ctrl)
+        super().__init__(ctrl)
 
         if columnconfigure:
             lst = columnconfigure.strip('()').split(',')
@@ -33,13 +33,13 @@ class FrameCtrl(tkControl):
 @WidgetRegistry.register("Frame")
 @WidgetRegistry.register("Tab")
 class tkFrameCtrl(FrameCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
 
-        super().__init__(idself, parent, **options)
+        super().__init__( parent, **options)
 
     @override
     def destroy(self):

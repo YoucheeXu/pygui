@@ -14,18 +14,18 @@ from pygui_simple.winbasic import (
 
 @WidgetRegistry.register("RadioButtonGroup")
 class RadioButtonGroupCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
+        master = cast(tk.Misc, parent.control)
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
-        master = cast(tk.Misc, parent.control)
         text = attr_dict.get("text")
         assert text is not None
         self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
 
         ctrl = ttk.LabelFrame(master)
-        super().__init__(idself, master, text, ctrl)
+        super().__init__(ctrl)
         # self._idself: str = idself
         # self._var_val: tk.IntVar = tk.IntVar()
         self._vartext: str = "_var" + text.replace(" ", "_")
@@ -55,10 +55,9 @@ class RadioButtonGroupCtrl(tkControl):
             self._app.assemble_control(sub_ctrl, radbtn_attr_dict)
 
     def _add_radiobutton(self, val: int, txt: str, **opt_dict: object):
-        ctrl_cfg = self._app.create_xml("Radiobutton", {"text": f"{txt}",
-            "vartext": self._vartext,
-            "value": f"{val}"})
-        radbutton = RadiobuttonCtrl("", ctrl_cfg, self, self._owner)
+        setattr(self, self._vartext, tk.IntVar)
+        variable = cast(tk.IntVar, getattr(self, self._vartext))
+        radbutton = RadiobuttonCtrl(self, txt, variable, value=val)
         radbutton.level = self.level+1
         radbutton.configure(**opt_dict)
         self._radbutton_lst.append(radbutton)

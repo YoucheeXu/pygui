@@ -12,7 +12,7 @@ from pygui_simple.winbasic import (
 
 
 class EntryCtrl(tkControl):
-    def __init__(self, idself: str, placeholder: str, parent: Widget, **kwargs: Any):
+    def __init__(self, parent: Widget, placeholder: str, **kwargs: Any):
         master = cast(tk.Misc, parent.control)
         self._var: tk.StringVar = tk.StringVar()
         tooltip = cast(str, kwargs.pop("tooltip", ""))
@@ -20,7 +20,7 @@ class EntryCtrl(tkControl):
             self.set_text(placeholder)
 
         ctrl = ttk.Entry(master, textvariable=self._var, **kwargs)
-        super().__init__("", master, idself, ctrl, tooltip)
+        super().__init__(ctrl, tooltip)
         _= ctrl.configure()
 
     def get_text(self) -> str:
@@ -32,12 +32,13 @@ class EntryCtrl(tkControl):
 
 @WidgetRegistry.register("Entry")
 class tkEntryCtrl(EntryCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
 
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
         text = attr_dict.get("text", "")
+        tooltip = attr_dict.get("tooltip", "")
 
-        super().__init__(idself, text, parent, **options)
+        super().__init__(parent, text, tooltip=tooltip, **options)

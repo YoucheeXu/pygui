@@ -15,19 +15,19 @@ from pygui_simple.winbasic import (
 
 @WidgetRegistry.register("ImageButton")
 class ImageButtonCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
+        master = cast(tk.Misc, parent.control)
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
-        master = cast(tk.Misc, parent.control)
         text = attr_dict.get("text", "")
         width = cast(int, options.get("width", 0))
         height = cast(int, options.get("height", 0))
 
         ctrl = tk.Button(master, **options)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(idself, master, text, ctrl, tooltip)
+        super().__init__(ctrl, tooltip)
         # self._res_path: str = owner.res_path
         self._app_path: str = owner.path
         self._ww: int = width
@@ -41,8 +41,15 @@ class ImageButtonCtrl(tkControl):
         # if eimg is None:
             # raise RuntimeError(f"fail to read image: {imagefile}")
 
+        if "id" in attr_dict:
+            idctrl = attr_dict["id"]
+        elif text:
+            idctrl = text.replace(" ", "").replace(".", "_").replace("\n", "_")
+        else:
+            raise RuntimeError("No id")
+
         def cmd():
-            _ = owner.process_message(idself,
+            _ = owner.process_message(idctrl,
                 mousepos=(ctrl.winfo_rootx(), ctrl.winfo_rooty()))
 
         if text:

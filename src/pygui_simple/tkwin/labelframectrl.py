@@ -14,7 +14,7 @@ from pygui_simple.winbasic import (
 # TODO: not finished
 @WidgetRegistry.register("LabelFrame")
 class LabelFrameCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -24,7 +24,7 @@ class LabelFrameCtrl(tkControl):
         assert text is not None
 
         ctrl = ttk.LabelFrame(master, text=text, **options)
-        tkControl.__init__(self, idself, master, text, ctrl)
+        super().__init__(ctrl)
 
     @override
     def destroy(self):

@@ -12,16 +12,16 @@ from pygui_simple.winbasic import (
 
 @WidgetRegistry.register("Listbox")
 class ListboxCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
+        master = cast(tk.Misc, parent.control)
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
-        master = cast(tk.Misc, parent.control)
 
         ctrl = tk.Listbox(master, **options)
         tooltip = attr_dict.get("tooltip", "")
-        super().__init__(idself, master, "", ctrl, tooltip)
+        super().__init__(ctrl, tooltip)
 
     def insert(self, index: str | int, *elements: str | float):
         ctrl = cast(tk.Listbox, self._tkctrl)

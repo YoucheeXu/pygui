@@ -12,12 +12,12 @@ from pygui_simple.winbasic import (
 
 
 class LabelCtrl(tkControl):
-    def __init__(self, idself: str, text: str, parent: Widget, **kwargs: Any):
-        tooltip = cast(str, kwargs.pop("tooltip", ""))
+    def __init__(self, parent: Widget, text: str, **kwargs: Any):
         master = cast(tk.Misc, parent.control)
+        tooltip = cast(str, kwargs.pop("tooltip", ""))
 
         ctrl = ttk.Label(master, text=text, **kwargs)
-        super().__init__(idself, master, text, ctrl, tooltip)
+        super().__init__(ctrl, tooltip)
 
     def get_text(self):
         lblctrl = cast(ttk.Label, self._tkctrl)
@@ -29,7 +29,7 @@ class LabelCtrl(tkControl):
 
 @WidgetRegistry.register("Label")
 class tkLabelCtrl(LabelCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         clickable = "clickable" in attr_dict
         options: dict[str, Any] = {}
@@ -38,8 +38,16 @@ class tkLabelCtrl(LabelCtrl):
         text: str | None = attr_dict.get("text")
         assert text is not None
 
-        super().__init__(idself, text, parent, **options)
+        super().__init__(parent, text, **options)
+
+        if "id" in attr_dict:
+            self._idctrl: str = attr_dict["id"]
+        elif text:
+            self._idctrl = text.replace(" ", "").replace(".", "_").replace("\n", "_")
+        else:
+            raise RuntimeError("No id")
+
         if clickable:
             _= cast(tk.Misc, self.control).bind("<Button-1>",
-                lambda e: owner.process_message(idself,
+                lambda e: owner.process_message(self._idctrl,
                     mousepos=e.widget.winfo_pointerxy()))

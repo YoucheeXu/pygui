@@ -1,7 +1,7 @@
 import tkinter as tk
 import xml.etree.ElementTree as et
 from tkinter import ttk
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from pygui_simple.tkwin.tkcontrol import tkControl
 from pygui_simple.winbasic import (
@@ -12,22 +12,22 @@ from pygui_simple.winbasic import (
 
 
 class RadiobuttonCtrl(tkControl):
-    def __init__(self, idself: str, text: str, parent: Widget, variable: tk.IntVar, **kwargs: Any):
+    def __init__(self, parent: Widget, text: str = "Radiobutton", variable: tk.IntVar | Literal[''] = '', **kwargs: Any):
         master = cast(tk.Misc, parent.control)
-        self._variable: tk.IntVar = variable
+        self._variable: tk.IntVar | Literal[''] = variable
         tooltip = cast(str, kwargs.pop("tooltip", ""))
 
         ctrl = ttk.Radiobutton(master, text=text, variable=variable, **kwargs)
-        super().__init__(idself, master, text, ctrl, tooltip)
+        super().__init__(ctrl, tooltip)
 
-    def get_val(self) -> int:
-        # return self.__dict__[self._vartext].get()
-        return self._variable.get()
-
+    def get_val(self):
+        if isinstance(self._variable, tk.IntVar):
+            return self._variable.get()
+        return None
 
 @WidgetRegistry.register("Radiobutton")
 class tkRadiobuttonCtrl(RadiobuttonCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
@@ -44,7 +44,7 @@ class tkRadiobuttonCtrl(RadiobuttonCtrl):
         if vartext not in owner.__dict__:
             owner.__dict__[vartext] = tk.IntVar()
 
-        super().__init__(idself, text, parent, owner.__dict__[vartext], **options)
+        super().__init__(parent, text, owner.__dict__[vartext], **options)
 
         variable = cast(tk.IntVar, owner.__dict__[vartext])
         _ = cast(ttk.Radiobutton, super().control).configure(

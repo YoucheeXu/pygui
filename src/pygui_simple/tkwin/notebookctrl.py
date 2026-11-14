@@ -13,17 +13,17 @@ from pygui_simple.winbasic import (
 
 @WidgetRegistry.register("Notebook")
 class NotebookCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
+        master = cast(tk.Misc, parent.control)
         subctrlcfg_list=list(ctrl_cfg)
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
         self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
-        master = cast(tk.Misc, parent.control)
 
         ctrl = ttk.Notebook(master, **options)
-        tkControl.__init__(self, "", master, idself, ctrl)
+        super().__init__(self._ctrl)
         # app.debug_print()
         self._app: WinBasic = owner
         self._idself: str = idself

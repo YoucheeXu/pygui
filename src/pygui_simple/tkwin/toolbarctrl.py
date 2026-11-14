@@ -13,9 +13,9 @@ from pygui_simple.winbasic import (
 
 @WidgetRegistry.register("Toolbar")
 class ToolbarCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
-        attr_dict = ctrl_cfg.attrib
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         master = cast(tk.Misc, parent.control)
+        attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
@@ -23,7 +23,7 @@ class ToolbarCtrl(tkControl):
         self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
 
         ctrl = ttk.Frame(master, **options)
-        super().__init__(idself, master, "", ctrl)
+        super().__init__(ctrl)
         self._app_path: str = owner.path
         self._app: WinBasic = owner
         self._idctrl_list: list[str] = []

@@ -17,9 +17,8 @@ class Widget:
     #: The parent window / container skips automatic child creation during setup.
     _handles_child_creation: bool = False
 
-    def __init__(self, idself: str, ctrl_cfg: et.Element | None = None, parent: Widget | None = None,
+    def __init__(self, parent: Widget | None = None, ctrl_cfg: et.Element | None = None,
             owner: WinBasic | None = None):
-        self._idself: str = idself
         self._control: object = None
         self._level: int = -1
 
@@ -102,14 +101,9 @@ class WidgetRegistry:
         return list(cls._widgets.keys())
 
 class Control(Widget, metaclass=abc.ABCMeta):
-    def __init__(self, idself: str, title: str):
-        super().__init__(idself)
-        self._title: str = title
+    def __init__(self):
+        super().__init__()
         self._backed: bool = True
-
-    @property
-    def title(self):
-        return self._title
 
     @property
     def backed(self):
@@ -194,7 +188,7 @@ class Container(Widget, metaclass=abc.ABCMeta):
     # We initialize with an empty dict as a placeholder; __init_subclass__ will replace it for each subclass
     _handlers: ClassVar[dict[str, list[str]]] = {}
     def __init__(self, owner: Container | None = None):
-        super().__init__("")
+        super().__init__()
         self._eventhandler_dict: dict[str, list[EventHanlder]] = {}
         self._msgs_hanlders: list[tuple[int, list[str], EventsHanlder]] = []
         self._owner: Container | None = owner
@@ -417,7 +411,7 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
             raise KeyError(f"{idctrl} already exists")
 
         if widget_cls := WidgetRegistry.get(tag):
-            ctrl = widget_cls(idctrl, ctrl_cfg, parent, owner)
+            ctrl = widget_cls(parent, ctrl_cfg, owner)
             ctrl.level = level
         else:
             raise KeyError(f"{tag}: unknown Control")

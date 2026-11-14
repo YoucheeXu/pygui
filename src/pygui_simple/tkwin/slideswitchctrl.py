@@ -27,7 +27,6 @@ class SlideSwitchCtrl(tkControl):
     """
     def __init__(
         self,
-        idself: str,
         parent: Widget,
         width: int = 80,
         height: int = 40,
@@ -59,7 +58,7 @@ class SlideSwitchCtrl(tkControl):
         """
         master = cast(tk.Misc, parent.control)
         ctrl = tk.Canvas(master, width=width, height=height, highlightthickness=0)
-        super().__init__(idself, master, "", ctrl)
+        super().__init__(ctrl)
 
         self._width: int = width
         self._height: int = height
@@ -363,7 +362,7 @@ class SlideSwitchCtrl(tkControl):
 
 @WidgetRegistry.register("SlideSwitch")
 class tkSlideSwitchCtrl(SlideSwitchCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         self._owner: WinBasic = owner
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
@@ -378,9 +377,14 @@ class tkSlideSwitchCtrl(SlideSwitchCtrl):
         # slider_shadow = cast(str, options.get("slider_shadow", "#CCCCCC"))
         # callback = None # callback: Callable[[bool], None] | None = None
 
-        super().__init__(idself, parent, **options)
+        super().__init__(parent, **options)
+
+        if "id" in attr_dict:
+            self._idctrl: str = attr_dict["id"]
+        else:
+            raise RuntimeError("No id")
 
     @override
     def on_state_changed(self, state: bool):
-        _ = self._owner.process_message(self._idself, event="Changed", val=state)
+        _ = self._owner.process_message(self._idctrl, event="Changed", val=state)
         return super().on_state_changed(state)

@@ -9,14 +9,12 @@ from pygui_simple.winbasic import Control
 
 
 class tkControl(Control):
-    def __init__(self, idself: str, master: tk.Misc, title: str, tkctrl: tk.Widget, tooltip: str = ""):
-        super().__init__(idself, title)
-        self._master: tk.Misc = master
+    def __init__(self, tkctrl: tk.Widget, tooltip: str = ""):
+        super().__init__()
         self._tkctrl: tk.Widget = tkctrl
         self.control = tkctrl  # pyright: ignore[reportUnannotatedClassAttribute]
         self._assemble_type: str = ""
         self._layout_info: tk._PackInfo | tk._PlaceInfo | None = None
-        # self._hidden: bool = True
 
         if tooltip:
             _ = Hovertip(tkctrl, tooltip, hover_delay=500)
@@ -83,12 +81,12 @@ class tkControl(Control):
                     self._tkctrl.grid()
             case "pack":
                 if is_hide:
-                    # if not self._hidden:
                     try:
                         self._layout_info = self._tkctrl.pack_info()
                         self._tkctrl.pack_forget()
-                    except tk.TclError as e:
-                        print(f"{self._idself}.hide.pack: {e}")
+                    except tk.TclError as _:
+                        # print(f"{self.idself}.hide.pack: {e}")
+                        pass
                 else:
                     assert self._layout_info is not None
                     # assert isinstance(self._layout_info, tk._PackInfo)
@@ -98,8 +96,9 @@ class tkControl(Control):
                     try:
                         self._layout_info = self._tkctrl.place_info()
                         self._tkctrl.place_forget()
-                    except tk.TclError as e:
-                        print(f"{self._idself}.hide.place: {e}")
+                    except tk.TclError as _:
+                        # print(f"{self.idself}.hide.place: {e}")
+                        pass
                 else:
                     assert self._layout_info is not None
                     # assert isinstance(self._layout_info, tk._PlaceInfo)

@@ -17,19 +17,17 @@ from pygui_simple.winbasic import (
 # TODO: Tip
 @WidgetRegistry.register("PicsListview")
 class PicsListviewCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
-        attr_dict = ctrl_cfg.attrib
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         master = cast(tk.Misc, parent.control)
+        attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
 
         ctrl = ttk.Frame(master, **options)
-        tkControl.__init__(self, "", master, idself, ctrl)
-        # self._image_group: list[ttk.LabelFrame] = []
+        super().__init__(ctrl)
         self._image_group: list[LabelFrameCtrl] = []
         self._imagepanel_llist: list[list[ImagePanelCtrl]] = []
-        # self._app: WinBasic = app
         self._owner: WinBasic = owner
         self._num_column: int = int(attr_dict["num_column"])
         self._pic_size: int = int(attr_dict["pic_size"])
@@ -40,10 +38,15 @@ class PicsListviewCtrl(tkControl):
         self._spacing: int = int(self._pic_size/10)
         self._groupidx: int = 0
 
+        if "id" in attr_dict:
+            self._idctrl: str = attr_dict["id"]
+        else:
+            raise RuntimeError("No id")
+
     def add_imagegroup(self, title: str, imagefile_list: list[str]):
         # frame = ttk.LabelFrame(self._tkctrl, text=title)
         frame_cfg = self._owner.create_xml("LabelFrame", {"text": f"btnItem{title}"})
-        frame = LabelFrameCtrl("", frame_cfg, self, self._owner)
+        frame = LabelFrameCtrl(self, frame_cfg, self._owner)
         frame.level = self.level+1
         imagepanel_list: list[ImagePanelCtrl] = []
         for i, imagefile in enumerate(imagefile_list):
@@ -51,7 +54,7 @@ class PicsListviewCtrl(tkControl):
             ctrl_cfg = self._owner.create_xml("ImagePanel", 
                 {"image": imagefile, 
                 "options": f"{{'height': {self._pic_size}, 'width': {self._pic_size}}}"})
-            image_panel = ImagePanelCtrl("", ctrl_cfg, frame, self._owner)
+            image_panel = ImagePanelCtrl(frame, ctrl_cfg, self._owner)
             image_panel.level = self.level+2
             image_panel_ctrl = cast(tk.Widget, image_panel.control)
             image_panel_ctrl.grid(row=i // self._num_column, column=i % self._num_column,
@@ -73,7 +76,7 @@ class PicsListviewCtrl(tkControl):
         _ = old_imagepanle.configure(highlightthickness=0)
         imagepanel = self._imagepanel_llist[self._grp_seld][self._idx_seld]
         _ = imagepanel.configure(highlightbackground="blue", highlightthickness=2)
-        _ = self._owner.process_message(self._idself, event="clicked",
+        _ = self._owner.process_message(self._idctrl, event="clicked",
             group=self._grp_seld, index=self._idx_seld)
 
     def get_selected(self) -> tuple[int, int]:

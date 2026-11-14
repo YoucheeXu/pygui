@@ -13,12 +13,12 @@ from pygui_simple.winbasic import (
 
 
 class ScrolledTextCtrl(tkControl):
-    def __init__(self, idself: str, parent: Widget, **kwargs: object):
+    def __init__(self, parent: Widget, **kwargs: object):
         master = cast(tk.Misc, parent.control)
         tooltip = cast(str, kwargs.pop("tooltip", ""))
 
         ctrl = scrolledtext.ScrolledText(master, **kwargs)
-        super().__init__(idself, master, "", ctrl, tooltip)
+        super().__init__(ctrl, tooltip)
 
     def insert(self, index: str| float | Tcl_Obj | tk.Widget, chars: str, *args: str | list[str] | tuple[str,...]):
         cast(scrolledtext.ScrolledText, self._control).insert(index, chars, *args)
@@ -26,10 +26,11 @@ class ScrolledTextCtrl(tkControl):
 
 @WidgetRegistry.register("ScrolledText")
 class tkScrolledTextCtrl(ScrolledTextCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, object] = {}
         if "options" in attr_dict:
             options = cast(dict[str, object], eval(attr_dict["options"]))
+        tooltip = attr_dict.get("tooltip", "")
 
-        super().__init__(idself, parent, **options)
+        super().__init__(parent, tooltip=tooltip, **options)

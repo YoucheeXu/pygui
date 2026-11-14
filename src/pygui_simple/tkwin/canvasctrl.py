@@ -16,9 +16,9 @@ _FontDescription = str | tuple[str, int] | tuple[str, int, str]
 
 @WidgetRegistry.register("Canvas")
 class CanvasCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
-        attr_dict = ctrl_cfg.attrib
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         master = cast(tk.Misc, parent.control)
+        attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
@@ -27,7 +27,7 @@ class CanvasCtrl(tkControl):
         self._img_cache: list[ImageTk.PhotoImage | None] = []
 
         ctrl = tk.Canvas(master, **options)
-        tkControl.__init__(self, "", master, idself, ctrl)
+        super().__init__(ctrl)
 
     def create_text(
         self,

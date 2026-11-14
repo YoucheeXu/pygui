@@ -7,6 +7,7 @@ import datetime
 import tkinter as tk
 import tkinter.font as tkFont
 import xml.etree.ElementTree as et
+from collections.abc import Callable
 from tkinter import ttk
 from typing import cast, override
 
@@ -23,7 +24,7 @@ class CalendarCtrl(tkControl):
 
     Attributes:
         _master: Parent tkinter widget container for the control
-        _owner: Parent Dialog instance for event message processing
+		_callback: callback function
         _date: First day of the currently displayed calendar month
         _selection: Tuple of (day text, tree item ID, column) for selected date; None if unselected
         _contain_frame: Main ttk Frame holding all calendar sub-widgets
@@ -36,21 +37,20 @@ class CalendarCtrl(tkControl):
         _cmb_month: ttk Combobox for month selection
         _items: List of Treeview item IDs for calendar week rows
     """
-    def __init__(self, idself: str, master: tk.Misc, owner: Container, **kwargs: object):
+    def __init__(self, parent: Widget, **kwargs: object):
         """ Initialize the calendar control widget.
 
         Args:
             parent: Parent tkinter widget to host the calendar
-            owner: Dialog instance that owns this control and handles events
-            idself: Unique control ID for event messaging with the owner
             **kwargs: Optional configuration parameters
                 fwday: First day of the week (0 = Monday, default: 0)
         """
-        ctrl = ttk.Frame(master)
-        super().__init__(idself, master, "", ctrl)
+        self._master: tk.Misc = cast(tk.Misc, parent.control)
+        ctrl = ttk.Frame(self._master)
+        super().__init__(ctrl)
 
-        self._master: tk.Misc = master
-        self._owner: Container = owner
+        self._callback: Callable[[datetime.date], None] | None = \
+            cast(Callable[[datetime.date], None] | None, kwargs.get("callback", 0))
 
         # first day of week, default to Monday)
         fwday = cast(int, kwargs.get("fwday", 0))
@@ -325,7 +325,11 @@ class CalendarCtrl(tkControl):
 
         year, month = self._date.year, self._date.month
         date = datetime.date(year, month, int(self._selection[0]))
-        _ = self._owner.process_message(self._idself, event="select_date", val=date)
+        self.on_date_changed(date)
+
+    def on_date_changed(self, date: datetime.date):
+        if self._callback:
+            self._callback(date)
 
     def _prev_month(self):
         """ Navigate to the previous month and refresh the calendar."""
@@ -426,7 +430,6 @@ class CalendarCtrl(tkControl):
         """ Clear the current date selection and hide the highlight."""
         self._selection = None
         self._canvas.place_forget()
-
 
 class CalendarDialog(Container):
     """ A modal, borderless pop-up dialog for date selection.
@@ -566,14 +569,23 @@ class CalendarDialog(Container):
         """
         print("CalendarDialog Destory")
 
-
 @WidgetRegistry.register("Calendar")
 class tkCalendarCtrl(CalendarCtrl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
-        master = cast(tk.Misc, parent.control)
         options: dict[str, object] = {}
         if "options" in attr_dict:
             options = cast(dict[str, object], eval(attr_dict["options"]))
 
-        super().__init__(idself, master, owner, **options)
+        super().__init__(parent, **options)
+
+        self._owner: WinBasic = owner
+        if "id" in attr_dict:
+            self._idctrl: str = attr_dict["id"]
+        else:
+            raise RuntimeError("No id")
+
+    @override
+    def on_date_changed(self, date: datetime.date):
+        _ = self._owner.process_message(self._idctrl, event="select_date", val=date)
+        return super().on_date_changed(date)

@@ -13,16 +13,16 @@ from pygui_simple.winbasic import (
 
 @WidgetRegistry.register("Menu")
 class MenuCtrl(tkControl):
-    def __init__(self, idself: str, ctrl_cfg: et.Element, parent: Widget, owner: WinBasic):
-        attr_dict = ctrl_cfg.attrib
+    def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         master = cast(tk.Misc, parent.control)
+        attr_dict = ctrl_cfg.attrib
         kwargs: dict[str, Any] = {}
         if "kwargs" in attr_dict:
             kwargs = eval(attr_dict["options"])
         self.handles_child_creation = True  # pyright: ignore[reportUnannotatedClassAttribute]
 
         menubar = tk.Menu(master, **kwargs)
-        super().__init__("", master, idself, menubar)
+        super().__init__(menubar)
 
         def get_cmd(cmd_name: str, **kwargs: object):
             return lambda: owner.process_message(cmd_name, **kwargs)
