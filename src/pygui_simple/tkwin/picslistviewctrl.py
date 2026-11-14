@@ -44,9 +44,7 @@ class PicsListviewCtrl(tkControl):
             raise RuntimeError("No id")
 
     def add_imagegroup(self, title: str, imagefile_list: list[str]):
-        # frame = ttk.LabelFrame(self._tkctrl, text=title)
-        frame_cfg = self._owner.create_xml("LabelFrame", {"text": f"btnItem{title}"})
-        frame = LabelFrameCtrl(self, frame_cfg, self._owner)
+        frame = LabelFrameCtrl(self, f"btnItem{title}")
         frame.level = self.level+1
         imagepanel_list: list[ImagePanelCtrl] = []
         for i, imagefile in enumerate(imagefile_list):
