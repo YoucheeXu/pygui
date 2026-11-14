@@ -5,6 +5,7 @@ import tkinter as tk
 import xml.etree.ElementTree as et
 from tkinter import ttk
 from typing import Any, cast, override
+from weakref import WeakSet
 
 from pygui_simple.tkwin.tkcontrol import tkControl
 from pygui_simple.winbasic import (
@@ -23,6 +24,8 @@ class ScrollableFrameCtrl(tkControl):
         height = cast(int, kwargs.get("height", 0))
 
         self._outter_frame: tk.Frame = tk.Frame(master, **kwargs)
+
+        self._scroll_bound: WeakSet[tk.Widget | tk.Toplevel] = WeakSet()
 
         # 配置网格布局权重，确保框架能扩展
         _ = self._outter_frame.grid_rowconfigure(0, weight=1)
@@ -133,9 +136,9 @@ class ScrollableFrameCtrl(tkControl):
 
         # 为所有子控件绑定滚动事件
         for widget in self._inner_frame.winfo_children():
-            if not hasattr(widget, '_scroll_events_bound'):
+            if widget not in self._scroll_bound:
                 self._bind_scroll_events(cast(tk.Widget, widget))
-                widget._scroll_events_bound = True  # 标记为已绑定
+                self._scroll_bound.add(widget)
 
     def _on_configure_canvas(self, event: tk.Event[tk.Canvas]):
         """ 画布大小变化时调整"""
@@ -183,14 +186,10 @@ class ScrollableFrameCtrl(tkControl):
         # 阻止事件传播到其他组件
         return "break"
 
-    @property
-    def outter(self):
-        return self._outter_frame
-
     @override
     def assemble(self, attr_dict: dict[str, str], prefix: str = ""):
         ctrl = self._control
-        self._control = self.outter  # pyright: ignore[reportUnannotatedClassAttribute]
+        self._control = self._outter_frame  # pyright: ignore[reportUnannotatedClassAttribute]
         super().assemble(attr_dict, prefix)
         self._control = ctrl
 
