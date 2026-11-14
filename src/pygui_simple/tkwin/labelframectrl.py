@@ -11,22 +11,26 @@ from pygui_simple.winbasic import (
 )
 
 
-# TODO: not finished
-@WidgetRegistry.register("LabelFrame")
 class LabelFrameCtrl(tkControl):
+    def __init__(self, parent: Widget, text: str, **kwargs: Any):
+        master = cast(tk.Misc, parent.control)
+        assert text is not None
+
+        ctrl = ttk.Labelframe(master, text=text, **kwargs)
+        super().__init__(ctrl)
+
+    @override
+    def destroy(self):
+        super().destroy()
+
+@WidgetRegistry.register("LabelFrame")
+class tkLabelFrameCtrl(LabelFrameCtrl):
     def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
         attr_dict = ctrl_cfg.attrib
         options: dict[str, Any] = {}
         if "options" in attr_dict:
             options = eval(attr_dict["options"])
-        master = cast(tk.Misc, parent.control)
         text = attr_dict.get("text")
         assert text is not None
 
-        ctrl = ttk.LabelFrame(master, text=text, **options)
-        super().__init__(ctrl)
-
-    @override
-    def destroy(self):
-        # po(f"LabelFrameCtrl {self._idself} destroy")
-        super().destroy()
+        super().__init__(parent, text, **options)
