@@ -42,9 +42,12 @@ class tkRadiobuttonCtrl(RadiobuttonCtrl):
         value = int(attr_dict["value"])
 
         if vartext not in owner.__dict__:
-            owner.__dict__[vartext] = tk.IntVar()
+            var = tk.IntVar()
+            setattr(owner, vartext, var)
+        else:
+            var = cast(tk.IntVar, getattr(owner, vartext))
 
-        super().__init__(parent, text, owner.__dict__[vartext], **options)
+        super().__init__(parent, text=text, variable=var, **options)
 
         variable = cast(tk.IntVar, owner.__dict__[vartext])
         _ = cast(ttk.Radiobutton, super().control).configure(
