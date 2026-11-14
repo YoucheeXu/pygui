@@ -39,11 +39,11 @@ class ScrollPicker[T](tk.Frame):
 
         self._background: str = cast(str, kwargs.get('background', 'white'))
 
-        # 创建UI组件
+        # Create UI components
         self._create_widgets()
-        # 绑定鼠标事件
+        # Bind mouse events
         self._bind_mouse_scroll()
-        # 初始化预览内容
+        # Initialize preview content
         self._update_previews()
 
         self._data_up2: tk.Label
@@ -57,25 +57,25 @@ class ScrollPicker[T](tk.Frame):
         return self._selected_data
 
     def _create_widgets(self) -> None:
-        # 配置网格权重，使布局更美观
-        for i in range(5):  # 行
+        # Configure grid weights for a cleaner layout
+        for i in range(5):  # row
             _ = self.grid_rowconfigure(i, weight=1)
-        for i in range(1):  # 列
+        for i in range(1):  # column
             _ = self.grid_columnconfigure(i, weight=1)
 
-        # 上方预览（+2）
+        # Top Preview (+2)
         self._data_up2 = tk.Label(self, font=("SimHei", 10), fg="#888888", width=6,
             bg=self._background,
             anchor="center")
         self._data_up2.grid(row=0, column=0)
 
-        # 上方预览（+1）
+        # Top Preview (+1)
         self._data_up1 = tk.Label(self, font=("SimHei", 12), fg="#555555", width=6,
             bg=self._background,
             anchor="center")
         self._data_up1.grid(row=1, column=0)
 
-        # 当前选中值
+        # Current selected value
         self._data_label = tk.Label(
             self,
             text=str(self._selected_data),
@@ -88,20 +88,20 @@ class ScrollPicker[T](tk.Frame):
         )
         self._data_label.grid(row=2, column=0, padx=10)
 
-        # 下方预览（-1）
+        # Bottom Preview (-1)
         self._data_down1 = tk.Label(self, font=("SimHei", 12), fg="#555555", width=6,
             bg=self._background,
             anchor="center")
         self._data_down1.grid(row=3, column=0)
 
-        # 下方预览（-2）
+        # Bottom Preview (-2)
         self._data_down2 = tk.Label(self, font=("SimHei", 10), fg="#888888", width=6,
             bg=self._background,
             anchor="center")
         self._data_down2.grid(row=4, column=0)
 
-    def _bind_mouse_scroll(self) -> None:  # 保护方法
-        """ 绑定鼠标滚轮事件"""
+    def _bind_mouse_scroll(self) -> None:
+        """ Bind mouse wheel events"""
 
         scrollable_data_widgets = [self._data_label, self._data_up1, self._data_up2,
             self._data_down1, self._data_down2]
@@ -110,29 +110,29 @@ class ScrollPicker[T](tk.Frame):
             _ = widget.bind("<Button-4>", self._on_data_scroll)
             _ = widget.bind("<Button-5>", self._on_data_scroll)
 
-        # 鼠标悬停效果
+        # Hover effect
         _ = self._data_label.bind("<Enter>", self._on_enter)
         _ = self._data_label.bind("<Leave>", self._on_leave)
 
     def _on_enter(self, event: tk.Event[tk.Label]) -> None:
-        """ 鼠标进入时的样式变化"""
+        """ Change style when the mouse enters"""
         if hasattr(event.widget, 'config'):
             _ = event.widget.config(bg="#e0f0ff")
 
     def _on_leave(self, event: tk.Event[tk.Label]) -> None:
-        """ 鼠标离开时的样式恢复"""
+        """ Restore style when the mouse leaves"""
         if hasattr(event.widget, 'config'):
             _ = event.widget.config(bg="white")
 
     def _update_previews(self) -> None:
         self._data_label["text"] = self._selected_data
 
-        """ 更新上下预览内容"""
-        # 上方预览（+1和+2，受限于上限）
+        """ Update top and bottom preview content"""
+        # Top Preview (+1 and +2, capped by upper limit)
         up1 = self._get_data(self._index + 1)
         up2 = self._get_data(self._index + 2)
 
-        # 下方预览（-1和-2，受限于下限）
+        # Bottom Preview (-1 & -2, capped by lower limit)
         down1 = self._get_data(self._index - 1)
         down2 = self._get_data(self._index - 2)
 
@@ -142,10 +142,10 @@ class ScrollPicker[T](tk.Frame):
         _ = self._data_down2.config(text=str(down2))
 
     def _on_data_scroll(self, event: tk.Event) -> None:
-        """ 处理滚动"""
-        if event.delta > 0 or getattr(event, 'num', 0) == 4:  # 上滚增加
+        """ Handle scrolling"""
+        if event.delta > 0 or getattr(event, 'num', 0) == 4:  # Increase on scroll up
             self._selected_data = self._get_data(self._index + 1, True)
-        else:  # 下滚减少
+        else:  # Decrease on scroll down
             self._selected_data = self._get_data(self._index - 1, True)
 
         _ = self._data_label.config(text=str(self._selected_data))
@@ -196,7 +196,7 @@ class ScrollPickerCtrl[T](tkControl):
 
         self._selected_val: T = initial if initial else val_list[0]
 
-        # 创建UI组件
+        # Create UI components
         self._create_widgets()
 
         self._callback: Callable[[T], None] | None = callback
@@ -217,13 +217,13 @@ class ScrollPickerCtrl[T](tkControl):
             self._callback(val)
 
     def get_val(self):
-        """ 获取当前选择的时间"""
+        """ Get currently selected value"""
         return self._selected_val
 
 class DateScrollPickerDialog(DialogCtrl):
     def __init__(self, parent: WinBasic, point: tuple[int, int] | None = None,
             title: str = "", initial: str = ""):
-        self._title: str = title if title else "日期选择器"
+        self._title: str = title if title else "Date picker"
         
         super().__init__(parent, title, 300, 190)
 
@@ -276,7 +276,7 @@ class DateScrollPickerDialog(DialogCtrl):
         cast(tk.Widget, self._month_scrollpicker.control).grid(row=0, column=1)
         cast(tk.Widget, self._day_scrollpicker.control).grid(row=0, column=2)
 
-        self._result_var.set(f"当前选择: {self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}")
+        self._result_var.set(f"Current selection: {self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}")
         result_label = LabelCtrl(self._main_frame, "", textvariable=self._result_var, font=("SimHei", 12))
         cast(tk.Widget, result_label.control).grid(row=3, column=0, columnspan=3, pady=5)
         self._idctrl_dict["lblDateResull"] = result_label
@@ -297,11 +297,11 @@ class DateScrollPickerDialog(DialogCtrl):
         self._update_result_preview()
 
     def _get_max_day(self) -> int:
-        """ 获取当月最大天数"""
+        """ Get maximum days of the selected month"""
         return calendar.monthrange(self._selected_year, self._selected_month)[1]
 
-    def _adjust_day_range(self) -> None:
-        """ 调整日期以适应当前年月"""
+    def _adjust_day_range(self):
+        """ Adjust date to fit selected year and month"""
         max_day = self._get_max_day()
         if self._selected_day > max_day:
             self._selected_day = max_day
@@ -309,20 +309,20 @@ class DateScrollPickerDialog(DialogCtrl):
         day_list = list(range(1, max_day))
         self._day_scrollpicker.scrollpicker.update_val_list(day_list)
 
-    def _update_result_preview(self) -> None:
-        """ 更新结果预览"""
+    def _update_result_preview(self):
+        """ Update result preview"""
         formatted_date: str = f"{self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}"
-        self._result_var.set(f"当前选择: {formatted_date}")
+        self._result_var.set(f"Current selection: {formatted_date}")
 
     @override
     def _confirm(self, **kwargs: object):
-        """ 显示并返回最终选择的日期"""
+        """ Record the finally selected date"""
         formatted_date: str = f"{self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}"
-        self._result_var.set(f"已选择: {formatted_date}")
+        self._result_var.set(f"Selected: {formatted_date}")
         self.destroy()
 
     def get_datestr(self) -> str:
-        """ 获取当前选择的日期"""
+        """ Get currently selected date string"""
         return f"{self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}"
 
 class TimeScrollPickerCtrl(tkControl):
@@ -383,23 +383,23 @@ class TimeScrollPickerCtrl(tkControl):
 
         self._result_var: tk.StringVar = tk.StringVar()
 
-        # 创建UI组件
+        # Create UI components
         self._create_widgets()
 
         self._callback: Callable[[datetime.time], None] | None = callback
 
     def _create_widgets(self) -> None:
-        # 配置网格权重，使布局更美观
-        for i in range(1):  # 行
+        # Configure grid weights for better layout
+        for i in range(1):  # row
             _ = self._frame.grid_rowconfigure(i, weight=1)
-        for i in range(2):  # 列
+        for i in range(2):  # column
             _ = self._frame.grid_columnconfigure(i, weight=1)
 
         self._hour_scrollpicker.grid(row=0, column=1)
         self._minute_scrollpicker.grid(row=0, column=2)
 
         self._result_var = tk.StringVar()
-        self._result_var.set(f"当前选择: {self._selected_hour:02d}:{self._selected_minute:02d}")
+        self._result_var.set(f"Current selection: {self._selected_hour:02d}:{self._selected_minute:02d}")
 
     def _on_hour_change(self, hour: int):
         self._selected_hour = hour
@@ -418,9 +418,9 @@ class TimeScrollPickerCtrl(tkControl):
             self._callback(time)
 
     def _update_result_preview(self) -> None:
-        """ 更新结果预览"""
+        """ Update result preview"""
         formatted_time: str = f"{self._selected_hour:02d}:{self._selected_minute:02d}"
-        self._result_var.set(f"当前选择: {formatted_time}")
+        self._result_var.set(f"Selected: {formatted_time}")
 
     def set_initial(self, initial: str = ""):
         if not initial:
@@ -440,21 +440,21 @@ class TimeScrollPickerCtrl(tkControl):
         self._minute_scrollpicker.update_data(self._selected_minute)
 
     def get_time(self):
-        """ 获取当前选择的时间"""
+        """ Get currently selected time"""
         return datetime.time(self._selected_hour, self._selected_minute)
 
     def get_timestr(self) -> str:
-        """ 获取当前选择的时间字符串"""
+        """ Get currently selected time string"""
         return f"{self._selected_hour:02d}:{self._selected_minute:02d}"
 
 class TimeScrollPickerDialog(DialogCtrl):
     def __init__(self, parent: WinBasic, point: tuple[int, int] | None = None, *, stp: int = 0,
             title: str = "", initial: str = ""):
-        title = title if title else "时间选择器"
+        title = title if title else "Time Picker"
         self._stp: int = stp
         super().__init__(parent, title, 250, 190)
 
-        # 初始时间设置
+        # Initial time setting
         if not initial:
             now: datetime.datetime = datetime.datetime.now()
             self._selected_hour: int = now.hour
@@ -465,7 +465,7 @@ class TimeScrollPickerDialog(DialogCtrl):
             self._selected_minute = int(now_list[1])
 
         self._result_var: tk.StringVar = tk.StringVar()
-        self._result_var.set(f"当前选择: {self._selected_hour:02d}:{self._selected_minute:02d}")
+        self._result_var.set(f"Current selection: {self._selected_hour:02d}:{self._selected_minute:02d}")
 
         if point:
             x, y = point
@@ -479,8 +479,7 @@ class TimeScrollPickerDialog(DialogCtrl):
             self._main_frame,
             100, 50,
             stp=self._stp,
-            initial=f"{self._selected_hour}:{self._selected_minute}",
-            # callback=self._on_time_change
+            initial=f"{self._selected_hour}:{self._selected_minute}"
         )
         cast(tk.Widget, self._time_scrollpicker.control).pack(pady=5)
         self._idctrl_dict["tspTimePicker"] = self._time_scrollpicker
@@ -492,15 +491,12 @@ class TimeScrollPickerDialog(DialogCtrl):
 
         return super()._construct_children()
 
-    # def on_time_change(self, time: datetime.time):
-    #     self._result_var.set(f"当前选择: {time.hour:02d}:{time.minute:02d}")
-
     def get_time(self):
-        """ 获取当前选择的时间"""
+        """ Get currently selected time"""
         return self._time_scrollpicker.get_time()
 
     def get_timestr(self) -> str:
-        """ 获取当前选择的时间字符串"""
+        """ Get currently selected time string"""
         return self._time_scrollpicker.get_timestr()
 
     def _exit(self):
