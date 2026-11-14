@@ -360,6 +360,17 @@ class SlideSwitchCtrl(tkControl):
         if self._callback:
             self._callback(state)
 
+    def on(self, animate: bool = True):
+        self.set_state(True, animate)
+
+    def off(self, animate: bool = True):
+        self.set_state(False, animate)
+
+    @override
+    def destroy(self):
+        cast(tk.Canvas, self._control).destroy()
+        return super().destroy()
+
 @WidgetRegistry.register("SlideSwitch")
 class tkSlideSwitchCtrl(SlideSwitchCtrl):
     def __init__(self, parent: Widget, ctrl_cfg: et.Element, owner: WinBasic):
