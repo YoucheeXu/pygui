@@ -62,8 +62,8 @@ class MenuCtrl(tkControl):
                 owner.debug_print(f"    subMenu: {tag} -> {sub_label}")
                 if tag == "Checkbutton":
                     var_name = subattr_dict["variable"]
-                    self.__dict__[f"_{var_name}"] = tk.BooleanVar()
-                    var = self.__dict__[f"_{var_name}"]
+                    var = tk.BooleanVar()
+                    setattr(self, f"_{var_name}", var)
                     # var.set(True)
                     # msg = "Changed"
                     # ext_msg = var.get()
