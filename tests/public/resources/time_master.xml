@@ -16,10 +16,10 @@
 			<MenuItem Command="About"/>
 		</MenuItem>
 	</Menu>
+	<Style text="BW.TLabel" options="{'background':'white'}"/>
 	<Notebook id="ntbMain" text="Notebook" layout="pack" pack="{'expand':True,'fill':'both'}">
 		<Tab id="tabHour" text="Hour">
-			<Style text="BW.TLabel" options="{'background':'white'}"/>
-            <Frame id="frmHourHead" Width="400" Height="50" layout="pack" pack="{'side':'top','expand':True,'fill':'x'}" options="{'bg':'white'}">
+            <Frame id="frmHourHead" Width="400" Height="50" layout="pack" pack="{'side':'top','fill':'x'}" options="{'bg':'white'}">
                 <Label id="lblTitleHour" text="时间投资计划" layout="pack" pack="{'side':'left'}"/>
                 <Button id="btnNewHour" text="+" layout="pack" pack="{'side':'right'}"/>
 			</Frame>

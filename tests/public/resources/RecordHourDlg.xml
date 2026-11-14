@@ -1,4 +1,4 @@
-<CustomDialog id="dlgRecordHour" text="记录项目时间" Width="360" Height="200">
+<CustomDialog id="dlgRecordHour" text="记录项目时间" Width="320" Height="160">
 	<ImagePanel id="imgNameRecordHour" image="resources/gift.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':0,'column':0,'sticky':'W'}"/>
 	<Label id="lblItemRecordHour" text="" layout="grid" grid="{'row':0,'column':1,'sticky':'W'}"/>
 	<ImagePanel id="imgScheduleRecordHour" image="resources/calendar.png" options="{'width':20, 'height': 20}" layout="grid" grid="{'row':1,'column':0,'sticky':'W'}"/>

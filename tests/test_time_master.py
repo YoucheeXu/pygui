@@ -20,6 +20,5 @@ def main():
     app.run()
     app.destroy()
 
-
 if __name__ == "__main__":
     main()

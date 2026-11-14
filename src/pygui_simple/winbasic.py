@@ -451,13 +451,12 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         self._idctrl_dict[idctrl] = ctrl
 
     def delete_control(self, idctrl: str):
-        ctrl = cast(Control, self._idctrl_dict[idctrl])
+        ctrl = self._idctrl_dict.pop(idctrl)
+
         try:
-            ctrl.destroy()
-            del self._idctrl_dict[idctrl]
+            cast(Control, ctrl).destroy()
         except AttributeError:
-            print(f"WinBasic warnning: {idctrl} doesn't have destroy")            
-        # del self._idctrl_dict[idctrl]
+            print(f"WinBasic warnning: {idctrl} doesn't have destroy")
 
     def get_control(self, idctrl: str):
         return self._idctrl_dict[idctrl]

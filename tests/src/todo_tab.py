@@ -30,6 +30,7 @@ from src.time_database_type import (
     time2str,
 )
 
+from pygui_simple.tkwin.dialogctrl import DialogCtrl, tkDialogCtrl
 from pygui_simple.tkwin.tkcontrol import tkControl
 from pygui_simple.tkwin.tkcontrols import (
     CalendarCtrl,
@@ -40,10 +41,7 @@ from pygui_simple.tkwin.tkcontrols import (
     SlideSwitchCtrl,
     TimeScrollPickerCtrl,
 )
-from pygui_simple.tkwin.tkwin import (
-    DialogCtrl,
-    tkWin,
-)
+from pygui_simple.tkwin.tkwin import tkWin
 from pygui_simple.winbasic import Container, WinBasic
 
 # --------------------------
@@ -128,9 +126,9 @@ class Todo(TypedDict):
     reminder_idx: int
 
 
-class RepeatCycleDlg(DialogCtrl):
+class RepeatCycleDlg(tkDialogCtrl):
     def __init__(self, app: WinBasic, dlg_cfg: et.Element):
-        super().__init__("", dlg_cfg, app, app)
+        super().__init__(app, dlg_cfg, app)
 
         # Weekday list
         self.weekdays: list[str] = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
@@ -307,9 +305,9 @@ class RepeatCycleDlg(DialogCtrl):
 
     @override
     def _beforego(self, **kwargs: object):
-        spr_ctrl = cast(ScrollPickerCtrl, self.get_control("sprEveryRepeatCycle"))
+        spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryRepeatCycle"))
         spr_ctrl.hide()
-        spr_ctrl = cast(ScrollPickerCtrl, self.get_control("sprFrqRepeatCycle"))
+        spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqRepeatCycle"))
         spr_ctrl.hide()
 
         # Configure custom styles
@@ -333,7 +331,7 @@ class RepeatCycleDlg(DialogCtrl):
         if self.alive:
             match idmsg:
                 case "lblSelEveryRepeatCycle":
-                    spr_ctrl = cast(ScrollPickerCtrl, self.get_control("sprEveryRepeatCycle"))
+                    spr_ctrl = cast(ScrollPickerCtrl[int], self.get_control("sprEveryRepeatCycle"))
                     spr_ctrl.hide(spr_ctrl.visible)
                 case "sprEveryRepeatCycle":
                     val = cast(int, kwargs["val"])
@@ -348,7 +346,7 @@ class RepeatCycleDlg(DialogCtrl):
 
                         lbl_info.set_text(f"Every {val} {frq}")
                 case "lblSelFrqRepeatCycle":
-                    spr_ctrl = cast(ScrollPickerCtrl, self.get_control("sprFrqRepeatCycle"))
+                    spr_ctrl = cast(ScrollPickerCtrl[str], self.get_control("sprFrqRepeatCycle"))
                     spr_ctrl.hide(spr_ctrl.visible)
                 case "sprFrqRepeatCycle":
                     val = cast(str, kwargs["val"])
@@ -383,14 +381,14 @@ class RepeatCycleDlg(DialogCtrl):
 
         assert self._owner is not None
         _ = self._owner.process_message("ModifyCycle", cycle_info=cycle_info, every=every, frq=frq)
-        return True, ""
-
+        super()._confirm(**kwargs)
+  
     @override
     def _cancel(self, **kwargs: object):
         # po(f"{self._idself} cancel")
-        return True, ""
+        super()._cancel(**kwargs)
 
-class EditTodoDialog(DialogCtrl):
+class EditTodoDialog(tkDialogCtrl):
     """_summary_
 
     Attributes:
@@ -405,7 +403,7 @@ class EditTodoDialog(DialogCtrl):
         """
         self._todo: Todo | None = None
         self._todo_old: Todo | None = None
-        super().__init__("", dlg_cfg, app, app)
+        super().__init__(app, dlg_cfg, app)
 
     @override
     def _beforego(self, **kwargs: object):
@@ -491,7 +489,7 @@ class EditTodoDialog(DialogCtrl):
         _ = self._owner.process_message("ModifyTodo", todo=self._todo)
         # pv(self._owner)
 
-        return True, ""
+        super()._confirm(**kwargs)
 
     @override
     def process_message(self, idmsg: str, **kwargs: object):

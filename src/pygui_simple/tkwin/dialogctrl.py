@@ -110,7 +110,7 @@ class DialogCtrl(Dialog):
         # self.movie_window(x, y, w, h)
         self.movie_window(x, y, self._ww, self._hh)
         self._topctrl.title(self._title)
-        _ = self._master.after(300, self._main_judge)
+        # _ = self._master.after(300, self._main_judge)
 
         # Disable the window's resizing capability
         _ = self._topctrl.resizable(width=tk.FALSE, height=tk.FALSE)
@@ -174,11 +174,11 @@ class DialogCtrl(Dialog):
 
             self._topctrl.grab_release()
             super().back()
-            for idctrl in self._idctrl_dict:
+            for idctrl in list(self._idctrl_dict):
                 self.delete_control(idctrl)
             # po("subctrl have been deleted!")
             self._idctrl_dict.clear()
-            print(self._idctrl_dict.keys())
+            # print(self._idctrl_dict.keys())
             self._topctrl.destroy()
             self._top = None
         self._alive = False

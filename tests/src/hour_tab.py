@@ -33,6 +33,7 @@ from src.time_database_type import (
     time2str,
 )
 
+from pygui_simple.tkwin.dialogctrl import DialogCtrl, tkDialogCtrl
 from pygui_simple.tkwin.matplotctrl import LineData, MatPlotCtrl
 from pygui_simple.tkwin.scrollpickerctrl import (
     DateScrollPickerDialog,
@@ -50,8 +51,8 @@ from pygui_simple.tkwin.tkcontrols import (
     LabelCtrl,
     PicsListviewCtrl,
 )
-from pygui_simple.tkwin.tkwin import DialogCtrl, tkWin
-from pygui_simple.winbasic import Container, Widget, on_message
+from pygui_simple.tkwin.tkwin import tkWin
+from pygui_simple.winbasic import Container, Widget, WinBasic, on_message
 
 
 class HourTuple(NamedTuple):
@@ -63,18 +64,18 @@ class HourTuple(NamedTuple):
     sums: int
 
 
-class RecordHourDlg(DialogCtrl):
+class RecordHourDlg(tkDialogCtrl):
     """ _summary_
 
     """
-    def __init__(self, app: tkWin, dlg_cfg: et.Element):
+    def __init__(self, app: WinBasic, dlg_cfg: et.Element):
         """ _summary_
 
         Args:
             app (tkWin): _description_
             dlg_cfg (et.Element): _description_
         """
-        super().__init__("", dlg_cfg, app, app)
+        super().__init__(app, dlg_cfg, app)
 
     @override
     def _beforego(self, **kwargs: object):
@@ -110,7 +111,7 @@ class RecordHourDlg(DialogCtrl):
         """ _summary_
         """
         x, y = cast(tuple[int, int], kwargs["mousepos"])
-        scrollpicker = DateScrollPickerDialog((x, y+20), "选择日期")
+        scrollpicker = DateScrollPickerDialog(self, (x, y+20), "选择日期")
         date = scrollpicker.get_datestr()
         lbl_day = cast(LabelCtrl, self.get_control("lblSelDayRecordHour"))
         lbl_day.set_text(date)
@@ -120,7 +121,7 @@ class RecordHourDlg(DialogCtrl):
         """
         lbl_strtime = cast(LabelCtrl, self.get_control("lblSelStrtRecordHour"))
         x, y = cast(tuple[int, int], kwargs["mousepos"])
-        scrollpicker = TimeScrollPickerDialog((x, y+20), stp=5, title="选择时间", initial=lbl_strtime.get_text())
+        scrollpicker = TimeScrollPickerDialog(self,(x, y+20), stp=5, title="选择时间", initial=lbl_strtime.get_text())
         strt_time = scrollpicker.get_timestr()
         lbl_strtime = cast(LabelCtrl, self.get_control("lblSelStrtRecordHour"))
         lbl_strtime.set_text(strt_time)
@@ -149,7 +150,7 @@ class RecordHourDlg(DialogCtrl):
         lbl_lastime = cast(LabelCtrl, self.get_control("lblSelLastRecordHour"))
         lastime = self._schedule_txt2clk(lbl_lastime.get_text())
         x, y = cast(tuple[int, int], kwargs["mousepos"])
-        scrollpicker = TimeScrollPickerDialog((x, y+20), stp=5, title="持续时间", initial=lastime)
+        scrollpicker = TimeScrollPickerDialog(self, (x, y+20), stp=5, title="持续时间", initial=lastime)
         lastime = scrollpicker.get_timestr()
         lastime_list = lastime.split(":")
         hour = int(lastime_list[0])
@@ -183,7 +184,7 @@ class RecordHourDlg(DialogCtrl):
         sum_minutes = detail["sums"] + duration
 
         _ = owner.process_message("ChangeSum", id=hid, sum=sum_minutes)
-        return True, ""
+        super()._confirm(**kwargs)
 
     @override
     def process_message(self, idmsg: str, **kwargs: object):
@@ -212,18 +213,18 @@ class Reminder(TypedDict):
     data: ReminderDataDict
     status: ReminderStatusEnum
 
-class EditHourDlg(DialogCtrl):
+class EditHourDlg(tkDialogCtrl):
     """ _summary_
 
     """
-    def __init__(self, app: tkWin, dlg_cfg: et.Element):
+    def __init__(self, app: WinBasic, dlg_cfg: et.Element):
         """ _summary_
 
         Args:
             app (tkWin): _description_
             dlg_cfg (et.Element): _description_
         """
-        super().__init__("", dlg_cfg, app, app)
+        super().__init__(app, dlg_cfg, app)
         self._old_fid: int = -1
         self._old_iid: IconTuple = IconTuple(0, 0)
         self._hid: int = 0
@@ -381,6 +382,10 @@ class EditHourDlg(DialogCtrl):
         ent_name = cast(EntryCtrl, self.get_control("txtItemEditHour"))
         name = ent_name.get_text()
 
+        if not name:
+            ent_name.set_text("name shouldn't not be empty")
+            return
+
         if hid != 0:    # edit item
             sum_clock_str = ""
             for reminder in self._reminders:
@@ -419,9 +424,6 @@ class EditHourDlg(DialogCtrl):
                 _ = owner.process_message("changeItemImage",
                     id=hid, group=grp, index=idx)
         else:   # New item
-            if len(name) == 0:
-                return False, "Name should not be empty"
-
             lst_itemimage = cast(PicsListviewCtrl,
                 self.get_control("lstImageEditHour"))
             iid = lst_itemimage.get_selected()
@@ -433,7 +435,8 @@ class EditHourDlg(DialogCtrl):
             else:
                 _ = owner.process_message("CreateChild", name=name, iid=icon,
                     fid=fid, reminders=reminders)
-        return True, ""
+
+        super()._confirm(**kwargs)
 
     def _get_hourdetail(self, db: TimeDatabase, hid: int):
         """ _summary_
@@ -562,7 +565,7 @@ class EditHourDlg(DialogCtrl):
             return super().process_message(idmsg, **kwargs)
         return True
 
-class HourDetailDlg(DialogCtrl):
+class HourDetailDlg(tkDialogCtrl):
     """ _summary_
 
     Attributes:
@@ -576,7 +579,7 @@ class HourDetailDlg(DialogCtrl):
             app (tkWin): _description_
             dlg_cfg (et.Element): _description_
         """
-        super().__init__("", dlg_cfg, app, app)
+        super().__init__(app, dlg_cfg, app)
         self._last_cid: int = 0
         self._children: dict[int, HourTuple] = {}
 
@@ -998,7 +1001,7 @@ class HourDetailDlg(DialogCtrl):
         for idx in self._children:
             self._delete_childctrl(idx)
         self._children.clear()
-        return True, ""
+        super()._cancel(**kwargs)
 
     @override
     def _confirm(self, **kwargs: object):
@@ -1014,7 +1017,8 @@ class HourDetailDlg(DialogCtrl):
                     name=name, fid=fid, iid=iid, reminders=reminders)
             self._delete_childctrl(idx)
         self._children.clear()
-        return True, ""
+
+        super()._confirm(**kwargs)
 
     def _get_imagepath(self, group: int, index: int):
         """ _summary_
@@ -1040,8 +1044,7 @@ class HourDetailDlg(DialogCtrl):
         """
         dlg_id = "dlgRecordHour"
         dlg_cfg = self._app.get_customctrlcfg(dlg_id)
-        app = cast(tkWin, self._app)
-        recordhour_dlg = RecordHourDlg(app, dlg_cfg)
+        recordhour_dlg = RecordHourDlg(self._app, dlg_cfg)
         recordhour_dlg.do_show(owner, x, y, **kwargs)
 
     def _show_edithourdlg(self, owner: Container | None = None, x: int = 0, y: int = 0,
@@ -1054,8 +1057,7 @@ class HourDetailDlg(DialogCtrl):
         """
         dlg_id = "dlgEditHour"
         dlg_cfg = self._app.get_customctrlcfg(dlg_id)
-        app = cast(tkWin, self._app)
-        dlg = EditHourDlg(app, dlg_cfg)
+        dlg = EditHourDlg(self._app, dlg_cfg)
         dlg.do_show(owner, x, y, **kwargs)
 
     def _create_childctrl(self, parent: Widget, uid: int, sub_item: str,
@@ -1072,31 +1074,31 @@ class HourDetailDlg(DialogCtrl):
         imagepath = self._get_imagepath(iid.grpidx, iid.eleidx)
 
         level = 2
-        frm_child_xml = self._app.create_xml("Frame", {"id": f"frmSub{uid}"})
-        _, frm_child = self._app.create_control(parent, frm_child_xml, level)
+        frm_child_xml = self.create_xml("Frame", {"id": f"frmSub{uid}"})
+        _, frm_child = self.create_control(parent, frm_child_xml, level)
 
         level = 3
 
-        pnlitem_xml = self._app.create_xml("ImagePanel", {"id": f"pnlChild{uid}",
+        pnlitem_xml = self.create_xml("ImagePanel", {"id": f"pnlChild{uid}",
             "image": imagepath, 
             "options": "{'height':20, 'width':20}"}, frm_child_xml)
-        _, pnl_item = self._app.create_control(frm_child, pnlitem_xml, level)
-        self._app.assemble_control(pnl_item, {"layout":"pack",
+        _, pnl_item = self.create_control(frm_child, pnlitem_xml, level)
+        self.assemble_control(pnl_item, {"layout":"pack",
             "pack":"{'side':'left','anchor':'w'}"}, '  '*level)
 
-        lblitem_xml = self._app.create_xml("Label", {"id": f"lblChild{uid}", 
+        lblitem_xml = self.create_xml("Label", {"id": f"lblChild{uid}", 
             "text": sub_item, "options": "{'width':40}"}, frm_child_xml)
-        _, lbl_subitem = self._app.create_control(frm_child, lblitem_xml, level)
-        self._app.assemble_control(lbl_subitem, {"layout":"pack",
+        _, lbl_subitem = self.create_control(frm_child, lblitem_xml, level)
+        self.assemble_control(lbl_subitem, {"layout":"pack",
             "pack":"{'side':'left','anchor':'w'}"}, f"{'  '*level}")
 
-        lblsum_xml = self._app.create_xml("Label", {"text": f"{sums}h",
+        lblsum_xml = self.create_xml("Label", {"text": f"{sums}h",
             "id": f"lblSubSum{uid}"}, frm_child_xml)
-        _, lbl_sum = self._app.create_control(frm_child, lblsum_xml, level)
-        self._app.assemble_control(lbl_sum, {"layout":"pack",
+        _, lbl_sum = self.create_control(frm_child, lblsum_xml, level)
+        self.assemble_control(lbl_sum, {"layout":"pack",
             "pack":"{'side':'left','anchor':'e'}"}, f"{'  '*level}")
 
-        self._app.assemble_control(frm_child, {"layout": "grid",
+        self.assemble_control(frm_child, {"layout": "grid",
             "grid": f"{{'row':{uid},'column':0,'pady':4}}"}, f"{'  '*(level-1)}")
 
     def _delete_childctrl(self, sid: int):
@@ -1105,10 +1107,10 @@ class HourDetailDlg(DialogCtrl):
         Args:
             sid (int): _description_
         """
-        self._app.delete_control(f"frmSub{sid}")
-        self._app.delete_control(f"pnlChild{sid}")
-        self._app.delete_control(f"lblChild{sid}")
-        self._app.delete_control(f"lblSubSum{sid}")
+        self.delete_control(f"frmSub{sid}")
+        self.delete_control(f"pnlChild{sid}")
+        self.delete_control(f"lblChild{sid}")
+        self.delete_control(f"lblSubSum{sid}")
 
     @on_message("btnImageHourDetail")
     def on_edit_hour(self, **kwargs: object):
