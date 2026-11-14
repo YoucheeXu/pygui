@@ -13,10 +13,17 @@ from pygui_simple.winbasic import (
 class FrameCtrl(tkControl):
     def __init__(self, parent: Widget, **kwargs: Any):
         master = cast(tk.Misc, parent.control)
+        rowconfigure = cast(str, kwargs.pop("rowconfigure", ""))
         columnconfigure = cast(str, kwargs.pop("columnconfigure", ""))
 
         ctrl = tk.Frame(master, **kwargs)
         super().__init__(ctrl)
+
+        if rowconfigure:
+            lst = rowconfigure.strip('()').split(',')
+            rowcfgs = tuple(int(x) for x in lst)
+            for i, wgh in enumerate(rowcfgs):
+                _ = ctrl.rowconfigure(i, weight=wgh)
 
         if columnconfigure:
             lst = columnconfigure.strip('()').split(',')
