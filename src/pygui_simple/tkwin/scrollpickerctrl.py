@@ -10,6 +10,8 @@ from collections.abc import Callable
 from tkinter import ttk
 from typing import Any, TypeVar, cast, override
 
+from pygui_simple.tkwin.dialogctrl import DialogCtrl
+from pygui_simple.tkwin.labelctrl import LabelCtrl
 from pygui_simple.tkwin.tkcontrol import tkControl
 from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
 
@@ -219,15 +221,12 @@ class ScrollPickerCtrl[T](tkControl):
         """ 获取当前选择的时间"""
         return self._selected_val
 
-class DateScrollPickerDialog:
-    def __init__(self, point: tuple[int, int] | None = None,
+class DateScrollPickerDialog(DialogCtrl):
+    def __init__(self, parent: WinBasic, point: tuple[int, int] | None = None,
             title: str = "", initial: str = ""):
-        self._master: tk.Toplevel = tk.Toplevel()
-        self._master.withdraw()
-
-        self._frame: tk.Frame = tk.Frame(self._master)
-
         self._title: str = title if title else "日期选择器"
+        
+        super().__init__(parent, title, 300, 190)
 
         # 初始日期设置
         if not initial:
@@ -241,69 +240,48 @@ class DateScrollPickerDialog:
             self._selected_month = int(today_list[1])
             self._selected_day = int(today_list[2])
 
+        self._result_var: tk.StringVar = tk.StringVar()
+
+        if point:
+            x, y = point
+        else:
+            x, y = 0, 0
+        self.do_show(parent, x, y)
+
+    @override
+    def _construct_children(self):
         year_list = list(range(1970, 2101))
-        self._year_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
-            year_list, self._selected_year,
-            self._on_year_change)
+        self._year_scrollpicker: ScrollPickerCtrl[int] = ScrollPickerCtrl[int](self._main_frame, 0, 0,
+            year_list, initial=self._selected_year,
+            callback=self._on_year_change)
+        self._idctrl_dict["scpYear"] = self._year_scrollpicker
 
         month_list  = list(range(1, 13))
-        self._month_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
-            month_list, self._selected_month,
-            self._on_month_change)
+        self._month_scrollpicker: ScrollPickerCtrl[int] = ScrollPickerCtrl[int](self._main_frame, 0, 0,
+            month_list, initial=self._selected_month,
+            callback=self._on_month_change)
+        self._idctrl_dict["scpMonth"] = self._month_scrollpicker
 
         day_list = list(range(1, 32))
-        self._day_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
-            day_list, self._selected_day,
-            self._on_day_change)
+        self._day_scrollpicker: ScrollPickerCtrl[int] = ScrollPickerCtrl[int](self._main_frame, 0, 0,
+            day_list, initial=self._selected_day,
+            callback=self._on_day_change)
+        self._idctrl_dict["scpDay"] = self._day_scrollpicker
 
-        # 创建UI组件
-        self._create_widgets()
+        # for i in range(3):  # 行
+        #     _ = cast(tk.Widget, self._main_frame.control).grid_rowconfigure(i, weight=1)
+        # for i in range(3):  # 列
+        #     _ = cast(tk.Widget, self._main_frame.control).grid_columnconfigure(i, weight=1)
 
-        self._confirm_btn: ttk.Button
-        self._result_var: tk.StringVar
-        self._result_label: ttk.Label
+        cast(tk.Widget, self._year_scrollpicker.control).grid(row=0, column=0)
+        cast(tk.Widget, self._month_scrollpicker.control).grid(row=0, column=1)
+        cast(tk.Widget, self._day_scrollpicker.control).grid(row=0, column=2)
 
-        self._frame.pack(expand = 1, fill = 'both')
-
-        self._master.overrideredirect(True)
-        self._master.update_idletasks()
-        width, height = self._master.winfo_reqwidth(), self._master.winfo_reqheight()
-        self.height: int = height
-        if point:
-            x, y = point[0], point[1]
-        else:
-            x, y = (self._master.winfo_screenwidth() - width)/2, \
-                (self._master.winfo_screenheight() - height)/2
-        self._master.geometry(f"{width}x{height}+{x}+{y}") # 窗口位置居中
-        _ = self._master.after(300, self._main_judge)
-        self._master.attributes('-topmost', True)
-        self._master.grab_set()        # ensure all input goes to our window
-        self._master.deiconify()
-        self._master.focus_set()
-        self._master.wait_window()
-
-    def _create_widgets(self) -> None:
-        # 配置网格权重，使布局更美观
-        for i in range(3):  # 行
-            _ = self._frame.grid_rowconfigure(i, weight=1)
-        for i in range(3):  # 列
-            _ = self._frame.grid_columnconfigure(i, weight=1)
-
-        ttk.Label(self._frame, text=self._title, font=("SimHei", 12)).grid(row=0, column=0,
-            columnspan=3, pady=5)
-
-        self._year_scrollpicker.grid(row=1, column=0)
-        self._month_scrollpicker.grid(row=1, column=1)
-        self._day_scrollpicker.grid(row=1, column=2)
-
-        # 确认按钮和结果显示
-        self._confirm_btn = ttk.Button(self._frame, text="确认选择", command=self._confirm)
-        self._confirm_btn.grid(row=2, column=0, columnspan=3, pady=10)
-
-        self._result_var = tk.StringVar()
         self._result_var.set(f"当前选择: {self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}")
-        self._result_label = ttk.Label(self._frame, textvariable=self._result_var, font=("SimHei", 12))
-        self._result_label.grid(row=3, column=0, columnspan=3, pady=5)
+        result_label = LabelCtrl(self._main_frame, "", textvariable=self._result_var, font=("SimHei", 12))
+        cast(tk.Widget, result_label.control).grid(row=3, column=0, columnspan=3, pady=5)
+        self._idctrl_dict["lblDateResull"] = result_label
+        return super()._construct_children()
 
     def _on_year_change(self, year: int):
         self._selected_year = year
@@ -328,36 +306,32 @@ class DateScrollPickerDialog:
         max_day = self._get_max_day()
         if self._selected_day > max_day:
             self._selected_day = max_day
-            self._day_scrollpicker.update_data(self._selected_day)
+            self._day_scrollpicker.scrollpicker.update_data(self._selected_day)
         day_list = list(range(1, max_day))
-        self._day_scrollpicker.update_val_list(day_list)
+        self._day_scrollpicker.scrollpicker.update_val_list(day_list)
 
     def _update_result_preview(self) -> None:
         """ 更新结果预览"""
         formatted_date: str = f"{self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}"
         self._result_var.set(f"当前选择: {formatted_date}")
 
-    def _confirm(self) -> str:
+    @override
+    def _confirm(self, **kwargs: object):
         """ 显示并返回最终选择的日期"""
         formatted_date: str = f"{self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}"
         self._result_var.set(f"已选择: {formatted_date}")
-        self._exit()
-        return formatted_date
+        self.destroy()
 
     def get_datestr(self) -> str:
         """ 获取当前选择的日期"""
         return f"{self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}"
-
-    def _exit(self):
-        self._master.grab_release()
-        self._master.destroy()
 
     def _main_judge(self):
         """ 判断窗口是否在最顶层"""
         try:
             if self._master.focus_displayof() is None \
                 or 'toplevel' not in str(self._master.focus_displayof()):
-                self._exit()
+                self.destroy()
             else:
                 _ = self._master.after(10, self._main_judge)
         except tk.TclError:
