@@ -38,6 +38,9 @@ class CheckbuttonCtrl(tkControl):
     def variable(self):
         return self._variable
 
+    def select(self):
+        self._ctrl.select()
+
     def get_val(self) -> int:
         return self._variable.get()
 
