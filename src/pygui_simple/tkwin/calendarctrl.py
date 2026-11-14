@@ -11,8 +11,9 @@ from collections.abc import Callable
 from tkinter import ttk
 from typing import cast, override
 
+from pygui_simple.tkwin.dialogctrl import DialogCtrl
 from pygui_simple.tkwin.tkcontrol import tkControl
-from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
+from pygui_simple.winbasic import Widget, WidgetRegistry, WinBasic
 
 
 class CalendarCtrl(tkControl):
@@ -439,7 +440,7 @@ class CalendarCtrl(tkControl):
         self._selection = None
         self._canvas.place_forget()
 
-class CalendarDialog(Container):
+class CalendarDialog(DialogCtrl):
     """ A modal, borderless pop-up dialog for date selection.
 
     This class creates a top-level tkinter window containing a CalendarCtrl widget
@@ -451,7 +452,7 @@ class CalendarDialog(Container):
         _calendar_ctrl: Embedded CalendarCtrl widget for date selection
         _hh: Stored height of the dialog window
     """
-    def __init__(self, point: tuple[int, int] | None = None):
+    def __init__(self, parent: WinBasic, point: tuple[int, int] | None = None):
         """ Initialize and render the date selection dialog.
 
         Creates a borderless, topmost modal dialog with a calendar control and
@@ -462,87 +463,22 @@ class CalendarDialog(Container):
             point: Optional (x, y) screen coordinates for the dialog window;
                 defaults to screen center if None
         """
-        super().__init__()
-
         # Initialize hidden top-level window
-        self._top: tk.Toplevel = tk.Toplevel()
-        self._top.withdraw()
+        super().__init__(parent, "", 220, 250)
 
-        # Main container frame
-        frame = ttk.Frame(self._top)
+        if point:
+            x, y = point
+        else:
+            x, y = 0, 0
+        self.do_show(parent, x, y)
 
+    @override
+    def _construct_children(self):
         # Embed calendar control and set layout
-        self._calendar_ctrl: CalendarCtrl = CalendarCtrl("", frame, self)
+        self._calendar_ctrl: CalendarCtrl = CalendarCtrl(self._main_frame)
         cast(tk.Widget, self._calendar_ctrl.control).pack(expand = 1, fill = 'both')
 
-        # Bottom action bar with confirm/cancel buttons
-        bottom_frame = ttk.Frame(frame)
-        bottom_frame.pack(in_=frame, side='bottom', pady=5)
-
-        # Confirm button (save selection and close)
-        ttk.Button(bottom_frame, text="确 定", width=6,
-            command=lambda: self._exit(True)).grid(row=0, column=0, sticky='ns', padx=20)
-        ttk.Button(bottom_frame, text="取 消", width=6, command=self._exit). \
-            grid(row=0, column=1, sticky='ne', padx=20)
-
-        # tk.Frame(frame, bg='#565656').\
-        #     place(x=0, y=0, relx=0, rely=0, relwidth=1, relheigh=2/200)
-        # tk.Frame(frame, bg='#565656'). \
-        #     place(x=0, y=0, relx=0, rely=198/200, relwidth=1, relheigh=2/200)
-        # tk.Frame(frame, bg='#565656'). \
-        #     place(x=0, y=0, relx=0, rely=0, relwidth=2/200, relheigh=1)
-        # tk.Frame(frame, bg='#565656'). \
-        #     place(x=0, y=0, relx=198/200, rely=0, relwidth=2/200, relheigh=1)
-
-        # Layout main frame
-        frame.pack(expand = 1, fill = 'both')
-
-        # Remove window title bar/borders
-        self._top.overrideredirect(True)
-        self._top.update_idletasks()
-
-        # Calculate window dimensions and position
-        width, height = self._top.winfo_reqwidth(), self._top.winfo_reqheight()
-        self._hh: int = height
-        # Set position: custom point or screen center
-        if point:
-            x, y = point[0], point[1]
-        else:
-            x, y = (self._top.winfo_screenwidth() - width)/2, \
-                (self._top.winfo_screenheight() - height)/2
-
-        # Apply window geometry (size + position)
-        self._top.geometry(f"{width}x{height}+{x}+{y}")
-        # _ = self._master.after(300, self._main_judge)
-
-        # Disable window resizing
-        _ = self._top.resizable(width=tk.FALSE, height=tk.FALSE)
-        # self._top.transient(self._parent)
-        # Bind window close event
-        self._top.protocol("WM_DELETE_WINDOW", self.destroy)
-
-        # Configure modal behavior: topmost, grab focus, block input
-        _ = self._top.attributes('-topmost', True)
-        self._top.grab_set()        # ensure all input goes to our window
-        # Show window and wait for user interaction
-        self._top.deiconify()
-        self._top.focus_set()
-        self._top.wait_window()
-
-    def _main_judge(self):
-        """ Check if the dialog window retains focus; close if focus is lost.
-
-        Recursively monitors window focus state and closes the dialog if it loses
-        focus to another window/element. Includes exception handling for stability.
-        """
-        try:
-            if self._top.focus_displayof() is None \
-                or 'toplevel' not in str(self._top.focus_displayof()):
-                self._exit()
-            else:
-                _ = self._top.after(10, self._main_judge)
-        except tk.TclError:
-            _ = self._top.after(10, self._main_judge)
+        return super()._construct_children()
 
     def get_datestr(self):
         """ Retrieve the currently selected date as an ISO-format string.
@@ -553,29 +489,14 @@ class CalendarDialog(Container):
         """
         return self._calendar_ctrl.get_datestr()
 
-    def _exit(self, confirm: bool = False):
-        """ Close the dialog and release modal input control.
-
-        Cancels the date selection if closing via cancel/close; preserves the
-        selection if confirmed. Releases window grab and destroys the dialog.
-
-        Args:
-            confirm: If True, keep the selected date; if False, clear selection
-        """
-        if not confirm:
-            self._calendar_ctrl.cancel_select()
-        # Release modal focus and close window
-        self._top.grab_release()
-        self._top.destroy()
+    @override
+    def _cancel(self, **kwargs: object):
+        self._calendar_ctrl.cancel_select()
+        return super()._cancel(**kwargs)
 
     @override
-    def destroy(self, **kwargs: object):
-        """ Override base Dialog destroy method with empty implementation.
-
-        Prevents default destruction logic from interfering with custom
-        dialog closing behavior defined in _exit().
-        """
-        print("CalendarDialog Destory")
+    def _confirm(self, **kwargs: object):
+        return super()._confirm(**kwargs)
 
 @WidgetRegistry.register("Calendar")
 class tkCalendarCtrl(CalendarCtrl):
