@@ -7,13 +7,12 @@ import datetime
 import tkinter as tk
 import xml.etree.ElementTree as et
 from collections.abc import Callable
-from tkinter import ttk
 from typing import Any, TypeVar, cast, override
 
 from pygui_simple.tkwin.dialogctrl import DialogCtrl
 from pygui_simple.tkwin.labelctrl import LabelCtrl
 from pygui_simple.tkwin.tkcontrol import tkControl
-from pygui_simple.winbasic import Container, Widget, WidgetRegistry, WinBasic
+from pygui_simple.winbasic import Widget, WidgetRegistry, WinBasic
 
 T = TypeVar("T", bound=int | str)
 
@@ -228,7 +227,7 @@ class DateScrollPickerDialog(DialogCtrl):
         
         super().__init__(parent, title, 300, 190)
 
-        # 初始日期设置
+        # Initial date setting
         if not initial:
             today = datetime.datetime.now().date()
             self._selected_year: int = today.year
@@ -268,9 +267,9 @@ class DateScrollPickerDialog(DialogCtrl):
             callback=self._on_day_change)
         self._idctrl_dict["scpDay"] = self._day_scrollpicker
 
-        # for i in range(3):  # 行
+        # for i in range(3):  # row
         #     _ = cast(tk.Widget, self._main_frame.control).grid_rowconfigure(i, weight=1)
-        # for i in range(3):  # 列
+        # for i in range(3):  # column
         #     _ = cast(tk.Widget, self._main_frame.control).grid_columnconfigure(i, weight=1)
 
         cast(tk.Widget, self._year_scrollpicker.control).grid(row=0, column=0)
@@ -325,17 +324,6 @@ class DateScrollPickerDialog(DialogCtrl):
     def get_datestr(self) -> str:
         """ 获取当前选择的日期"""
         return f"{self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}"
-
-    def _main_judge(self):
-        """ 判断窗口是否在最顶层"""
-        try:
-            if self._master.focus_displayof() is None \
-                or 'toplevel' not in str(self._master.focus_displayof()):
-                self.destroy()
-            else:
-                _ = self._master.after(10, self._main_judge)
-        except tk.TclError:
-            _ = self._master.after(10, self._main_judge)
 
 class TimeScrollPickerCtrl(tkControl):
     def __init__(self, parent: Widget,
@@ -459,105 +447,67 @@ class TimeScrollPickerCtrl(tkControl):
         """ 获取当前选择的时间字符串"""
         return f"{self._selected_hour:02d}:{self._selected_minute:02d}"
 
-class TimeScrollPickerDialog(Container):
-    def __init__(self, point: tuple[int, int] | None = None, *, stp: int = 0,
+class TimeScrollPickerDialog(DialogCtrl):
+    def __init__(self, parent: WinBasic, point: tuple[int, int] | None = None, *, stp: int = 0,
             title: str = "", initial: str = ""):
-        super().__init__()
-
-        self._master: tk.Toplevel = tk.Toplevel()
-        self._master.withdraw()
-
-        self._frame: tk.Frame = tk.Frame(self._master)
-
-        self._title: str = title if title else "时间选择器"
+        title = title if title else "时间选择器"
+        self._stp: int = stp
+        super().__init__(parent, title, 250, 190)
 
         # 初始时间设置
         if not initial:
             now: datetime.datetime = datetime.datetime.now()
-            selected_hour = now.hour
-            selected_minute = now.minute
+            self._selected_hour: int = now.hour
+            self._selected_minute: int = now.minute
         else:
             now_list = initial.split(":")
-            selected_hour = int(now_list[0])
-            selected_minute = int(now_list[1])
-
-        ttk.Label(self._frame, text=self._title, font=("SimHei", 12)).pack()
-
-        self._time_scrollpicker_ctrl: TimeScrollPickerCtrl = TimeScrollPickerCtrl(
-            self._frame, 
-            100, 50,
-            stp=stp,
-            initial=f"{selected_hour}:{selected_minute}"
-        )
-        cast(tk.Widget, self._time_scrollpicker_ctrl.control).pack(pady=5)
-
-        confirm_btn = ttk.Button(self._frame, text="确认选择", command=self._confirm)
-        confirm_btn.pack()
+            self._selected_hour = int(now_list[0])
+            self._selected_minute = int(now_list[1])
 
         self._result_var: tk.StringVar = tk.StringVar()
-        self._result_var.set(f"当前选择: {selected_hour:02d}:{selected_minute:02d}")
-        result_label = ttk.Label(self._frame, textvariable=self._result_var, font=("SimHei", 12))
-        result_label.pack(pady=(5,0))
+        self._result_var.set(f"当前选择: {self._selected_hour:02d}:{self._selected_minute:02d}")
 
-        self._frame.pack(expand = 1, fill = 'both')
-
-        self._master.overrideredirect(True)
-        self._master.update_idletasks()
-        width, height = self._master.winfo_reqwidth(), self._master.winfo_reqheight()
-        self.height: int = height
         if point:
-            x, y = point[0], point[1]
+            x, y = point
         else:
-            x, y = (self._master.winfo_screenwidth() - width)/2, \
-                (self._master.winfo_screenheight() - height)/2
-        self._master.geometry(f"{width}x{height}+{x}+{y}") # 窗口位置居中
-        _ = self._master.after(300, self._main_judge)
-        _ = self._master.attributes('-topmost', True)
-        self._master.grab_set()        # ensure all input goes to our window
-        self._master.deiconify()
-        self._master.focus_set()
-        self._master.wait_window()
+            x, y = 0, 0
+        self.do_show(parent, x, y)
 
-    def _confirm(self, **_: object):
-        self._exit()
-        return True, ""
+    @override
+    def _construct_children(self):
+        self._time_scrollpicker: TimeScrollPickerCtrl = TimeScrollPickerCtrl(
+            self._main_frame,
+            100, 50,
+            stp=self._stp,
+            initial=f"{self._selected_hour}:{self._selected_minute}",
+            # callback=self._on_time_change
+        )
+        cast(tk.Widget, self._time_scrollpicker.control).pack(pady=5)
+        self._idctrl_dict["tspTimePicker"] = self._time_scrollpicker
+
+        # result_label = ttk.Label(self._frame, textvariable=self._result_var, font=("SimHei", 12))
+        result_label = LabelCtrl(self._main_frame, "", textvariable=self._result_var, font=("SimHei", 12))
+        cast(tk.Widget, result_label.control).pack(pady=(5,0))
+        self._idctrl_dict["tspTimePicker"] = result_label
+
+        return super()._construct_children()
+
+    # def on_time_change(self, time: datetime.time):
+    #     self._result_var.set(f"当前选择: {time.hour:02d}:{time.minute:02d}")
 
     def get_time(self):
         """ 获取当前选择的时间"""
-        return self._time_scrollpicker_ctrl.get_time()
+        return self._time_scrollpicker.get_time()
 
     def get_timestr(self) -> str:
         """ 获取当前选择的时间字符串"""
-        return self._time_scrollpicker_ctrl.get_timestr()
+        return self._time_scrollpicker.get_timestr()
 
     def _exit(self):
-        self._master.grab_release()
-        self._master.destroy()
-
-    def _main_judge(self):
-        """ 判断窗口是否在最顶层"""
-        try:
-            if self._master.focus_displayof() is None \
-                or 'toplevel' not in str(self._master.focus_displayof()):
-                self._exit()
-            else:
-                _ = self._master.after(10, self._main_judge)
-        except tk.TclError:
-            _ = self._master.after(10, self._main_judge)
-
-    @override
-    def process_message(self, idmsg: str, **kwargs: object):
-        match idmsg:
-            case "tspSelectTime":
-                time = self.get_time()
-                self._result_var.set(f"当前选择: {time.hour:02d}:{time.minute:02d}")
-            case _:
-                return super().process_message(idmsg, **kwargs)
-        return True
-
-    @override
-    def destroy(self, **kwargs: object):
-        pass
+        assert self._top is not None
+        topctrl = cast(tk.Toplevel, self._top.control)
+        topctrl.grab_release()
+        topctrl.destroy()
 
 @WidgetRegistry.register("ScrollPicker")
 class tkScrollPickerCtrl(tkControl):
