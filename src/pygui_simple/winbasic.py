@@ -445,6 +445,11 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         self.assemble_control(ctrl, ctrl_cfg.attrib, f"{'  '*level}")
         return idctrl_dict
 
+    def add_control(self, idctrl: str, ctrl: Widget):
+        if idctrl in self._idctrl_dict:
+            raise KeyError(f"{idctrl} already exists")
+        self._idctrl_dict[idctrl] = ctrl
+
     def delete_control(self, idctrl: str):
         ctrl = cast(Control, self._idctrl_dict[idctrl])
         try:
