@@ -486,13 +486,17 @@ class CalendarDialog(DialogCtrl):
         return self._calendar_ctrl.get_datestr()
 
     @override
-    def _cancel(self, **kwargs: object):
-        self._calendar_ctrl.cancel_select()
-        return super()._cancel(**kwargs)
+    def _beforego(self, **kwargs: object):
+        pass
 
     @override
     def _confirm(self, **kwargs: object):
-        return super()._confirm(**kwargs)
+        self.destroy(confirm=True, **kwargs)
+
+    @override
+    def _cancel(self, **kwargs: object):
+        self._calendar_ctrl.cancel_select()
+        self.destroy(confirm=False, **kwargs)
 
 @WidgetRegistry.register("Calendar")
 class tkCalendarCtrl(CalendarCtrl):

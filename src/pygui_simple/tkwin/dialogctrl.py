@@ -156,6 +156,9 @@ class DialogCtrl(Dialog):
             return super().process_message(idmsg, **kwargs)
         return None
 
+    def _before_close(self, **_: object):
+        return True, ""
+
     @override
     def destroy(self, **kwargs: object):
         """ Override base Dialog destroy method with empty implementation.

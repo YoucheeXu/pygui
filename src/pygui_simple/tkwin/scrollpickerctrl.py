@@ -311,11 +311,19 @@ class DateScrollPickerDialog(DialogCtrl):
         self._result_var.set(f"Current selection: {formatted_date}")
 
     @override
+    def _beforego(self, **kwargs: object):
+        pass
+
+    @override
     def _confirm(self, **kwargs: object):
         """ Record the finally selected date"""
         formatted_date: str = f"{self._selected_year}-{self._selected_month:02d}-{self._selected_day:02d}"
         self._result_var.set(f"Selected: {formatted_date}")
-        self.destroy()
+        self.destroy(confirm=True, **kwargs)
+
+    @override
+    def _cancel(self, **kwargs: object):
+        self.destroy(confirm=False, **kwargs)
 
     def get_datestr(self) -> str:
         """ Get currently selected date string"""
@@ -463,11 +471,7 @@ class TimeScrollPickerDialog(DialogCtrl):
         self._result_var: tk.StringVar = tk.StringVar()
         self._result_var.set(f"Current selection: {self._selected_hour:02d}:{self._selected_minute:02d}")
 
-        if point:
-            x, y = point
-        else:
-            x, y = 0, 0
-        self.do_show(parent, x, y)
+        self.do_show(parent, point)
 
     @override
     def _construct_children(self):
@@ -495,11 +499,17 @@ class TimeScrollPickerDialog(DialogCtrl):
         """ Get currently selected time string"""
         return self._time_scrollpicker.get_timestr()
 
-    def _exit(self):
-        assert self._top is not None
-        topctrl = cast(tk.Toplevel, self._top.control)
-        topctrl.grab_release()
-        topctrl.destroy()
+    @override
+    def _beforego(self, **kwargs: object):
+        pass
+
+    @override
+    def _confirm(self, **kwargs: object):
+        self.destroy(confirm=True, **kwargs)
+
+    @override
+    def _cancel(self, **kwargs: object):
+        self.destroy(confirm=False, **kwargs)
 
 @WidgetRegistry.register("ScrollPicker")
 class tkScrollPickerCtrl(tkControl):
