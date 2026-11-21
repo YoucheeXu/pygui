@@ -42,7 +42,7 @@ class DialogCtrl(Dialog):
         super().movie_window(x, y, w, h)
         self._topctrl.geometry(f'{self._ww}x{self._hh}+{self._xx}+{self._yy}')
 
-    def do_show(self, owner: Container | None = None, x: int = 0, y: int = 0, **kwargs: object):
+    def do_show(self, owner: Container | None = None, point: tuple[int, int] | None = None, **kwargs: object):
         self._alive = True
         if owner is not None:
             self._owner = owner  # pyright: ignore[reportUnannotatedClassAttribute]
@@ -51,18 +51,6 @@ class DialogCtrl(Dialog):
         self._top = tkWM[tk.Toplevel](tk.Toplevel(self._master))
         self._topctrl: tk.Toplevel = cast(tk.Toplevel, self._top.control)
         self._topctrl.withdraw()
-
-        # x, y, _, _ = self._app.get_winsize()
-        # if owner is not None:
-            # self._xx = x
-            # self._yy = y
-        # else:
-            # self._xx = self._parent.winfo_rootx() + x
-            # self._yy = self._parent.winfo_rooty() + y
-
-        if owner is None:
-            x += self._master.winfo_rootx()
-            y += self._master.winfo_rooty()
 
         # Main container frame
         self._main_frame: ScrollableFrameCtrl = ScrollableFrameCtrl(self._top,
@@ -107,10 +95,23 @@ class DialogCtrl(Dialog):
         #     print(h)
         # else:
         #     w, h = self._ww, self._hh
-        # self.movie_window(x, y, w, h)
-        self.movie_window(x, y, self._ww, self._hh)
+        w, h = self._ww, self._hh
+        if point:
+            x, y = point
+            if owner is None:
+                x += self._master.winfo_rootx()
+                y += self._master.winfo_rooty()
+        else:
+            # 获取屏幕宽度和高度
+            sw = self._master.winfo_screenwidth()
+            sh = self._master.winfo_screenheight()
+    
+            # 计算中心坐标
+            x = int((sw - w) / 2)
+            y = int((sh - h) / 2)
+        self.movie_window(x, y, w, h)
         self._topctrl.title(self._title)
-        # _ = self._master.after(300, self._main_judge)
+        # _ = self._topctrl.after(300, self._main_judge)
 
         # Disable the window's resizing capability
         _ = self._topctrl.resizable(width=tk.FALSE, height=tk.FALSE)

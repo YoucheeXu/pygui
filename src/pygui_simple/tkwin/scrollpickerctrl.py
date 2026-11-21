@@ -241,11 +241,7 @@ class DateScrollPickerDialog(DialogCtrl):
 
         self._result_var: tk.StringVar = tk.StringVar()
 
-        if point:
-            x, y = point
-        else:
-            x, y = 0, 0
-        self.do_show(parent, x, y)
+        self.do_show(parent, point)
 
     @override
     def _construct_children(self):

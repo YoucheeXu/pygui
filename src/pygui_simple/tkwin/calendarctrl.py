@@ -466,11 +466,7 @@ class CalendarDialog(DialogCtrl):
         # Initialize hidden top-level window
         super().__init__(parent, "", 220, 250)
 
-        if point:
-            x, y = point
-        else:
-            x, y = 0, 0
-        self.do_show(parent, x, y)
+        self.do_show(parent, point)
 
     @override
     def _construct_children(self):
