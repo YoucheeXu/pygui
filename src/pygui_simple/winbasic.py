@@ -103,14 +103,6 @@ class WidgetRegistry:
 class Control(Widget, metaclass=abc.ABCMeta):
     def __init__(self):
         super().__init__()
-        self._backed: bool = True
-
-    @property
-    def backed(self):
-        return self._backed
-
-    def back(self, bset: bool = True):
-        self._backed = bset
 
     @abc.abstractmethod
     def configure(self, **kwargs: object):
@@ -193,8 +185,6 @@ class Container(Widget, metaclass=abc.ABCMeta):
         self._msgs_hanlders: list[tuple[int, list[str], EventsHanlder]] = []
         self._owner: Container | None = owner
 
-        self._backed: bool = True
-
         self._idctrl_dict: OrderedDict[str, Widget] = OrderedDict()
 
     @property
@@ -204,15 +194,6 @@ class Container(Widget, metaclass=abc.ABCMeta):
     @owner.setter
     def owner(self, val: Container):
         self._owner = val  
-
-    def back(self, bset: bool = True):
-        for idctrl, ctrl in self._idctrl_dict.items():
-            try:
-                ctrl = cast(Control, ctrl).back(bset)
-            except AttributeError as _:
-                # po(f"{idctrl} doesn't support back")
-                print(f"{idctrl} doesn't support back")
-        self._backed = bset
 
     def __init_subclass__(cls, **kwargs: object):
         """ Special class method: automatically invoked once when a subclass of Container is defined.
@@ -524,10 +505,6 @@ class Dialog(WinBasic, metaclass=abc.ABCMeta):
         self._ww: int = width
         self._hh: int = height
         self._title: str = title
-
-    @property
-    def backed(self):
-        return self._backed
 
     def _beforego(self, **kwargs: object):
         _ = self.process_message("beforego", **kwargs)

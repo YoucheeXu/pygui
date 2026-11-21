@@ -119,10 +119,6 @@ class DialogCtrl(Dialog):
         self._topctrl.transient(self._master)   # dialog window is related to main
         self._topctrl.protocol("WM_DELETE_WINDOW", self._cancel) # intercept close button
 
-        # if self._owner is not None:
-        #     self._owner.back()
-        super().back(False)
-
         # Keep this window always on top of other windows
         _ = self._topctrl.wm_attributes("-topmost", True)  # pyright: ignore[reportUnknownMemberType]
         self._topctrl.grab_set()        # ensure all input goes to our window
@@ -177,7 +173,7 @@ class DialogCtrl(Dialog):
                 print(f"Warnning: {self._title} has no before_close")
 
             self._topctrl.grab_release()
-            super().back()
+
             for idctrl in list(self._idctrl_dict):
                 self.delete_control(idctrl)
             # po("subctrl have been deleted!")
@@ -186,8 +182,6 @@ class DialogCtrl(Dialog):
             self._topctrl.destroy()
             self._top = None
         self._alive = False
-        # if self._owner is not None:
-        #     self._owner.back(False)
         super().destroy()
 
 @WidgetRegistry.register("Dialog")

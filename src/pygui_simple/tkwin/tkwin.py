@@ -138,8 +138,6 @@ class tkWin(Window):
         self.register_eventhandler("Exit", self.exit)
         self.register_eventhandler("Quit", self.exit)
 
-        super().back(False)
-
         # self._x = self._win.winfo_rootx()
         # self._y = self._win.winfo_rooty()
 
