@@ -184,7 +184,11 @@ class RecordHourDlg(tkDialogCtrl):
         sum_minutes = detail["sums"] + duration
 
         _ = owner.process_message("ChangeSum", id=hid, sum=sum_minutes)
-        super()._confirm(**kwargs)
+        self.destroy(confirm=True, **kwargs)
+
+    @override
+    def _cancel(self, **kwargs: object):
+        self.destroy(confirm=False, **kwargs)
 
     @override
     def process_message(self, idmsg: str, **kwargs: object):
@@ -436,7 +440,11 @@ class EditHourDlg(tkDialogCtrl):
                 _ = owner.process_message("CreateChild", name=name, iid=icon,
                     fid=fid, reminders=reminders)
 
-        super()._confirm(**kwargs)
+        self.destroy(confirm=True, **kwargs)
+
+    @override
+    def _cancel(self, **kwargs: object):
+        self.destroy(confirm=False, **kwargs)
 
     def _get_hourdetail(self, db: TimeDatabase, hid: int):
         """ _summary_
@@ -587,6 +595,9 @@ class HourDetailDlg(tkDialogCtrl):
         self._detail: PlanDataDict = default_plan_data()
         self._db: TimeDatabase | None = None
         self._firstday: datetime.date = datetime.date(2025,12,25)
+
+        self._recordlg_cfg: et.Element = app.read_customctrlcfg("resources\\RecordHourDlg.xml")
+        self._editdlg_cfg: et.Element = app.read_customctrlcfg("resources\\EditHourDlg.xml")
 
     def _update_hourdetailctrl(self, attrib: str, val: str | float):
         """ _summary_
@@ -1001,7 +1012,7 @@ class HourDetailDlg(tkDialogCtrl):
         for idx in self._children:
             self._delete_childctrl(idx)
         self._children.clear()
-        super()._cancel(**kwargs)
+        self.destroy(confirm=False, **kwargs)
 
     @override
     def _confirm(self, **kwargs: object):
@@ -1018,7 +1029,7 @@ class HourDetailDlg(tkDialogCtrl):
             self._delete_childctrl(idx)
         self._children.clear()
 
-        super()._confirm(**kwargs)
+        self.destroy(confirm=True, **kwargs)
 
     def _get_imagepath(self, group: int, index: int):
         """ _summary_
@@ -1042,10 +1053,10 @@ class HourDetailDlg(tkDialogCtrl):
             x (type): _description_
             y (type): _description_
         """
-        dlg_id = "dlgRecordHour"
-        dlg_cfg = self._app.get_customctrlcfg(dlg_id)
-        recordhour_dlg = RecordHourDlg(self._app, dlg_cfg)
-        recordhour_dlg.do_show(owner, x, y, **kwargs)
+        # dlg_id = "dlgRecordHour"
+        # dlg_cfg = self._app.get_customctrlcfg(dlg_id)
+        recordhour_dlg = RecordHourDlg(self._app, self._recordlg_cfg)
+        recordhour_dlg.do_show(owner, (x, y), **kwargs)
 
     def _show_edithourdlg(self, owner: Container | None = None, x: int = 0, y: int = 0,
             **kwargs: object):
@@ -1055,10 +1066,10 @@ class HourDetailDlg(tkDialogCtrl):
             x (type): _description_
             y (type): _description_
         """
-        dlg_id = "dlgEditHour"
-        dlg_cfg = self._app.get_customctrlcfg(dlg_id)
-        dlg = EditHourDlg(self._app, dlg_cfg)
-        dlg.do_show(owner, x, y, **kwargs)
+        # dlg_id = "dlgEditHour"
+        # dlg_cfg = self._app.get_customctrlcfg(dlg_id)
+        dlg = EditHourDlg(self._app, self._editdlg_cfg)
+        dlg.do_show(owner, (x, y), **kwargs)
 
     def _create_childctrl(self, parent: Widget, uid: int, sub_item: str,
             iid: IconTuple, sums: str):
@@ -1308,15 +1319,14 @@ class HourTab(Container):
         self._selschedule_dlg.register_eventhandler("beforego", self._selscheduledlg_beforego)
         self._selschedule_dlg.register_eventhandler("cancel", self._selscheduledlg_cancel)
 
-        self._gui.read_customctrlcfg("resources\\RecordHourDlg.xml")
-        self._gui.read_customctrlcfg("resources\\HourDetailDlg.xml")
-        self._gui.read_customctrlcfg("resources\\EditHourDlg.xml")
-        self._gui.read_customctrlcfg("resources\\EditTodoDlg.xml")
-
         self._schedulestr: str = ""
         self._old_schedulestr: str = ""
 
         self._hoursdb: TimeDatabase = TimeDatabase()
+
+        self._recordlg_cfg: et.Element = self._gui.read_customctrlcfg("resources\\RecordHourDlg.xml")
+        self._detaildlg_cfg: et.Element = self._gui.read_customctrlcfg("resources\\HourDetailDlg.xml")
+        self._editdlg_cfg: et.Element = self._gui.read_customctrlcfg("resources\\EditHourDlg.xml")
 
     def _open(self, dbpath: str):
         """ _summary_
@@ -1580,7 +1590,7 @@ class HourTab(Container):
             y (type): _description_
             kwargs (type): _description_
         """
-        self._selclock_dlg.do_show(owner, x, y, **kwargs)
+        self._selclock_dlg.do_show(owner, (x, y), **kwargs)
         return self._clkstr
 
     def _selclockdlg_beforego(self, **kwargs: object):
@@ -1626,7 +1636,7 @@ class HourTab(Container):
             x (type): _description_
             y (type): _description_
         """
-        self._selschedule_dlg.do_show(owner, x, y, **kwargs)
+        self._selschedule_dlg.do_show(owner, (x, y), **kwargs)
         return self._schedulestr
 
     def _str2duration(self, duration_str: str):
@@ -1714,10 +1724,10 @@ class HourTab(Container):
             y (type): _description_
             kwargs (type): _description_
         """
-        dlg_id = "dlgRecordHour"
-        dlg_cfg = self._gui.get_customctrlcfg(dlg_id)
-        dlg = RecordHourDlg(self._gui, dlg_cfg)
-        dlg.do_show(owner, x, y, **kwargs)
+        # dlg_id = "dlgRecordHour"
+        # dlg_cfg = self._gui.get_customctrlcfg(dlg_id)
+        dlg = RecordHourDlg(self._gui, self._recordlg_cfg)
+        dlg.do_show(owner, (x, y), **kwargs)
 
     def show_hourdetaildlg(self, owner: Container | None = None, x: int = 0, y: int = 0,
             **kwargs: object):
@@ -1728,10 +1738,10 @@ class HourTab(Container):
             y (type): _description_
             kwargs (type): _description_
         """
-        dlg_id = "dlgHourDetail"
-        dlg_cfg = self._gui.get_customctrlcfg(dlg_id)
-        dlg = HourDetailDlg(self._gui, dlg_cfg)
-        dlg.do_show(owner, x, y, **kwargs)
+        # dlg_id = "dlgHourDetail"
+        # dlg_cfg = self._gui.get_customctrlcfg(dlg_id)
+        dlg = HourDetailDlg(self._gui, self._detaildlg_cfg)
+        dlg.do_show(owner, (x, y), **kwargs)
 
     def show_edithourdlg(self, owner: Container | None = None, x: int = 0, y: int = 0,
             **kwargs: object):
@@ -1742,10 +1752,10 @@ class HourTab(Container):
             y (type): _description_
             kwargs (type): _description_
         """
-        dlg_id = "dlgEditHour"
-        dlg_cfg = self._gui.get_customctrlcfg(dlg_id)
-        dlg = EditHourDlg(self._gui, dlg_cfg)
-        dlg.do_show(owner, x, y, **kwargs)
+        # dlg_id = "dlgEditHour"
+        # dlg_cfg = self._gui.get_customctrlcfg(dlg_id)
+        dlg = EditHourDlg(self._gui, self._editdlg_cfg)
+        dlg.do_show(owner, (x, y), **kwargs)
 
     def modify_clock(self, hid: int, eid: int, clk_time: datetime.time, custom: DayType):
         cycbgn_dtime = datetime.datetime.now()

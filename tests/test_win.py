@@ -102,6 +102,9 @@ class App(tkWin):
                                                            command=self.open_input_dialog_event)
         # self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
         self.string_input_button.assemble({"layout":"grid", "grid":"{'row':2, 'column':0, 'padx':20, 'pady':(10,10)}"})
+        self.string_calendar_button: ButtonCtrl = ButtonCtrl(self.tabview.tab("Tabview"), text="Open CalendarDialog",
+                                                           command=self.open_calendar_dialog_event)
+        self.string_calendar_button.assemble({"layout":"grid", "grid":"{'row':3, 'column':0, 'padx':20, 'pady':(10,10)}"})
         self.label_tab_2: LabelCtrl = LabelCtrl(self.tabview.tab("Tab 2"), "Label on Tab 2")
         # self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
         self.label_tab_2.assemble({"layout":"grid", "grid":"{'row':0, 'column':0, 'padx':20, 'pady':20}"})
@@ -199,6 +202,11 @@ class App(tkWin):
         # self.seg_button_1.set("Value 2")
 
     def open_input_dialog_event(self):
+        # dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
+        # print("CTkInputDialog:", dialog.get_input())
+        pass
+
+    def open_calendar_dialog_event(self):
         # dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
         # print("CTkInputDialog:", dialog.get_input())
         dialog  = CalendarDialog(self)
