@@ -335,8 +335,6 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         self._app_path: str = app_path
         self._is_debug: bool = False
 
-        self._customctrlcfg_dict: dict[str, et.Element] = {}
-
         self._xx: int = 0
         self._yy: int = 0
         self._ww: int = w
@@ -408,12 +406,7 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
     def create_controls(self, parent: Widget, ctrl_cfg: et.Element,
             level: int = 0, owner: WinBasic | None = None) -> OrderedDict[str, Widget]:
         idctrl_dict: OrderedDict[str, Widget] = OrderedDict()
-        tag = ctrl_cfg.tag
-        if tag == "CustomDialog":   # TODO: wait to delete
-            attr_dict = ctrl_cfg.attrib
-            idctrl = attr_dict["id"]
-            self._customctrlcfg_dict[idctrl] = ctrl_cfg
-            return idctrl_dict
+
         idctrl, ctrl = self.create_control(parent, ctrl_cfg, level, owner)
         idctrl_dict[idctrl] = ctrl
 
@@ -446,12 +439,8 @@ class WinBasic(Container, metaclass=abc.ABCMeta):
         cfgfile = os.path.join(self._app_path, cfgpath)
         element_tree = et.parse(cfgfile)
         ctrl_cfg: et.Element[str] = element_tree.getroot()
-        ctrl_attr = ctrl_cfg.attrib
-        idctrl = ctrl_attr["id"]
-        self._customctrlcfg_dict[idctrl] = ctrl_cfg
 
-    def get_customctrlcfg(self, idctrl: str):
-        return self._customctrlcfg_dict[idctrl]
+        return ctrl_cfg
 
     @override
     def destroy(self, **kwargs: object):
