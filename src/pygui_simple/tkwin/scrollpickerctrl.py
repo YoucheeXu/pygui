@@ -358,15 +358,14 @@ class TimeScrollPickerCtrl(tkControl):
             self._selected_minute = int(now_list[1])
 
         stp_hour, stp_minute = divmod(stp, 60)
-
-        print(f"step: {stp_hour} {stp_minute}")
+        # print(f"step: {stp_hour}, {stp_minute}")
 
         if stp_hour:
             hour_list = list(range(0, 24, stp_hour))
             self._selected_hour = (self._selected_hour // stp_hour) * stp_hour
         else:
             hour_list = list(range(24))
-        print(f"hour_list :{hour_list}")
+        # print(f"hour_list :{hour_list}")
         self._hour_scrollpicker: ScrollPicker[int] = ScrollPicker[int](self._frame,
             hour_list, self._selected_hour,
             self._on_hour_change,
@@ -378,7 +377,7 @@ class TimeScrollPickerCtrl(tkControl):
             self._selected_minute = (self._selected_minute // stp_minute) * stp_minute
         else:
             minute_list = list(range(60))
-        print(f"minute_list :{minute_list}")
+        # print(f"minute_list :{minute_list}")
         self._minute_scrollpicker: ScrollPicker[int] = ScrollPicker(self._frame,
             minute_list, self._selected_minute,
             self._on_minute_change,
