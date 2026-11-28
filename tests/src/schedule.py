@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from pyutilities_simple.logit import po, pv
 from src.action_sys import ActTyp
-from src.time_database_type import DayType, TimeUnit
+from src.database.time_database_type import DayType, TimeUnit
 
 
 @dataclass

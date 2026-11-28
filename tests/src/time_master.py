@@ -6,9 +6,9 @@ import tkinter.filedialog as tkFileDialog
 from threading import Thread
 from typing import cast
 
-from src.hour_tab import HourTab
+from src.hour.hour_tab import HourTab
 from src.schedule import Schedule
-from src.todo_tab import TodoTab
+from src.todo.todo_tab import TodoTab
 
 from pygui_simple.tkwin.tkcontrols import (
     MenuCtrl,  # pyright: ignore[reportUnusedImport]  # noqa: F401

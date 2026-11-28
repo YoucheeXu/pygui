@@ -4,9 +4,8 @@ import datetime
 import json
 from typing import TypedDict, TypeGuard, cast
 
-from src.time_database_type import DayType, ReminderDataDict, TimeUnit
+from src.database.time_database_type import DayType, ReminderDataDict, TimeUnit
 
-# Type alias for reminder collection (business layer)
 ReminderCollection = dict[int, ReminderDataDict]
 
 # -------------------------- JSON Layer TypedDicts --------------------------

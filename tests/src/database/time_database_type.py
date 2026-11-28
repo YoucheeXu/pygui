@@ -27,7 +27,6 @@ class DayType(IntEnum):
 DAYTYPE_NAMES = {dt.name for dt in DayType}
 
 T = TypeVar('T', bound=IntEnum)
-
 def str_to_intenum[T: IntEnum](enum_cls: type[T], name_str: str) -> T:
     """
     Convert an exact-matching string to the corresponding IntEnum instance (name-based).
@@ -181,6 +180,7 @@ WEEKDAY_MAPPING = {
 WEEKDAY_NAME_TO_NUM = {v.lower(): k for k, v in WEEKDAY_MAPPING.items()}
 
 # TODO: very limit
+# FIXME: Every week in clk_str
 def reminder2str(reminder: ReminderDataDict) -> tuple[str, str]:
     """ Convert ReminderDataDict to a human-readable natural language description string
 
